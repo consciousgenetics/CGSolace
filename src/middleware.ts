@@ -13,38 +13,57 @@ const regionMapCache = {
 }
 
 async function getRegionMap() {
-  const { regionMap, regionMapUpdated } = regionMapCache
+  try {
+    const { regionMap, regionMapUpdated } = regionMapCache
 
-  if (
-    !regionMap.keys().next().value ||
-    regionMapUpdated < Date.now() - 3600 * 1000
-  ) {
-    // Fetch regions from Medusa. We can't use the JS client here because middleware is running on Edge and the client needs a Node environment.
-    const { regions } = await fetch(`${BACKEND_URL}/store/regions`, {
-      headers: {
-        'x-publishable-api-key': PUBLISHABLE_API_KEY!,
-      },
-      next: {
-        revalidate: 3600,
-        tags: ['regions'],
-      },
-    }).then((res) => res.json())
+    if (
+      !regionMap.keys().next().value ||
+      regionMapUpdated < Date.now() - 3600 * 1000
+    ) {
+      try {
+        // Fetch regions from Medusa. We can't use the JS client here because middleware is running on Edge and the client needs a Node environment.
+        const response = await fetch(`${BACKEND_URL}/store/regions`, {
+          headers: {
+            'x-publishable-api-key': PUBLISHABLE_API_KEY || '',
+          },
+          next: {
+            revalidate: 3600,
+            tags: ['regions'],
+          },
+        });
 
-    if (!regions?.length) {
-      notFound()
+        if (!response.ok) {
+          console.error(`Failed to fetch regions: ${response.status} ${response.statusText}`);
+          return new Map();
+        }
+
+        const data = await response.json();
+        const regions = data.regions || [];
+
+        if (!regions?.length) {
+          console.warn('No regions found in the response');
+          return new Map();
+        }
+
+        // Create a map of country codes to regions.
+        regions.forEach((region: HttpTypes.StoreRegion) => {
+          region.countries?.forEach((c) => {
+            regionMapCache.regionMap.set(c.iso_2 ?? '', region)
+          })
+        })
+
+        regionMapCache.regionMapUpdated = Date.now()
+      } catch (error) {
+        console.error('Error fetching regions:', error);
+        return new Map();
+      }
     }
 
-    // Create a map of country codes to regions.
-    regions.forEach((region: HttpTypes.StoreRegion) => {
-      region.countries?.forEach((c) => {
-        regionMapCache.regionMap.set(c.iso_2 ?? '', region)
-      })
-    })
-
-    regionMapCache.regionMapUpdated = Date.now()
+    return regionMapCache.regionMap
+  } catch (error) {
+    console.error('Error in getRegionMap:', error);
+    return new Map();
   }
-
-  return regionMapCache.regionMap
 }
 
 /**
@@ -89,59 +108,82 @@ function getCountryCode(
  * Middleware to handle region selection and onboarding status.
  */
 export async function middleware(request: NextRequest) {
-  const searchParams = request.nextUrl.searchParams
-  const isOnboarding = searchParams.get('onboarding') === 'true'
-  const cartId = searchParams.get('cart_id')
-  const checkoutStep = searchParams.get('step')
-  const onboardingCookie = request.cookies.get('_medusa_onboarding')
-  const cartIdCookie = request.cookies.get('_medusa_cart_id')
+  try {
+    const searchParams = request.nextUrl.searchParams
+    const isOnboarding = searchParams.get('onboarding') === 'true'
+    const cartId = searchParams.get('cart_id')
+    const checkoutStep = searchParams.get('step')
+    const onboardingCookie = request.cookies.get('_medusa_onboarding')
+    const cartIdCookie = request.cookies.get('_medusa_cart_id')
 
-  const regionMap = await getRegionMap()
+    let regionMap;
+    try {
+      regionMap = await getRegionMap()
+    } catch (error) {
+      console.error('Failed to get region map:', error);
+      regionMap = new Map();
+    }
 
-  const countryCode = regionMap && (await getCountryCode(request, regionMap))
+    let countryCode;
+    try {
+      countryCode = regionMap.size > 0 && await getCountryCode(request, regionMap)
+    } catch (error) {
+      console.error('Failed to get country code:', error);
+      countryCode = DEFAULT_REGION;
+    }
 
-  const urlHasCountryCode =
-    countryCode && request.nextUrl.pathname.split('/')[1].includes(countryCode)
+    // If we couldn't determine a country code, use the default
+    if (!countryCode) {
+      countryCode = DEFAULT_REGION;
+    }
 
-  // check if one of the country codes is in the url
-  if (
-    urlHasCountryCode &&
-    (!isOnboarding || onboardingCookie) &&
-    (!cartId || cartIdCookie)
-  ) {
-    return NextResponse.next()
+    const urlHasCountryCode =
+      countryCode && request.nextUrl.pathname.split('/')[1]?.includes(countryCode)
+
+    // check if one of the country codes is in the url
+    if (
+      urlHasCountryCode &&
+      (!isOnboarding || onboardingCookie) &&
+      (!cartId || cartIdCookie)
+    ) {
+      return NextResponse.next()
+    }
+
+    const redirectPath =
+      request.nextUrl.pathname === '/' ? '' : request.nextUrl.pathname
+
+    const queryString = request.nextUrl.search ? request.nextUrl.search : ''
+
+    let redirectUrl = request.nextUrl.href
+
+    let response = NextResponse.redirect(redirectUrl, 307)
+
+    // If no country code is set, we redirect to the relevant region.
+    if (!urlHasCountryCode && countryCode) {
+      redirectUrl = `${request.nextUrl.origin}/${countryCode}${redirectPath}${queryString}`
+      response = NextResponse.redirect(`${redirectUrl}`, 307)
+    }
+
+    // If a cart_id is in the params, we set it as a cookie and redirect to the address step.
+    if (cartId && !checkoutStep) {
+      redirectUrl = `${redirectUrl}&step=address`
+      response = NextResponse.redirect(`${redirectUrl}`, 307)
+      response.cookies.set('_medusa_cart_id', cartId, { maxAge: 60 * 60 * 24 })
+    }
+
+    // Set a cookie to indicate that we're onboarding. This is used to show the onboarding flow.
+    if (isOnboarding) {
+      response.cookies.set('_medusa_onboarding', 'true', {
+        maxAge: 60 * 60 * 24,
+      })
+    }
+
+    return response
+  } catch (error) {
+    console.error('Middleware error:', error);
+    // Return a basic response to prevent the middleware from failing completely
+    return NextResponse.next();
   }
-
-  const redirectPath =
-    request.nextUrl.pathname === '/' ? '' : request.nextUrl.pathname
-
-  const queryString = request.nextUrl.search ? request.nextUrl.search : ''
-
-  let redirectUrl = request.nextUrl.href
-
-  let response = NextResponse.redirect(redirectUrl, 307)
-
-  // If no country code is set, we redirect to the relevant region.
-  if (!urlHasCountryCode && countryCode) {
-    redirectUrl = `${request.nextUrl.origin}/${countryCode}${redirectPath}${queryString}`
-    response = NextResponse.redirect(`${redirectUrl}`, 307)
-  }
-
-  // If a cart_id is in the params, we set it as a cookie and redirect to the address step.
-  if (cartId && !checkoutStep) {
-    redirectUrl = `${redirectUrl}&step=address`
-    response = NextResponse.redirect(`${redirectUrl}`, 307)
-    response.cookies.set('_medusa_cart_id', cartId, { maxAge: 60 * 60 * 24 })
-  }
-
-  // Set a cookie to indicate that we're onboarding. This is used to show the onboarding flow.
-  if (isOnboarding) {
-    response.cookies.set('_medusa_onboarding', 'true', {
-      maxAge: 60 * 60 * 24,
-    })
-  }
-
-  return response
 }
 
 export const config = {
