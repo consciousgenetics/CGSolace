@@ -1,6 +1,6 @@
 [build]
 builder = "NIXPACKS"
-buildCommand = "cd backend && yarn install && yarn build"
+buildCommand = "cd backend && yarn install && mkdir -p .medusa/server && cp tsconfig.json .medusa/server/ && yarn build"
 
 [deploy]
 startCommand = "cd backend && yarn start"
