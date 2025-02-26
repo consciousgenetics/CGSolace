@@ -46,7 +46,16 @@ export const fetchStrapiClient = async (
         status: response.status,
         statusText: response.statusText,
         url: response.url,
+        endpoint: endpoint
       });
+      
+      // For development environments, we can show more detailed error information
+      if (process.env.NODE_ENV === 'development') {
+        console.error(`Strapi fetch failed for endpoint: ${endpoint}`);
+        console.error(`Full URL attempted: ${url}`);
+        console.error(`Status: ${response.status} ${response.statusText}`);
+      }
+      
       return { 
         ok: true, 
         json: () => Promise.resolve({ data: [] }) 
@@ -157,14 +166,20 @@ export const getExploreBlogData = async (): Promise<BlogData> => {
 
 // Products
 export const getProductVariantsColors = async (): Promise<VariantColorData> => {
-  const res = await fetchStrapiClient(
-    `/product-variants-colors?populate[1]=Type&populate[2]=Type.Image&pagination[start]=0&pagination[limit]=100`,
-    {
-      next: { tags: ['variants-colors'] },
-    }
-  )
+  try {
+    const res = await fetchStrapiClient(
+      `/Product-variants-colors?populate[1]=Type&populate[2]=Type.Image&pagination[start]=0&pagination[limit]=100`,
+      {
+        next: { tags: ['variants-colors'] },
+      }
+    )
 
-  return res.json()
+    return res.json()
+  } catch (error) {
+    console.error('Error fetching product variant colors:', error);
+    // Return a properly structured empty response
+    return { data: [] };
+  }
 }
 
 // About Us

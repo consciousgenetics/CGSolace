@@ -28,6 +28,7 @@ const ProductTemplate: React.FC<ProductTemplateProps> = async ({
   countryCode,
 }: ProductTemplateProps) => {
   const variantsColors = await getProductVariantsColors()
+  const variantColorsData = variantsColors?.data || []
 
   const { response: productsList } = await getProductsListByCollectionId({
     collectionId: product.collection_id,
@@ -58,7 +59,7 @@ const ProductTemplate: React.FC<ProductTemplateProps> = async ({
                 id={product.id}
                 region={region}
                 cartItems={cart?.items}
-                colors={variantsColors.data}
+                colors={variantColorsData}
               />
             </Suspense>
             <ProductTabs product={product} />
