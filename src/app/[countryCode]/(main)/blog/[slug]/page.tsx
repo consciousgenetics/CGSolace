@@ -10,34 +10,64 @@ export const dynamic = 'force-dynamic'
 export const dynamicParams = true
 
 export async function generateStaticParams() {
-  // Skip static generation completely during build
-  if (process.env.NODE_ENV === 'production') {
-    return []
+  // Skip blog static generation during production builds
+  if (process.env.NODE_ENV === "production" || process.env.NEXT_PUBLIC_VERCEL_ENV || process.env.VERCEL) {
+    console.log('Skipping blog static params generation in production/Vercel environment');
+    return [
+      { countryCode: 'us', slug: 'placeholder' }
+    ];
   }
 
   try {
-    const slugs = await getAllBlogSlugs()
+    const slugs = await getAllBlogSlugs();
+
     if (!slugs || slugs.length === 0) {
-      return []
+      console.log('No blog slugs found, using fallback');
+      return [
+        { countryCode: 'us', slug: 'placeholder' }
+      ];
     }
 
-    const countryCodes = await listRegions().then((regions: StoreRegion[]) =>
-      regions?.map((r) => r.countries?.map((c) => c.iso_2)).flat()
-    )
+    try {
+      const countryCodes = await listRegions()
+        .then((regions: StoreRegion[]) =>
+          regions
+            ?.map((r) => r.countries?.map((c) => c.iso_2))
+            .flat()
+            .filter(Boolean) as string[]
+        )
+        .catch(() => ['us']);
 
-    if (!countryCodes || countryCodes.length === 0) {
-      return []
+      if (!countryCodes || countryCodes.length === 0) {
+        console.log('No country codes found, using fallback');
+        return slugs.map((slug: string) => ({
+          countryCode: 'us',
+          slug: slug || 'placeholder',
+        }));
+      }
+
+      const staticParams = countryCodes
+        ?.map((countryCode: string) =>
+          slugs.map((slug: string) => ({
+            countryCode,
+            slug: slug || 'placeholder',
+          }))
+        )
+        .flat();
+
+      return staticParams;
+    } catch (error) {
+      console.error('Error processing regions:', error);
+      return slugs.map((slug: string) => ({
+        countryCode: 'us',
+        slug: slug || 'placeholder',
+      }));
     }
-
-    return slugs.flatMap((slug) =>
-      countryCodes.map((countryCode) => ({
-        slug,
-        countryCode,
-      }))
-    )
   } catch (error) {
-    console.warn('Error during static generation:', error)
-    return []
+    console.error('Error in generateStaticParams for blog:', error);
+    return [
+      { countryCode: 'us', slug: 'placeholder' }
+    ];
   }
 }
 
