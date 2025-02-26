@@ -168,7 +168,7 @@ export const getExploreBlogData = async (): Promise<BlogData> => {
 export const getProductVariantsColors = async (): Promise<VariantColorData> => {
   try {
     const res = await fetchStrapiClient(
-      `/Product-variants-colors?populate[1]=Type&populate[2]=Type.Image&pagination[start]=0&pagination[limit]=100`,
+      `/product-variants-colors?populate[1]=Type&populate[2]=Type.Image&pagination[start]=0&pagination[limit]=100`,
       {
         next: { tags: ['variants-colors'] },
       }

@@ -27,8 +27,14 @@ const ProductTemplate: React.FC<ProductTemplateProps> = async ({
   region,
   countryCode,
 }: ProductTemplateProps) => {
-  const variantsColors = await getProductVariantsColors()
-  const variantColorsData = variantsColors?.data || []
+  // Fetch variant colors with error handling
+  let variantColorsData = [];
+  try {
+    const variantsColors = await getProductVariantsColors()
+    variantColorsData = variantsColors?.data || []
+  } catch (error) {
+    console.error("Error loading product variant colors:", error)
+  }
 
   const { response: productsList } = await getProductsListByCollectionId({
     collectionId: product.collection_id,
