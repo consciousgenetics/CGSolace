@@ -82,13 +82,19 @@ const Collections = ({
   medusaCollections: StoreCollection[]
 }) => {
   const validCollections = useMemo(() => {
-    if (!cmsCollections.data.length || !medusaCollections.length) return null
+    if (!cmsCollections?.data?.length || !medusaCollections?.length) return null
+    
+    // Log the collections data for debugging
+    console.log("CMS Collections:", cmsCollections.data.map(c => ({ title: c.Title, handle: c.Handle })));
+    console.log("Medusa Collections:", medusaCollections.map(c => ({ title: c.title, handle: c.handle })));
+    
     const collections = cmsCollections.data.filter((cmsCollection) =>
       medusaCollections.some(
         (medusaCollection) => medusaCollection.handle === cmsCollection.Handle
       )
     )
-    if (!collections || collections.length < 3) return null
+    
+    if (!collections || collections.length < 1) return null
     return collections.sort((a, b) => b.id - a.id)
   }, [cmsCollections, medusaCollections])
 

@@ -15,66 +15,30 @@ interface CategoryPageLayoutProps {
 }
 
 export async function generateStaticParams() {
-  // Skip category static generation during Vercel builds
-  if (process.env.NEXT_PUBLIC_VERCEL_ENV || process.env.VERCEL) {
-    console.log('Skipping category static params generation in Vercel environment');
-    return [
-      { countryCode: 'us', category: ['placeholder'] }
-    ];
+  const product_categories = await listCategories()
+
+  if (!product_categories) {
+    return []
   }
 
-  try {
-    const product_categories = await listCategories();
+  const countryCodes = await listRegions().then((regions: StoreRegion[]) =>
+    regions?.map((r) => r.countries?.map((c) => c.iso_2)).flat()
+  )
 
-    if (!product_categories || product_categories.length === 0) {
-      console.log('No categories found, using fallback');
-      return [
-        { countryCode: 'us', category: ['placeholder'] }
-      ];
-    }
+  const categoryHandles = product_categories.map(
+    (category: any) => category.handle
+  )
 
-    try {
-      const countryCodes = await listRegions()
-        .then((regions: StoreRegion[]) =>
-          regions?.map((r) => r.countries?.map((c) => c.iso_2)).flat()
-        )
-        .catch(() => ['us']);
+  const staticParams = countryCodes
+    ?.map((countryCode: string | undefined) =>
+      categoryHandles.map((handle: any) => ({
+        countryCode,
+        category: [handle],
+      }))
+    )
+    .flat()
 
-      if (!countryCodes || countryCodes.length === 0) {
-        console.log('No country codes found, using fallback');
-        return product_categories.map((category: any) => ({
-          countryCode: 'us',
-          category: [category.handle || 'placeholder'],
-        }));
-      }
-
-      const categoryHandles = product_categories.map(
-        (category: any) => category.handle || 'placeholder'
-      );
-
-      const staticParams = countryCodes
-        ?.map((countryCode: string | undefined) =>
-          categoryHandles.map((handle: any) => ({
-            countryCode: countryCode || 'us',
-            category: [handle || 'placeholder'],
-          }))
-        )
-        .flat();
-
-      return staticParams;
-    } catch (error) {
-      console.error('Error processing regions:', error);
-      return product_categories.map((category: any) => ({
-        countryCode: 'us',
-        category: [category.handle || 'placeholder'],
-      }));
-    }
-  } catch (error) {
-    console.error('Error in generateStaticParams for categories:', error);
-    return [
-      { countryCode: 'us', category: ['placeholder'] }
-    ];
-  }
+  return staticParams
 }
 
 export async function generateMetadata(

@@ -10,50 +10,36 @@ type Props = {
 }
 
 export async function generateStaticParams() {
-  // Skip product fetching during Vercel builds to avoid errors
-  if (process.env.NEXT_PUBLIC_VERCEL_ENV || process.env.VERCEL) {
-    console.log('Skipping product static params generation in Vercel environment');
-    return [
-      { countryCode: 'us', handle: 'placeholder' }
-    ];
+  const countryCodes = await listRegions().then(
+    (regions) =>
+      regions
+        ?.map((r) => r.countries?.map((c) => c.iso_2))
+        .flat()
+        .filter(Boolean) as string[]
+  )
+
+  if (!countryCodes) {
+    return null
   }
 
-  try {
-    const countryCodes = await listRegions().then(
-      (regions) =>
-        regions
-          ?.map((r) => r.countries?.map((c) => c.iso_2))
-          .flat()
-          .filter(Boolean) as string[]
-    ).catch(() => ['us']);
+  const products = await Promise.all(
+    countryCodes.map((countryCode) => {
+      return getProductsList({ countryCode })
+    })
+  ).then((responses) =>
+    responses.map(({ response }) => response.products).flat()
+  )
 
-    if (!countryCodes) {
-      return [{ countryCode: 'us', handle: 'placeholder' }];
-    }
+  const staticParams = countryCodes
+    ?.map((countryCode) =>
+      products.map((product) => ({
+        countryCode,
+        handle: product.handle,
+      }))
+    )
+    .flat()
 
-    const products = await Promise.all(
-      countryCodes.map((countryCode) => {
-        return getProductsList({ countryCode })
-          .catch(() => ({ response: { products: [] } }));
-      })
-    ).then((responses) =>
-      responses.map(({ response }) => response.products).flat()
-    );
-
-    const staticParams = countryCodes
-      ?.map((countryCode) =>
-        products.map((product) => ({
-          countryCode,
-          handle: product.handle || 'placeholder',
-        }))
-      )
-      .flat();
-
-    return staticParams;
-  } catch (error) {
-    console.error('Error in generateStaticParams:', error);
-    return [{ countryCode: 'us', handle: 'placeholder' }];
-  }
+  return staticParams
 }
 
 export async function generateMetadata(props: Props): Promise<Metadata> {

@@ -18,218 +18,59 @@ export const fetchStrapiClient = async (
     const baseUrl = process.env.NEXT_PUBLIC_STRAPI_URL || 'http://127.0.0.1:1337';
     const url = `${baseUrl}/api${endpoint}`;
     
-    console.log('Attempting to fetch from Strapi:', url);
+    // Skip actual fetching during build time in production
+    if (process.env.NODE_ENV === 'production' && !process.env.NEXT_PUBLIC_STRAPI_URL) {
+      console.log('Skipping Strapi fetch during build:', url);
+      return { 
+        ok: true, 
+        json: () => Promise.resolve({ data: [] }) 
+      }
+    }
 
-    // Prepare headers
+    console.log('Attempting to fetch from Strapi:', url);
+    
     const headers = {
       'Authorization': `Bearer ${process.env.NEXT_PUBLIC_STRAPI_READ_TOKEN}`,
       'Content-Type': 'application/json',
       'Accept': 'application/json',
     };
 
-    // Handle static generation and production cases
-    const isStaticBuild = process.env.NEXT_PUBLIC_VERCEL_ENV || (process.env.NODE_ENV === 'production' && !process.env.NEXT_PUBLIC_STRAPI_URL);
-    
-    if (isStaticBuild) {
-      try {
-        // For product routes during static generation, return empty data immediately
-        if (endpoint.includes('/products') || endpoint.includes('/collections')) {
-          console.log('Skipping Strapi fetch for product/collection during build:', endpoint);
-          return {
-            ok: true,
-            json: () => Promise.resolve({
-              data: [],
-              meta: { pagination: { total: 0, page: 1, pageSize: 10, pageCount: 0 } }
-            })
-          };
-        }
+    const response = await fetch(url, {
+      headers,
+      mode: 'cors',
+      ...params,
+    })
 
-        const response = await fetch(url, {
-          headers,
-          mode: 'cors',
-          ...params,
-        });
-
-        if (!response.ok) {
-          console.warn('Failed to fetch data from Strapi during build:', {
-            status: response.status,
-            statusText: response.statusText,
-            url: response.url,
-            endpoint: endpoint,
-          });
-          return {
-            ok: true,
-            json: () => Promise.resolve({
-              data: [],
-              meta: { pagination: { total: 0, page: 1, pageSize: 10, pageCount: 0 } }
-            })
-          };
-        }
-
-        const originalResponse = response;
-        return {
-          ...originalResponse,
-          json: async () => {
-            try {
-              const data = await originalResponse.json();
-              return transformStrapiResponse(data);
-            } catch (jsonError) {
-              console.warn('Error parsing JSON from Strapi:', {
-                message: jsonError.message,
-                endpoint: endpoint,
-              });
-              return {
-                data: [],
-                meta: { pagination: { total: 0, page: 1, pageSize: 10, pageCount: 0 } }
-              };
-            }
-          }
-        };
-      } catch (error) {
-        console.warn('Error connecting to Strapi during build:', {
-          message: error.message,
-          error: error,
-          url: url,
-          endpoint: endpoint,
-        });
-        return {
-          ok: true,
-          json: () => Promise.resolve({
-            data: [],
-            meta: { pagination: { total: 0, page: 1, pageSize: 10, pageCount: 0 } }
-          })
-        };
+    if (!response.ok) {
+      console.warn('Failed to fetch data from Strapi:', {
+        status: response.status,
+        statusText: response.statusText,
+        url: response.url,
+      });
+      return { 
+        ok: true, 
+        json: () => Promise.resolve({ data: [] }) 
       }
     }
 
-    // Development or runtime behavior
-    try {
-      const response = await fetch(url, {
-        headers,
-        mode: 'cors',
-        ...params,
-      });
-
-      if (!response.ok) {
-        console.warn(`Failed to fetch data from Strapi: ${response.status} ${response.statusText} for ${url}`);
-        
-        // Return empty data for homepage components and other critical UI elements
-        if (endpoint.includes('/homepage') || 
-            endpoint.includes('/collections') || 
-            endpoint.includes('/blogs') ||
-            endpoint.includes('/about-us') ||
-            endpoint.includes('/faq')) {
-          return {
-            ok: true,
-            json: () => {
-              // Return appropriate empty structure based on endpoint
-              if (endpoint.includes('/homepage')) {
-                return Promise.resolve({
-                  data: {
-                    HeroBanner: null,
-                    MidBanner: null
-                  }
-                });
-              }
-              return Promise.resolve({
-                data: [],
-                meta: { pagination: { total: 0, page: 1, pageSize: 10, pageCount: 0 } }
-              });
-            }
-          };
-        }
-        
-        // For other endpoints, throw an error
-        throw new Error(`Failed to fetch data from Strapi: ${response.status} ${response.statusText}`);
+    // Create a wrapper for the json method that transforms image URLs
+    const originalResponse = response
+    return {
+      ...originalResponse,
+      json: async () => {
+        const data = await originalResponse.json()
+        return transformStrapiResponse(data)
       }
-
-      const originalResponse = response;
-      return {
-        ...originalResponse,
-        json: async () => {
-          const data = await originalResponse.json();
-          return transformStrapiResponse(data);
-        }
-      };
-    } catch (fetchError) {
-      console.error('Fetch error in development:', {
-        message: fetchError.message,
-        endpoint: endpoint,
-      });
-      
-      // Return empty data for homepage components and other critical UI elements
-      if (endpoint.includes('/homepage') || 
-          endpoint.includes('/collections') || 
-          endpoint.includes('/blogs') ||
-          endpoint.includes('/about-us') ||
-          endpoint.includes('/faq')) {
-        return {
-          ok: true,
-          json: () => {
-            // Return appropriate empty structure based on endpoint
-            if (endpoint.includes('/homepage')) {
-              return Promise.resolve({
-                data: {
-                  HeroBanner: null,
-                  MidBanner: null
-                }
-              });
-            }
-            return Promise.resolve({
-              data: [],
-              meta: { pagination: { total: 0, page: 1, pageSize: 10, pageCount: 0 } }
-            });
-          }
-        };
-      }
-      
-      // For other endpoints, rethrow the error
-      throw fetchError;
     }
   } catch (error) {
-    console.error('Error in fetchStrapiClient:', {
+    console.warn('Error connecting to Strapi:', {
       message: error.message,
       error: error,
-      endpoint: endpoint,
     });
-    
-    if (process.env.NEXT_PUBLIC_VERCEL_ENV || process.env.NODE_ENV === 'production') {
-      return {
-        ok: true,
-        json: () => Promise.resolve({
-          data: [],
-          meta: { pagination: { total: 0, page: 1, pageSize: 10, pageCount: 0 } }
-        })
-      };
+    return { 
+      ok: true, 
+      json: () => Promise.resolve({ data: [] }) 
     }
-    
-    // For homepage components, return empty data even in development
-    if (endpoint.includes('/homepage') || 
-        endpoint.includes('/collections') || 
-        endpoint.includes('/blogs') ||
-        endpoint.includes('/about-us') ||
-        endpoint.includes('/faq')) {
-      return {
-        ok: true,
-        json: () => {
-          // Return appropriate empty structure based on endpoint
-          if (endpoint.includes('/homepage')) {
-            return Promise.resolve({
-              data: {
-                HeroBanner: null,
-                MidBanner: null
-              }
-            });
-          }
-          return Promise.resolve({
-            data: [],
-            meta: { pagination: { total: 0, page: 1, pageSize: 10, pageCount: 0 } }
-          });
-        }
-      };
-    }
-    
-    throw error;
   }
 }
 

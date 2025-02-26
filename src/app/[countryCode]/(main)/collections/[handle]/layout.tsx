@@ -18,68 +18,34 @@ interface CollectionPageLayoutProps {
 }
 
 export async function generateStaticParams() {
-  // Skip collection static generation during Vercel builds
-  if (process.env.NEXT_PUBLIC_VERCEL_ENV || process.env.VERCEL) {
-    console.log('Skipping collection static params generation in Vercel environment');
-    return [
-      { countryCode: 'us', handle: 'placeholder' }
-    ];
+  const { collections } = await getCollectionsList()
+
+  if (!collections) {
+    return []
   }
 
-  try {
-    const { collections } = await getCollectionsList();
+  const countryCodes = await listRegions().then(
+    (regions: StoreRegion[]) =>
+      regions
+        ?.map((r) => r.countries?.map((c) => c.iso_2))
+        .flat()
+        .filter(Boolean) as string[]
+  )
 
-    if (!collections || collections.length === 0) {
-      console.log('No collections found, using fallback');
-      return [
-        { countryCode: 'us', handle: 'placeholder' }
-      ];
-    }
+  const collectionHandles = collections.map(
+    (collection: StoreCollection) => collection.handle
+  )
 
-    try {
-      const countryCodes = await listRegions().then(
-        (regions: StoreRegion[]) =>
-          regions
-            ?.map((r) => r.countries?.map((c) => c.iso_2))
-            .flat()
-            .filter(Boolean) as string[]
-      ).catch(() => ['us']);
+  const staticParams = countryCodes
+    ?.map((countryCode: string) =>
+      collectionHandles.map((handle: string | undefined) => ({
+        countryCode,
+        handle,
+      }))
+    )
+    .flat()
 
-      if (!countryCodes || countryCodes.length === 0) {
-        console.log('No country codes found, using fallback');
-        return collections.map((collection: StoreCollection) => ({
-          countryCode: 'us',
-          handle: collection.handle || 'placeholder',
-        }));
-      }
-
-      const collectionHandles = collections.map(
-        (collection: StoreCollection) => collection.handle || 'placeholder'
-      );
-
-      const staticParams = countryCodes
-        ?.map((countryCode: string) =>
-          collectionHandles.map((handle: string | undefined) => ({
-            countryCode,
-            handle: handle || 'placeholder',
-          }))
-        )
-        .flat();
-
-      return staticParams;
-    } catch (error) {
-      console.error('Error processing regions:', error);
-      return collections.map((collection: StoreCollection) => ({
-        countryCode: 'us',
-        handle: collection.handle || 'placeholder',
-      }));
-    }
-  } catch (error) {
-    console.error('Error in generateStaticParams for collections:', error);
-    return [
-      { countryCode: 'us', handle: 'placeholder' }
-    ];
-  }
+  return staticParams
 }
 
 export async function generateMetadata(

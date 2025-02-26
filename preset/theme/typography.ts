@@ -1,6 +1,6 @@
 import defaultTheme from 'tailwindcss/defaultTheme'
 
-export const fontFamily = { sans: ['Inter', ...defaultTheme.fontFamily.sans] }
+export const fontFamily = { sans: ['Anton', 'Inter', ...defaultTheme.fontFamily.sans] }
 
 export const fontSize = {
   sm: ['0.75rem', { lineHeight: '1.25rem' }],

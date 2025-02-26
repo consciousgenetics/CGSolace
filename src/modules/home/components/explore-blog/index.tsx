@@ -10,6 +10,11 @@ import useEmblaCarousel from 'embla-carousel-react'
 import { BlogPost } from 'types/strapi'
 
 export function ExploreBlog({ posts }: { posts: BlogPost[] }) {
+  // Ensure we have valid posts
+  if (!posts || posts.length === 0) {
+    return null
+  }
+
   const [emblaRef] = useEmblaCarousel({
     align: 'start',
     skipSnaps: false,
