@@ -47,22 +47,33 @@ export default async function Home(props: {
   }
 
   // CMS data
-  const [
-    strapiCollections,
-    heroBannerData,
-    midBannerData,
-    { data: posts },
-  ] = await Promise.all([
-    getCollectionsData(),
-    getHeroBannerData(),
-    getMidBannerData(),
-    getExploreBlogData(),
-  ]) as [CollectionsData, HeroBannerData, MidBannerData, BlogData]
+  let strapiCollections = null;
+  let heroBannerData = null;
+  let midBannerData = null;
+  let blogPosts = { data: [] };
+
+  try {
+    // Fetch CMS data with error handling
+    [
+      strapiCollections,
+      heroBannerData,
+      midBannerData,
+      blogPosts,
+    ] = await Promise.all([
+      getCollectionsData().catch(() => null),
+      getHeroBannerData().catch(() => ({ data: { HeroBanner: null } })),
+      getMidBannerData().catch(() => ({ data: { MidBanner: null } })),
+      getExploreBlogData().catch(() => ({ data: [] })),
+    ]) as [CollectionsData | null, HeroBannerData | null, MidBannerData | null, BlogData];
+  } catch (error) {
+    console.error("Error fetching CMS data:", error);
+    // Continue with null values
+  }
 
   return (
     <>
       {heroBannerData?.data?.HeroBanner && <Hero data={heroBannerData} />}
-      {strapiCollections && (
+      {strapiCollections && strapiCollections.data && strapiCollections.data.length > 0 && (
         <Collections
           cmsCollections={strapiCollections}
           medusaCollections={collectionsList}
@@ -83,7 +94,7 @@ export default async function Home(props: {
       {midBannerData?.data?.MidBanner && (
         <Banner data={{ data: { HeroBanner: midBannerData.data.MidBanner } }} />
       )}
-      {posts && posts.length > 0 && <ExploreBlog posts={posts} />}
+      {blogPosts?.data && blogPosts.data.length > 0 && <ExploreBlog posts={blogPosts.data} />}
     </>
   )
 }

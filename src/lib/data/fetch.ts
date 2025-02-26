@@ -103,24 +103,89 @@ export const fetchStrapiClient = async (
     }
 
     // Development or runtime behavior
-    const response = await fetch(url, {
-      headers,
-      mode: 'cors',
-      ...params,
-    });
+    try {
+      const response = await fetch(url, {
+        headers,
+        mode: 'cors',
+        ...params,
+      });
 
-    if (!response.ok) {
-      throw new Error(`Failed to fetch data from Strapi: ${response.status} ${response.statusText}`);
-    }
-
-    const originalResponse = response;
-    return {
-      ...originalResponse,
-      json: async () => {
-        const data = await originalResponse.json();
-        return transformStrapiResponse(data);
+      if (!response.ok) {
+        console.warn(`Failed to fetch data from Strapi: ${response.status} ${response.statusText} for ${url}`);
+        
+        // Return empty data for homepage components and other critical UI elements
+        if (endpoint.includes('/homepage') || 
+            endpoint.includes('/collections') || 
+            endpoint.includes('/blogs') ||
+            endpoint.includes('/about-us') ||
+            endpoint.includes('/faq')) {
+          return {
+            ok: true,
+            json: () => {
+              // Return appropriate empty structure based on endpoint
+              if (endpoint.includes('/homepage')) {
+                return Promise.resolve({
+                  data: {
+                    HeroBanner: null,
+                    MidBanner: null
+                  }
+                });
+              }
+              return Promise.resolve({
+                data: [],
+                meta: { pagination: { total: 0, page: 1, pageSize: 10, pageCount: 0 } }
+              });
+            }
+          };
+        }
+        
+        // For other endpoints, throw an error
+        throw new Error(`Failed to fetch data from Strapi: ${response.status} ${response.statusText}`);
       }
-    };
+
+      const originalResponse = response;
+      return {
+        ...originalResponse,
+        json: async () => {
+          const data = await originalResponse.json();
+          return transformStrapiResponse(data);
+        }
+      };
+    } catch (fetchError) {
+      console.error('Fetch error in development:', {
+        message: fetchError.message,
+        endpoint: endpoint,
+      });
+      
+      // Return empty data for homepage components and other critical UI elements
+      if (endpoint.includes('/homepage') || 
+          endpoint.includes('/collections') || 
+          endpoint.includes('/blogs') ||
+          endpoint.includes('/about-us') ||
+          endpoint.includes('/faq')) {
+        return {
+          ok: true,
+          json: () => {
+            // Return appropriate empty structure based on endpoint
+            if (endpoint.includes('/homepage')) {
+              return Promise.resolve({
+                data: {
+                  HeroBanner: null,
+                  MidBanner: null
+                }
+              });
+            }
+            return Promise.resolve({
+              data: [],
+              meta: { pagination: { total: 0, page: 1, pageSize: 10, pageCount: 0 } }
+            });
+          }
+        };
+      }
+      
+      // For other endpoints, rethrow the error
+      throw fetchError;
+    }
   } catch (error) {
     console.error('Error in fetchStrapiClient:', {
       message: error.message,
@@ -137,6 +202,33 @@ export const fetchStrapiClient = async (
         })
       };
     }
+    
+    // For homepage components, return empty data even in development
+    if (endpoint.includes('/homepage') || 
+        endpoint.includes('/collections') || 
+        endpoint.includes('/blogs') ||
+        endpoint.includes('/about-us') ||
+        endpoint.includes('/faq')) {
+      return {
+        ok: true,
+        json: () => {
+          // Return appropriate empty structure based on endpoint
+          if (endpoint.includes('/homepage')) {
+            return Promise.resolve({
+              data: {
+                HeroBanner: null,
+                MidBanner: null
+              }
+            });
+          }
+          return Promise.resolve({
+            data: [],
+            meta: { pagination: { total: 0, page: 1, pageSize: 10, pageCount: 0 } }
+          });
+        }
+      };
+    }
+    
     throw error;
   }
 }
