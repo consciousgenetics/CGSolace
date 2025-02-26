@@ -5,17 +5,19 @@ import { listRegions } from '@lib/data/regions'
 import { StoreRegion } from '@medusajs/types'
 import BlogPostTemplate from '@modules/blog/templates/blogPostTemplate'
 
-export async function generateStaticParams() {
-  // Skip static generation during build if we can't connect to Strapi
-  try {
-    // Skip static generation during development or when explicitly disabled
-    if (process.env.SKIP_STATIC_GENERATION === 'true' || process.env.NODE_ENV === 'development') {
-      return []
-    }
+// Skip static generation completely during build
+export const dynamic = 'force-dynamic'
+export const dynamicParams = true
 
+export async function generateStaticParams() {
+  // Skip static generation completely during build
+  if (process.env.NODE_ENV === 'production') {
+    return []
+  }
+
+  try {
     const slugs = await getAllBlogSlugs()
-    if (!slugs) {
-      console.warn('No blog slugs found during static generation')
+    if (!slugs || slugs.length === 0) {
       return []
     }
 
@@ -24,7 +26,6 @@ export async function generateStaticParams() {
     )
 
     if (!countryCodes || countryCodes.length === 0) {
-      console.warn('No country codes found during static generation')
       return []
     }
 
@@ -36,7 +37,7 @@ export async function generateStaticParams() {
     )
   } catch (error) {
     console.warn('Error during static generation:', error)
-    return [] // Return empty array to skip static generation
+    return []
   }
 }
 
