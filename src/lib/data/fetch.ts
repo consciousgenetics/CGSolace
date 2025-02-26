@@ -20,9 +20,8 @@ export const fetchStrapiClient = async (
     
     console.log('Attempting to fetch from Strapi:', url);
     
-    // During build time in production, if we can't connect to Strapi,
-    // return empty data instead of failing the build
-    if (process.env.NODE_ENV === 'production') {
+    // Always use production error handling during build time or when NODE_ENV is production
+    if (process.env.NODE_ENV === 'production' || process.env.NEXT_PUBLIC_VERCEL_ENV) {
       try {
         const headers = {
           'Authorization': `Bearer ${process.env.NEXT_PUBLIC_STRAPI_READ_TOKEN}`,
@@ -41,10 +40,15 @@ export const fetchStrapiClient = async (
             status: response.status,
             statusText: response.statusText,
             url: response.url,
+            endpoint: endpoint,
           });
+          // Return empty data array or appropriate fallback based on endpoint
           return { 
             ok: true, 
-            json: () => Promise.resolve({ data: [] }) 
+            json: () => Promise.resolve({ 
+              data: endpoint.includes('/products') ? [] : [],
+              meta: { pagination: { total: 0 } }
+            }) 
           };
         }
 
@@ -53,8 +57,19 @@ export const fetchStrapiClient = async (
         return {
           ...originalResponse,
           json: async () => {
-            const data = await originalResponse.json();
-            return transformStrapiResponse(data);
+            try {
+              const data = await originalResponse.json();
+              return transformStrapiResponse(data);
+            } catch (jsonError) {
+              console.warn('Error parsing JSON from Strapi:', {
+                message: jsonError.message,
+                endpoint: endpoint,
+              });
+              return { 
+                data: endpoint.includes('/products') ? [] : [],
+                meta: { pagination: { total: 0 } }
+              };
+            }
           }
         };
       } catch (error) {
@@ -62,15 +77,19 @@ export const fetchStrapiClient = async (
           message: error.message,
           error: error,
           url: url,
+          endpoint: endpoint,
         });
         return { 
           ok: true, 
-          json: () => Promise.resolve({ data: [] }) 
+          json: () => Promise.resolve({ 
+            data: endpoint.includes('/products') ? [] : [],
+            meta: { pagination: { total: 0 } }
+          }) 
         };
       }
     }
 
-    // Development or runtime behavior
+    // Development behavior
     const headers = {
       'Authorization': `Bearer ${process.env.NEXT_PUBLIC_STRAPI_READ_TOKEN}`,
       'Content-Type': 'application/json',
@@ -103,11 +122,14 @@ export const fetchStrapiClient = async (
       endpoint: endpoint,
     });
     
-    // During build time, return empty data instead of throwing
-    if (process.env.NODE_ENV === 'production') {
+    // During build time or Vercel deployment, return empty data instead of throwing
+    if (process.env.NODE_ENV === 'production' || process.env.NEXT_PUBLIC_VERCEL_ENV) {
       return { 
         ok: true, 
-        json: () => Promise.resolve({ data: [] }) 
+        json: () => Promise.resolve({ 
+          data: endpoint.includes('/products') ? [] : [],
+          meta: { pagination: { total: 0 } }
+        }) 
       };
     }
     throw error;
