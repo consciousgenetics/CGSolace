@@ -3,9 +3,5 @@
   "buildCommand": "npm run build",
   "installCommand": "npm install",
   "framework": "nextjs",
-  "outputDirectory": ".next",
-  "env": {
-    "NEXT_PUBLIC_MEDUSA_BACKEND_URL": "@next_public_medusa_backend_url",
-    "NEXT_PUBLIC_STRAPI_API_URL": "@next_public_strapi_api_url"
-  }
+  "outputDirectory": ".next"
 } 
