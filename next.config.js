@@ -26,15 +26,6 @@ const nextConfig = {
       allowedOrigins: ['localhost:3000', 'localhost:8000'],
     },
   },
-  async redirects() {
-    return [
-      {
-        source: '/',
-        destination: '/us',
-        permanent: true,
-      },
-    ]
-  },
   // Add this section to handle dynamic routes during build
   typescript: {
     // Temporarily ignore type errors during build
