@@ -45,11 +45,22 @@ const nextConfig = {
     ignoreDuringBuilds: true,
   },
   // Add static generation configuration
-  staticPageGenerationTimeout: 1000,
+  staticPageGenerationTimeout: 180,
   output: 'standalone',
   env: {
     NEXT_PUBLIC_MEDUSA_BACKEND_URL: process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || 'http://localhost:9000',
     NEXT_PUBLIC_STRAPI_API_URL: process.env.NEXT_PUBLIC_STRAPI_API_URL || 'http://localhost:1337'
+  },
+  // Add this to handle build-time data fetching
+  async rewrites() {
+    return {
+      fallback: [
+        {
+          source: '/api/:path*',
+          destination: `${process.env.NEXT_PUBLIC_STRAPI_API_URL}/api/:path*`
+        }
+      ]
+    }
   }
 }
 
