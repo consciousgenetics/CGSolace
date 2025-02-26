@@ -18,17 +18,59 @@ export const fetchStrapiClient = async (
     const baseUrl = process.env.NEXT_PUBLIC_STRAPI_URL || 'http://127.0.0.1:1337';
     const url = `${baseUrl}/api${endpoint}`;
     
-    // Skip actual fetching during build time in production
-    if (process.env.NODE_ENV === 'production' && !process.env.NEXT_PUBLIC_STRAPI_URL) {
-      console.log('Skipping Strapi fetch during build:', url);
-      return { 
-        ok: true, 
-        json: () => Promise.resolve({ data: [] }) 
+    console.log('Attempting to fetch from Strapi:', url);
+    
+    // During build time in production, if we can't connect to Strapi,
+    // return empty data instead of failing the build
+    if (process.env.NODE_ENV === 'production') {
+      try {
+        const headers = {
+          'Authorization': `Bearer ${process.env.NEXT_PUBLIC_STRAPI_READ_TOKEN}`,
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        };
+
+        const response = await fetch(url, {
+          headers,
+          mode: 'cors',
+          ...params,
+        });
+
+        if (!response.ok) {
+          console.warn('Failed to fetch data from Strapi during build:', {
+            status: response.status,
+            statusText: response.statusText,
+            url: response.url,
+          });
+          return { 
+            ok: true, 
+            json: () => Promise.resolve({ data: [] }) 
+          };
+        }
+
+        // Create a wrapper for the json method that transforms image URLs
+        const originalResponse = response;
+        return {
+          ...originalResponse,
+          json: async () => {
+            const data = await originalResponse.json();
+            return transformStrapiResponse(data);
+          }
+        };
+      } catch (error) {
+        console.warn('Error connecting to Strapi during build:', {
+          message: error.message,
+          error: error,
+          url: url,
+        });
+        return { 
+          ok: true, 
+          json: () => Promise.resolve({ data: [] }) 
+        };
       }
     }
 
-    console.log('Attempting to fetch from Strapi:', url);
-    
+    // Development or runtime behavior
     const headers = {
       'Authorization': `Bearer ${process.env.NEXT_PUBLIC_STRAPI_READ_TOKEN}`,
       'Content-Type': 'application/json',
@@ -39,38 +81,36 @@ export const fetchStrapiClient = async (
       headers,
       mode: 'cors',
       ...params,
-    })
+    });
 
     if (!response.ok) {
-      console.warn('Failed to fetch data from Strapi:', {
-        status: response.status,
-        statusText: response.statusText,
-        url: response.url,
-      });
-      return { 
-        ok: true, 
-        json: () => Promise.resolve({ data: [] }) 
-      }
+      throw new Error(`Failed to fetch data from Strapi: ${response.status} ${response.statusText}`);
     }
 
     // Create a wrapper for the json method that transforms image URLs
-    const originalResponse = response
+    const originalResponse = response;
     return {
       ...originalResponse,
       json: async () => {
-        const data = await originalResponse.json()
-        return transformStrapiResponse(data)
+        const data = await originalResponse.json();
+        return transformStrapiResponse(data);
       }
-    }
+    };
   } catch (error) {
-    console.warn('Error connecting to Strapi:', {
+    console.error('Error in fetchStrapiClient:', {
       message: error.message,
       error: error,
+      endpoint: endpoint,
     });
-    return { 
-      ok: true, 
-      json: () => Promise.resolve({ data: [] }) 
+    
+    // During build time, return empty data instead of throwing
+    if (process.env.NODE_ENV === 'production') {
+      return { 
+        ok: true, 
+        json: () => Promise.resolve({ data: [] }) 
+      };
     }
+    throw error;
   }
 }
 
