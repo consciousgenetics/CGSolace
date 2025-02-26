@@ -48,16 +48,17 @@ const nextConfig = {
   staticPageGenerationTimeout: 180,
   output: 'standalone',
   env: {
-    NEXT_PUBLIC_MEDUSA_BACKEND_URL: process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL,
-    NEXT_PUBLIC_STRAPI_API_URL: process.env.NEXT_PUBLIC_STRAPI_API_URL
+    NEXT_PUBLIC_MEDUSA_BACKEND_URL: process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || 'http://localhost:9000',
+    NEXT_PUBLIC_STRAPI_API_URL: process.env.NEXT_PUBLIC_STRAPI_API_URL || 'http://localhost:1337'
   },
   // Add this to handle build-time data fetching
   async rewrites() {
+    const strapiUrl = process.env.NEXT_PUBLIC_STRAPI_API_URL || 'http://localhost:1337';
     return {
       fallback: [
         {
           source: '/api/:path*',
-          destination: `${process.env.NEXT_PUBLIC_STRAPI_API_URL}/api/:path*`
+          destination: `${strapiUrl}/api/:path*`
         }
       ]
     }
