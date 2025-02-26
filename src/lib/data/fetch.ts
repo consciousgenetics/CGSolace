@@ -15,8 +15,16 @@ export const fetchStrapiClient = async (
   params?: RequestInit
 ) => {
   try {
+    // During build time, if SKIP_STATIC_GENERATION is true, return empty data
+    if (process.env.SKIP_STATIC_GENERATION === 'true') {
+      return { 
+        ok: true, 
+        json: () => Promise.resolve({ data: [] }) 
+      }
+    }
+
     // Replace localhost with 127.0.0.1 to force IPv4
-    const baseUrl = process.env.NEXT_PUBLIC_STRAPI_URL?.replace('localhost', '127.0.0.1') || 'http://127.0.0.1:1337';
+    const baseUrl = process.env.NEXT_PUBLIC_STRAPI_API_URL?.replace('localhost', '127.0.0.1') || 'http://127.0.0.1:1337';
     const url = `${baseUrl}${endpoint}`;
     
     console.log('Attempting to fetch from Strapi:', url);
@@ -42,6 +50,13 @@ export const fetchStrapiClient = async (
         statusText: response.statusText,
         url: response.url,
       });
+      // During build, return empty data instead of failing
+      if (process.env.NODE_ENV === 'production') {
+        return { 
+          ok: true, 
+          json: () => Promise.resolve({ data: [] }) 
+        }
+      }
       return { ok: false, json: () => Promise.resolve({ data: [] }) }
     }
 
@@ -61,11 +76,14 @@ export const fetchStrapiClient = async (
       error: error,
       stack: error.stack
     });
-    // Return a mock response that won't break the build
-    return { 
-      ok: true, 
-      json: () => Promise.resolve({ data: [] }) 
+    // During build or production, return empty data instead of failing
+    if (process.env.NODE_ENV === 'production') {
+      return { 
+        ok: true, 
+        json: () => Promise.resolve({ data: [] }) 
+      }
     }
+    throw error
   }
 }
 
