@@ -100,8 +100,25 @@ export async function middleware(request: NextRequest) {
 
   const countryCode = regionMap && (await getCountryCode(request, regionMap))
 
+  // Check if URL already has a valid country code
+  const pathSegments = request.nextUrl.pathname.split('/')
+  const firstSegment = pathSegments[1] || ''
+  
   const urlHasCountryCode =
-    countryCode && request.nextUrl.pathname.split('/')[1].includes(countryCode)
+    countryCode && firstSegment === countryCode
+    
+  // Check if we're dealing with a /dk/us type of situation
+  const hasDoubleCountry = regionMap && 
+    pathSegments.length > 2 && 
+    regionMap.has(firstSegment) && 
+    regionMap.has(pathSegments[2])
+    
+  // Handle the double country code case
+  if (hasDoubleCountry) {
+    const newPath = `/${firstSegment}${pathSegments.slice(3).join('/')}`
+    const redirectUrl = `${request.nextUrl.origin}${newPath}${request.nextUrl.search}`
+    return NextResponse.redirect(redirectUrl, 307)
+  }
 
   // check if one of the country codes is in the url
   if (
