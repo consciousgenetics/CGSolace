@@ -6,7 +6,26 @@ import { Text } from '@modules/common/components/text'
 import Markdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 
-export function BlogContent({ content }: { content: string }) {
+const extractTextContent = (content: any): string => {
+  if (typeof content === 'string') return content
+  if (Array.isArray(content)) {
+    return content
+      .map(block => {
+        if (block.children) {
+          return block.children
+            .map(child => child.text || '')
+            .join('')
+        }
+        return ''
+      })
+      .join('\n')
+  }
+  return ''
+}
+
+export function BlogContent({ content }: { content: any }) {
+  const textContent = extractTextContent(content)
+
   return (
     <Markdown
       components={{
@@ -14,8 +33,8 @@ export function BlogContent({ content }: { content: string }) {
           <Box className="relative h-[350px] w-full">
             <Image
               fill
-              src={props.src}
-              alt={props.alt}
+              src={props.src || ''}
+              alt={props.alt || ''}
               className="w-full object-cover"
             />
           </Box>
@@ -45,7 +64,7 @@ export function BlogContent({ content }: { content: string }) {
       }}
       remarkPlugins={[remarkGfm]}
     >
-      {content}
+      {textContent}
     </Markdown>
   )
 }

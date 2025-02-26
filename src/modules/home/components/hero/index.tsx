@@ -6,10 +6,20 @@ import { Container } from '@modules/common/components/container'
 import { Heading } from '@modules/common/components/heading'
 import LocalizedClientLink from '@modules/common/components/localized-client-link'
 import { Text } from '@modules/common/components/text'
-import { HeroBanner } from 'types/strapi'
+import { HeroBannerData } from 'types/strapi'
 
-const Hero = ({ data }: { data: HeroBanner }) => {
-  const { Headline, Text: text, CTA, Image: bannerImage } = data
+const Hero = ({ data }: { data: HeroBannerData }) => {
+  const bannerData = data?.data?.HeroBanner
+  
+  if (!bannerData) {
+    return null
+  }
+
+  const { Headline, Text: text, CTA, Image: bannerImage } = bannerData
+
+  if (!bannerImage?.url) {
+    return null
+  }
 
   return (
     <>
@@ -28,11 +38,13 @@ const Hero = ({ data }: { data: HeroBanner }) => {
           {Headline}
         </Heading>
         <Box className="flex flex-col-reverse justify-between gap-8 medium:flex-row medium:items-center">
-          <Button asChild className="w-max">
-            <LocalizedClientLink href={CTA.BtnLink}>
-              {CTA.BtnText}
-            </LocalizedClientLink>
-          </Button>
+          {CTA && (
+            <Button asChild className="w-max">
+              <LocalizedClientLink href={CTA.BtnLink}>
+                {CTA.BtnText}
+              </LocalizedClientLink>
+            </Button>
+          )}
           <Text
             size="lg"
             className="max-w-full text-basic-primary medium:max-w-[410px] medium:text-end"

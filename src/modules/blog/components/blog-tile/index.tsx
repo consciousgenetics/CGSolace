@@ -6,19 +6,44 @@ import LocalizedClientLink from '@modules/common/components/localized-client-lin
 import { Text } from '@modules/common/components/text'
 import { BlogPost } from 'types/strapi'
 
+const extractTextContent = (content: any): string => {
+  if (typeof content === 'string') return content
+  if (Array.isArray(content)) {
+    return content
+      .map(block => {
+        if (block.children) {
+          return block.children
+            .map(child => child.text || '')
+            .join('')
+        }
+        return ''
+      })
+      .join('\n')
+  }
+  return ''
+}
+
 export function BlogTile({ post }: { post: BlogPost }) {
+  const textContent = extractTextContent(post.Content)
+
   return (
     <Box className="flex min-w-40 flex-col overflow-hidden bg-secondary">
       <Box className="h-[224px] overflow-hidden large:h-[280px]">
         <LocalizedClientLink href={`/blog/${post.Slug}`}>
-          <Image
-            className="h-full w-full object-cover object-center"
-            src={post.FeaturedImage.url}
-            alt={post.FeaturedImage.alternativeText ?? 'Blog post image'}
-            width={600}
-            height={600}
-            priority
-          />
+          {post.FeaturedImage?.url ? (
+            <Image
+              className="h-full w-full object-cover object-center"
+              src={post.FeaturedImage.url}
+              alt={post.FeaturedImage.alternativeText ?? 'Blog post image'}
+              width={600}
+              height={600}
+              priority
+            />
+          ) : (
+            <div className="flex h-full w-full items-center justify-center bg-gray-100">
+              <Text>No image available</Text>
+            </div>
+          )}
         </LocalizedClientLink>
       </Box>
       <Box className="flex flex-col gap-4 p-4 small:gap-6 small:p-5">
@@ -35,9 +60,9 @@ export function BlogTile({ post }: { post: BlogPost }) {
             <Text
               className="line-clamp-2 text-secondary"
               size="md"
-              title={post.Content}
+              title={textContent}
             >
-              {post.Content}
+              {textContent}
             </Text>
           </div>
         </div>

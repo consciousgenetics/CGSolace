@@ -14,16 +14,18 @@ export const metadata: Metadata = {
 export default function RootLayout(props: { children: React.ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className="text-basic-primary">
+      <body suppressHydrationWarning>
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
           enableSystem
-          // disableTransitionOnChange
+          disableTransitionOnChange
         >
-          <ProgressBar />
-          <Toaster position="bottom-right" offset={65} closeButton />
-          <main className="relative">{props.children}</main>
+          <div className="text-basic-primary">
+            <ProgressBar />
+            <Toaster position="bottom-right" offset={65} closeButton />
+            <main className="relative">{props.children}</main>
+          </div>
         </ThemeProvider>
       </body>
     </html>

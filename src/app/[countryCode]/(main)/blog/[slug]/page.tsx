@@ -6,6 +6,11 @@ import { StoreRegion } from '@medusajs/types'
 import BlogPostTemplate from '@modules/blog/templates/blogPostTemplate'
 
 export async function generateStaticParams() {
+  // Skip static generation during development or when explicitly disabled
+  if (process.env.SKIP_STATIC_GENERATION === 'true' || process.env.NODE_ENV === 'development') {
+    return []
+  }
+
   const slugs = await getAllBlogSlugs()
 
   if (!slugs) {

@@ -6,10 +6,20 @@ import { Container } from '@modules/common/components/container'
 import { Heading } from '@modules/common/components/heading'
 import LocalizedClientLink from '@modules/common/components/localized-client-link'
 import { Text } from '@modules/common/components/text'
-import { HeroBanner } from 'types/strapi'
+import { HeroBanner, HeroBannerData } from 'types/strapi'
 
-export const Banner = ({ data }: { data: HeroBanner }) => {
-  const { Image: bannerImage, CTA, Headline, Text: text } = data
+export const Banner = ({ data }: { data: HeroBannerData }) => {
+  const bannerData = data?.data?.HeroBanner
+  
+  if (!bannerData) {
+    return null
+  }
+
+  const { Image: bannerImage, CTA, Headline, Text: text } = bannerData
+
+  if (!bannerImage?.url) {
+    return null
+  }
 
   return (
     <Container>
@@ -17,9 +27,10 @@ export const Banner = ({ data }: { data: HeroBanner }) => {
         <Image
           src={bannerImage.url}
           alt={bannerImage.alternativeText ?? 'Banner image'}
-          layout="fill"
-          objectFit="cover"
-          className="object-right-top"
+          fill
+          className="object-cover object-right-top"
+          sizes="100vw"
+          priority
         />
 
         <div className="absolute inset-0 flex flex-col items-center justify-center px-10 text-center text-white">
@@ -28,11 +39,13 @@ export const Banner = ({ data }: { data: HeroBanner }) => {
           <Text size="lg" className="mt-2 medium:max-w-[600px]">
             {text}
           </Text>
-          <Button className="mt-8" asChild>
-            <LocalizedClientLink href={CTA.BtnLink}>
-              {CTA.BtnText}
-            </LocalizedClientLink>
-          </Button>
+          {CTA && (
+            <Button className="mt-8" asChild>
+              <LocalizedClientLink href={CTA.BtnLink}>
+                {CTA.BtnText}
+              </LocalizedClientLink>
+            </Button>
+          )}
         </div>
       </Box>
     </Container>

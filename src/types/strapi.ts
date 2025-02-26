@@ -42,8 +42,14 @@ export type MidBannerData = BannerResponse<'MidBanner'>
 export type BlogPost = {
   Title: string
   Slug: string
-  Content: string
-  FeaturedImage: {
+  Content: string | Array<{
+    type: string
+    children: Array<{
+      type: string
+      text: string
+    }>
+  }>
+  FeaturedImage?: {
     url: string
     alternativeText?: string
   }

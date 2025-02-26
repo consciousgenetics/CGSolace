@@ -16,6 +16,7 @@ import { ExploreBlog } from '@modules/home/components/explore-blog'
 import Hero from '@modules/home/components/hero'
 import { ProductCarousel } from '@modules/products/components/product-carousel'
 import SkeletonProductsCarousel from '@modules/skeletons/templates/skeleton-products-carousel'
+import { BlogData, CollectionsData, HeroBannerData, MidBannerData } from 'types/strapi'
 
 export const metadata: Metadata = {
   title: 'Solace Medusa Starter Template',
@@ -48,23 +49,19 @@ export default async function Home(props: {
   // CMS data
   const [
     strapiCollections,
-    {
-      data: { HeroBanner },
-    },
-    {
-      data: { MidBanner },
-    },
+    heroBannerData,
+    midBannerData,
     { data: posts },
   ] = await Promise.all([
     getCollectionsData(),
     getHeroBannerData(),
     getMidBannerData(),
     getExploreBlogData(),
-  ])
+  ]) as [CollectionsData, HeroBannerData, MidBannerData, BlogData]
 
   return (
     <>
-      {HeroBanner && <Hero data={HeroBanner} />}
+      {heroBannerData?.data?.HeroBanner && <Hero data={heroBannerData} />}
       {strapiCollections && (
         <Collections
           cmsCollections={strapiCollections}
@@ -83,7 +80,9 @@ export default async function Home(props: {
           }}
         />
       </Suspense>
-      {MidBanner && <Banner data={MidBanner} />}
+      {midBannerData?.data?.MidBanner && (
+        <Banner data={{ data: { HeroBanner: midBannerData.data.MidBanner } }} />
+      )}
       {posts && posts.length > 0 && <ExploreBlog posts={posts} />}
     </>
   )
