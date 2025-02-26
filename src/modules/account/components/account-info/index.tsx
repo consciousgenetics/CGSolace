@@ -2,7 +2,7 @@ import { useEffect } from 'react'
 
 import { Disclosure } from '@headlessui/react'
 import useToggleState from '@lib/hooks/use-toggle-state'
-import { Badge, Button, clx } from '@medusajs/ui'
+import { Button, Badge, clx } from '@medusajs/ui'
 import { useFormStatus } from 'react-dom'
 
 type AccountInfoProps = {
@@ -63,7 +63,7 @@ const AccountInfo = ({
             onClick={handleToggle}
             type={state ? 'reset' : 'button'}
             data-testid="edit-button"
-            data-active={state}
+            data-state={state ? 'active' : 'inactive'}
           >
             {state ? 'Cancel' : 'Edit'}
           </Button>
@@ -123,12 +123,12 @@ const AccountInfo = ({
             <div>{children}</div>
             <div className="mt-2 flex items-center justify-end">
               <Button
-                isLoading={pending}
+                disabled={pending}
                 className="w-full small:max-w-[140px]"
                 type="submit"
                 data-testid="save-button"
               >
-                Save changes
+                {pending ? 'Saving...' : 'Save changes'}
               </Button>
             </div>
           </div>

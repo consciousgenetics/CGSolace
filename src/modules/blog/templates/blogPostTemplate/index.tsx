@@ -17,18 +17,27 @@ export default async function BlogPostTemplate({
   countryCode: string
   article: BlogPost
 }) {
-  const readTime = (content: string) => {
+  const getContentAsString = (content: string | Array<{ type: string; children: Array<{ type: string; text: string }> }>) => {
+    if (typeof content === 'string') {
+      return content
+    }
+    return content.map(block => block.children.map(child => child.text).join('')).join('\n\n')
+  }
+
+  const readTime = (content: string | Array<{ type: string; children: Array<{ type: string; text: string }> }>) => {
+    const contentString = getContentAsString(content)
     const wordsPerMinute = 200
-    const noOfWords = content.split(/\s/g).length
+    const noOfWords = contentString.split(/\s/g).length
     const minutes = noOfWords / wordsPerMinute
     return Math.ceil(minutes)
   }
 
-  const extractHeadings = (markdown: string) => {
+  const extractHeadings = (content: string | Array<{ type: string; children: Array<{ type: string; text: string }> }>) => {
+    const contentString = getContentAsString(content)
     const headingRegex = /^(#{1,6})\s+(.+)$/gm
     const extractedHeadings = []
     let match
-    while ((match = headingRegex.exec(markdown)) !== null) {
+    while ((match = headingRegex.exec(contentString)) !== null) {
       extractedHeadings.push({
         level: match[1].length,
         text: match[2],
@@ -41,7 +50,8 @@ export default async function BlogPostTemplate({
   const headings = extractHeadings(article.Content)
   const hasHeadings = headings.length > 0
 
-  const paragraphs = article.Content.split('\n\n')
+  const contentString = getContentAsString(article.Content)
+  const paragraphs = contentString.split('\n\n')
   const firstParagraph = paragraphs[0]
   const restOfContent = paragraphs.slice(1).join('\n\n')
 
