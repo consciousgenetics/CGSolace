@@ -171,7 +171,7 @@ export const getProductVariantsColors = async (
   try {
     // Update to use variant-colors endpoint instead
     const res = await fetchStrapiClient(
-      `/variant-colors?populate[1]=Type&populate[2]=Type.Image&pagination[start]=0&pagination[limit]=100`,
+      `/variant-colors?populate[1]=variant_types&populate[2]=variant_types.Image&pagination[start]=0&pagination[limit]=100`,
       {
         next: { tags: ['variants-colors'] },
       }

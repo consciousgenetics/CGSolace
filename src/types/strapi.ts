@@ -87,14 +87,26 @@ export type CollectionsData = {
 
 export type VariantColor = {
   id: number
-  Name: string
-  Type: {
-    Color?: string
-    Image?: {
-      url: string
-      alternativeText?: string
+  attributes: {
+    Name: string
+    Color: string
+    variant_types: {
+      data: {
+        id: number
+        attributes: {
+          Name: string
+          Image?: {
+            data: {
+              attributes: {
+                url: string
+                alternativeText?: string
+              }
+            }
+          }
+        }
+      }[]
     }
-  }[]
+  }
 }
 
 export type VariantColorData = {
