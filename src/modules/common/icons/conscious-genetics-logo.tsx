@@ -9,11 +9,12 @@ export const ConsciousGeneticsLogo = ({
 }: Omit<ImageProps, 'src' | 'alt'>) => {
   return (
     <Image
-      src="/conscious-genetics-logo.png"
+      src={'/conscious-genetics-logo.png'}
       alt="Conscious Genetics Logo"
       width={width}
       height={height}
       className={className}
+      priority
       {...props}
     />
   )
