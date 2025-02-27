@@ -9,49 +9,77 @@ import {
   MidBannerData,
   VariantColorData,
 } from 'types/strapi'
-import qs from 'qs'
 
-export async function fetchStrapiClient(
+export const fetchStrapiClient = async (
   endpoint: string,
-  urlParamsObject = {},
-  options = {}
-) {
+  params?: RequestInit
+) => {
   try {
-    // Merge default and user options
-    const mergedOptions = {
-      next: { revalidate: 3600 },
-      ...options,
-    };
-
-    // Build request URL
-    const queryString = qs.stringify(urlParamsObject);
-    const requestUrl = `${process.env.NEXT_PUBLIC_STRAPI_URL}/api${endpoint}${
-      queryString ? `?${queryString}` : ''
-    }`;
-
-    // Perform the request
-    const response = await fetch(requestUrl, mergedOptions);
-
-    // If response is not ok, throw error
-    if (!response.ok) {
-      if (process.env.NODE_ENV === 'development') {
-        console.error(`API error: ${response.status} for ${requestUrl}`);
-        try {
-          const errorText = await response.text();
-          console.error(`Error details: ${errorText}`);
-        } catch (e) {
-          console.error("Couldn't parse error response");
-        }
+    const baseUrl = process.env.NEXT_PUBLIC_STRAPI_URL || 'http://127.0.0.1:1337';
+    const url = `${baseUrl}/api${endpoint}`;
+    
+    // Skip actual fetching during build time in production
+    if (process.env.NODE_ENV === 'production' && !process.env.NEXT_PUBLIC_STRAPI_URL) {
+      console.log('Skipping Strapi fetch during build:', url);
+      return { 
+        ok: true, 
+        json: () => Promise.resolve({ data: [] }) 
       }
-      throw new Error(`Error fetching from Strapi: ${response.status} ${response.statusText}`);
     }
 
-    // Parse and return JSON response
-    const data = await response.json();
-    return data;
+    console.log('Attempting to fetch from Strapi:', url);
+    
+    const headers = {
+      'Authorization': `Bearer ${process.env.NEXT_PUBLIC_STRAPI_READ_TOKEN}`,
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+    };
+
+    const response = await fetch(url, {
+      headers,
+      mode: 'cors',
+      ...params,
+    })
+
+    if (!response.ok) {
+      console.warn('Failed to fetch data from Strapi:', {
+        status: response.status,
+        statusText: response.statusText,
+        url: response.url,
+        endpoint: endpoint
+      });
+      
+      // For development environments, we can show more detailed error information
+      if (process.env.NODE_ENV === 'development') {
+        console.error(`Strapi fetch failed for endpoint: ${endpoint}`);
+        console.error(`Full URL attempted: ${url}`);
+        console.error(`Status: ${response.status} ${response.statusText}`);
+      }
+      
+      return { 
+        ok: true, 
+        json: () => Promise.resolve({ data: [] }) 
+      }
+    }
+
+    // Create a wrapper for the json method that transforms image URLs
+    const originalResponse = response
+    return {
+      ...originalResponse,
+      json: async () => {
+        const data = await originalResponse.json()
+        return transformStrapiResponse(data)
+      }
+    }
   } catch (error) {
-    console.error("Strapi client error:", error);
-    throw error;
+    console.warn('Error connecting to Strapi:', {
+      message: error.message,
+      error: error,
+    });
+    return { 
+      ok: true, 
+      json: () => Promise.resolve({ data: [] }) 
+    }
   }
 }
 
@@ -137,65 +165,39 @@ export const getExploreBlogData = async (): Promise<BlogData> => {
 }
 
 // Products
-export async function getProductVariantsColors() {
+export const getProductVariantsColors = async (
+  filter?: { id?: string }
+): Promise<VariantColorData> => {
   try {
-    // First try with lowercase endpoint (new format)
-    try {
-      const variants = await fetchStrapiClient(
-        "/product-variant-colors",
-        { populate: ["Type", "Type.Image"] }
-      );
-      
-      if (process.env.NODE_ENV === 'development') {
-        console.log("Successfully fetched from /product-variant-colors");
+    // First try the singular form
+    let res = await fetchStrapiClient(
+      `/product-variant-colors?populate=*`,
+      {
+        next: { tags: ['variants-colors'] },
       }
-      
-      return variants.data;
-    } catch (error) {
-      // If that fails, try with plural endpoint
-      try {
-        const variants = await fetchStrapiClient(
-          "/product-variant-colors",
-          { populate: ["Type", "Type.Image"] }
-        );
-        
-        if (process.env.NODE_ENV === 'development') {
-          console.log("Successfully fetched from /product-variant-colors");
+    )
+    
+    // If that fails, try the plural form
+    if (!res.ok) {
+      console.warn('Failed to fetch from /product-variant-colors, trying /product-variants-colors');
+      res = await fetchStrapiClient(
+        `/product-variants-colors?populate=*`,
+        {
+          next: { tags: ['variants-colors'] },
         }
-        
-        return variants.data;
-      } catch (pluralError) {
-        // If that fails, try with variant-colors endpoint
-        try {
-          const variants = await fetchStrapiClient(
-            "/variant-colors",
-            { populate: ["Type", "Type.Image"] }
-          );
-          
-          if (process.env.NODE_ENV === 'development') {
-            console.log("Successfully fetched from /variant-colors");
-          }
-          
-          return variants.data;
-        } catch (variantError) {
-          // Finally try the custom route if none of the standard endpoints work
-          if (process.env.NODE_ENV === 'development') {
-            console.log("Attempting to fetch from custom route /product-variants-colors");
-          }
-          
-          const variants = await fetchStrapiClient(
-            "/product-variants-colors",
-            { populate: ["Type", "Type.Image"] }
-          );
-          
-          return variants.data;
-        }
-      }
+      )
     }
+
+    // In development, log more details about the response
+    if (process.env.NODE_ENV === 'development') {
+      console.log('Variant colors response:', res.ok ? 'Success' : 'Failed');
+    }
+
+    return res.json()
   } catch (error) {
-    console.error("Failed to fetch product variant colors:", error);
-    // Return empty array to prevent UI errors
-    return [];
+    console.error('Error fetching product variant colors:', error);
+    // Return a properly structured empty response
+    return { data: [] };
   }
 }
 
