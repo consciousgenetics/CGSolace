@@ -1,20 +1,20 @@
 "use client"
 
 import { useState } from 'react'
+import Image from 'next/image'
 import { IconProps } from 'types/icon'
 
 export const SolaceLogo = ({ className, ...props }: IconProps) => {
   const [imgError, setImgError] = useState(false)
   
-  // Base path for the image
-  const basePath = process.env.NEXT_PUBLIC_BASE_URL || ''
-  
   return (
     <div className={className}>
       {!imgError ? (
-        <img 
-          src={`${basePath}/conscious-genetics-logo.png`}
-          alt="Conscious Genetics Logo"
+        <Image
+          src="/conscious-genetics-logo.png"
+          alt="Conscious Genetix Logo"
+          width={160}
+          height={40}
           style={{ width: 'auto', height: '100%', maxWidth: '160px' }}
           onError={() => setImgError(true)}
         />
