@@ -30,6 +30,13 @@ export default async function PaginatedProducts({
         data-testid="products-list"
       >
         {products.map((p) => {
+          const calculatedPrice = p.calculated_price !== null && p.calculated_price !== undefined
+            ? convertToLocale({
+                amount: Number(p.calculated_price),
+                currency_code: region.currency_code,
+              })
+            : 'N/A';
+            
           return (
             <li key={p.id}>
               <ProductTile
@@ -39,10 +46,7 @@ export default async function PaginatedProducts({
                   title: p.title,
                   handle: p.handle,
                   thumbnail: p.thumbnail,
-                  calculatedPrice: convertToLocale({
-                    amount: Number(p.calculated_price),
-                    currency_code: region.currency_code,
-                  }),
+                  calculatedPrice: calculatedPrice,
                   salePrice: p.sale_price,
                 }}
                 regionId={region.id}
