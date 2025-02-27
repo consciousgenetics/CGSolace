@@ -5,7 +5,7 @@ import { HttpTypes } from '@medusajs/types'
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL
 const PUBLISHABLE_API_KEY = process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY
-const DEFAULT_REGION = process.env.NEXT_PUBLIC_DEFAULT_REGION || 'us'
+const DEFAULT_REGION = process.env.NEXT_PUBLIC_DEFAULT_REGION || 'uk'
 
 const regionMapCache = {
   regionMap: new Map<string, HttpTypes.StoreRegion>(),
@@ -34,12 +34,18 @@ async function getRegionMap() {
       notFound()
     }
 
+    console.log('Available regions:', regions.map((r: HttpTypes.StoreRegion) => r.name));
+    
     // Create a map of country codes to regions.
     regions.forEach((region: HttpTypes.StoreRegion) => {
       region.countries?.forEach((c) => {
         regionMapCache.regionMap.set(c.iso_2 ?? '', region)
+        console.log(`Mapping country ${c.iso_2} to region ${region.name}`);
       })
     })
+
+    // Log all available country codes
+    console.log('Available country codes:', Array.from(regionMapCache.regionMap.keys()));
 
     regionMapCache.regionMapUpdated = Date.now()
   }
@@ -62,19 +68,23 @@ function getCountryCode(
     const vercelCountryCode = request.headers
       .get('x-vercel-ip-country')
       ?.toLowerCase()
+    
+    console.log('Vercel detected country:', vercelCountryCode)
 
     const urlCountryCode = request.nextUrl.pathname.split('/')[1]?.toLowerCase()
+    console.log('URL country code:', urlCountryCode)
 
+    // Check if the detected country code exists in the region map
     if (urlCountryCode && regionMap.has(urlCountryCode)) {
       countryCode = urlCountryCode
     } else if (vercelCountryCode && regionMap.has(vercelCountryCode)) {
       countryCode = vercelCountryCode
-    } else if (regionMap.has(DEFAULT_REGION)) {
-      countryCode = DEFAULT_REGION
-    } else if (regionMap.keys().next().value) {
-      countryCode = regionMap.keys().next().value
+    } else {
+      // Always default to UK
+      countryCode = 'uk'
     }
 
+    console.log('Selected country code:', countryCode)
     return countryCode
   } catch (error) {
     if (process.env.NODE_ENV === 'development') {
@@ -82,6 +92,8 @@ function getCountryCode(
         'Middleware.ts: Error getting the country code. Did you set up regions in your Medusa Admin and define a NEXT_PUBLIC_MEDUSA_BACKEND_URL environment variable?'
       )
     }
+    // Default to UK even in case of errors
+    return 'uk'
   }
 }
 
