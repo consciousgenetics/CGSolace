@@ -42,10 +42,30 @@ const OptionSelect: React.FC<OptionSelectProps> = ({
       </Text>
       <div className="flex flex-wrap gap-2" data-testid={dataTestId}>
         {filteredOptions?.map((v) => {
-          const color = getVariantColor(v, variantsColors)
-          const image = color?.Image
-          const hex = color?.Color
+          // Safely try to get the color
+          const color = getVariantColor(v, variantsColors);
+          const image = color?.Image;
+          const hex = color?.Color;
 
+          // Fallback to basic buttons if no color data is available
+          if (!color) {
+            return (
+              <button
+                onClick={() => updateOption(option.id, v)}
+                key={v}
+                className={cn('border-primary px-4 py-2 border rounded', {
+                  'border-action-primary bg-action-primary/10': v === current,
+                })}
+                aria-label={`Choose ${title} option ${v}`}
+                disabled={disabled}
+                data-testid="option-button"
+              >
+                {v}
+              </button>
+            );
+          }
+
+          // Use image if available
           return image ? (
             <button
               onClick={() => updateOption(option.id, v)}
@@ -73,11 +93,11 @@ const OptionSelect: React.FC<OptionSelectProps> = ({
                 'border-action-primary': v === current,
               })}
               aria-label="Choose variant color"
-              style={{ backgroundColor: hex }}
+              style={{ backgroundColor: hex || '#e5e5e5' }} // Fallback gray color
               disabled={disabled}
               data-testid="option-button"
             />
-          )
+          );
         })}
       </div>
     </div>
