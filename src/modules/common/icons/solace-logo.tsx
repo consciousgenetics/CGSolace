@@ -7,11 +7,15 @@ import { IconProps } from 'types/icon'
 export const SolaceLogo = ({ className, ...props }: IconProps) => {
   const [imgError, setImgError] = useState(false)
   
+  const logoUrl = process.env.NEXT_PUBLIC_BASE_URL 
+    ? `${process.env.NEXT_PUBLIC_BASE_URL}/conscious-genetics-logo.png`
+    : '/conscious-genetics-logo.png'
+  
   return (
     <div className={className}>
       {!imgError ? (
         <Image
-          src={`${process.env.NEXT_PUBLIC_BASE_URL || ''}/conscious-genetics-logo.png`}
+          src={logoUrl}
           alt="Conscious Genetix Logo"
           width={160}
           height={40}
