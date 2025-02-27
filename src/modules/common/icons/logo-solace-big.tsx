@@ -1,16 +1,12 @@
-import Image from 'next/image'
 import { IconProps } from 'types/icon'
 
 export const SolaceLogoBig = ({ className, ...props }: IconProps) => {
   return (
     <div className={className}>
-      <Image 
+      <img 
         src="/images/logo/conscious-genetix-logo.png" 
         alt="Conscious Genetix Logo"
-        width={320}
-        height={90}
-        style={{ width: 'auto', height: '100%', objectFit: 'contain' }}
-        priority
+        style={{ width: 'auto', height: '100%', maxWidth: '320px', objectFit: 'contain' }}
       />
     </div>
   )
