@@ -3,13 +3,12 @@
 import { useState } from 'react'
 import Image from 'next/image'
 import { IconProps } from 'types/icon'
+import { transformUrl } from '@lib/util/transform-url'
 
 export const SolaceLogo = ({ className, ...props }: IconProps) => {
   const [imgError, setImgError] = useState(false)
   
-  const logoUrl = process.env.NEXT_PUBLIC_BASE_URL 
-    ? `${process.env.NEXT_PUBLIC_BASE_URL}/conscious-genetics-logo.png`
-    : '/conscious-genetics-logo.png'
+  const logoUrl = transformUrl('/conscious-genetics-logo.png')
   
   return (
     <div className={className}>

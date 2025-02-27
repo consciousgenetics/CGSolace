@@ -3,6 +3,7 @@ import Image from 'next/image'
 
 import { clx, Container } from '@medusajs/ui'
 import { PlaceholderImage } from '@modules/common/icons'
+import { transformUrl } from '@lib/util/transform-url'
 
 type ThumbnailProps = {
   thumbnail?: string | null
@@ -52,7 +53,7 @@ const ImageOrPlaceholder = ({
 }: Pick<ThumbnailProps, 'size'> & { image?: string }) => {
   return image ? (
     <Image
-      src={image}
+      src={transformUrl(image)}
       alt="Thumbnail"
       className="absolute inset-0 object-cover object-center"
       draggable={false}

@@ -3,6 +3,7 @@
 import { useState } from 'react'
 
 import { cn } from '@lib/util/cn'
+import { transformUrl } from '@lib/util/transform-url'
 import { HttpTypes } from '@medusajs/types'
 import { Button } from '@modules/common/components/button'
 
@@ -24,10 +25,16 @@ const ImageGallery = ({ images, title }: ImageGalleryProps) => {
     setSelectedImage(index)
   }
 
+  // Transform image URLs
+  const transformedImages = images.map(img => ({
+    ...img,
+    url: transformUrl(img.url)
+  }))
+
   return (
     <div className="flex flex-col justify-center gap-4">
       <div className="hidden grid-cols-2 gap-1 medium:grid">
-        {images
+        {transformedImages
           .slice(0, MAX_INITIAL_IMAGES + additionalImages)
           .map((image, index) => (
             <div
@@ -50,13 +57,13 @@ const ImageGallery = ({ images, title }: ImageGalleryProps) => {
             </div>
           ))}
       </div>
-      {additionalImages + MAX_INITIAL_IMAGES < images.length && (
+      {additionalImages + MAX_INITIAL_IMAGES < transformedImages.length && (
         <Button
           className="mx-auto hidden w-fit outline-none medium:flex"
           variant="tonal"
           size="sm"
           onClick={() => {
-            additionalImages + MAX_INITIAL_IMAGES < images.length &&
+            additionalImages + MAX_INITIAL_IMAGES < transformedImages.length &&
               setAdditionalImages((prev) => prev + 2)
           }}
         >
@@ -66,10 +73,10 @@ const ImageGallery = ({ images, title }: ImageGalleryProps) => {
       <GalleryDialog
         activeImg={selectedImage}
         onChange={setSelectedImage}
-        images={images}
+        images={transformedImages}
         title={title}
       />
-      <ImageCarousel images={images} openDialog={setSelectedImage} />
+      <ImageCarousel images={transformedImages} openDialog={setSelectedImage} />
     </div>
   )
 }
