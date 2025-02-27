@@ -8,12 +8,16 @@ checkEnvVariables()
 const nextConfig = {
   reactStrictMode: true,
   images: {
-    domains: ['localhost', 'cg-solace.vercel.app'],
+    domains: [
+      'localhost',
+      'cg-solace.vercel.app',
+      new URL(process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || 'http://localhost:9000').hostname
+    ],
     unoptimized: true,
   },
   experimental: {
     serverActions: {
-      allowedOrigins: ['localhost:3000', 'localhost:8000'],
+      allowedOrigins: ['localhost:3000', 'localhost:8000', 'cg-solace.vercel.app'],
     },
   },
   // Add this section to handle dynamic routes during build
@@ -30,16 +34,23 @@ const nextConfig = {
   output: 'standalone',
   env: {
     NEXT_PUBLIC_MEDUSA_BACKEND_URL: process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || 'http://localhost:9000',
-    NEXT_PUBLIC_STRAPI_API_URL: process.env.NEXT_PUBLIC_STRAPI_API_URL || 'http://localhost:1337'
+    NEXT_PUBLIC_STRAPI_API_URL: process.env.NEXT_PUBLIC_STRAPI_API_URL || 'http://localhost:1337',
+    NEXT_PUBLIC_BASE_URL: process.env.NEXT_PUBLIC_BASE_URL || 'https://cg-solace.vercel.app'
   },
   // Add this to handle build-time data fetching
   async rewrites() {
     const strapiUrl = process.env.NEXT_PUBLIC_STRAPI_API_URL || 'http://localhost:1337';
+    const medusaUrl = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || 'http://localhost:9000';
+    
     return {
       fallback: [
         {
           source: '/api/:path*',
           destination: `${strapiUrl}/api/:path*`
+        },
+        {
+          source: '/static/:path*',
+          destination: `${medusaUrl}/static/:path*`
         }
       ]
     }
