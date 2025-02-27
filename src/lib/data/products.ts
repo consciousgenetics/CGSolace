@@ -158,17 +158,43 @@ export const getProductsListByCollectionId = async function ({
 }
 
 export const getStoreFilters = async function () {
-  const filters: ProductFilters = await fetch(
-    `${BACKEND_URL}/store/filter-product-attributes`,
-    {
-      headers: {
-        'x-publishable-api-key': PUBLISHABLE_API_KEY!,
-      },
-      next: {
-        revalidate: 3600,
-      },
-    }
-  ).then((res) => res.json())
+  try {
+    const response = await fetch(
+      `${BACKEND_URL}/store/filter-product-attributes`,
+      {
+        headers: {
+          'x-publishable-api-key': PUBLISHABLE_API_KEY!,
+          'Accept': 'application/json',
+        },
+        next: {
+          revalidate: 3600,
+        },
+      }
+    );
 
-  return filters
+    if (!response.ok) {
+      console.error(`Filter API error: ${response.status} ${response.statusText}`);
+      return { types: [], collections: [], materials: [] };
+    }
+
+    const contentType = response.headers.get('content-type');
+    if (!contentType || !contentType.includes('application/json')) {
+      console.error(`Invalid content type: ${contentType}`);
+      return { types: [], collections: [], materials: [] };
+    }
+
+    const text = await response.text();
+    
+    try {
+      const filters: ProductFilters = JSON.parse(text);
+      return filters;
+    } catch (e) {
+      console.error('JSON parse error:', e);
+      console.error('Response text starts with:', text.substring(0, 200) + '...');
+      return { types: [], collections: [], materials: [] };
+    }
+  } catch (error) {
+    console.error('Filter function error:', error);
+    return { types: [], collections: [], materials: [] };
+  }
 }
