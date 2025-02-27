@@ -174,27 +174,44 @@ export const getStoreFilters = async function () {
 
     if (!response.ok) {
       console.error(`Filter API error: ${response.status} ${response.statusText}`);
-      return { types: [], collections: [], materials: [] };
+      return { collection: [], type: [], material: [] };
     }
 
     const contentType = response.headers.get('content-type');
     if (!contentType || !contentType.includes('application/json')) {
       console.error(`Invalid content type: ${contentType}`);
-      return { types: [], collections: [], materials: [] };
+      return { collection: [], type: [], material: [] };
     }
 
     const text = await response.text();
     
     try {
-      const filters: ProductFilters = JSON.parse(text);
+      const rawFilters = JSON.parse(text);
+      
+      // Transform the response to match ProductFilters type
+      const filters: ProductFilters = {
+        collection: (rawFilters.collections || []).map((c: any) => ({
+          id: c.id || c.value,
+          value: c.value
+        })),
+        type: (rawFilters.types || []).map((t: any) => ({
+          id: t.id || t.value,
+          value: t.value
+        })),
+        material: (rawFilters.materials || []).map((m: any) => ({
+          id: m.id || m.value,
+          value: m.value
+        }))
+      };
+      
       return filters;
     } catch (e) {
       console.error('JSON parse error:', e);
       console.error('Response text starts with:', text.substring(0, 200) + '...');
-      return { types: [], collections: [], materials: [] };
+      return { collection: [], type: [], material: [] };
     }
   } catch (error) {
     console.error('Filter function error:', error);
-    return { types: [], collections: [], materials: [] };
+    return { collection: [], type: [], material: [] };
   }
 }

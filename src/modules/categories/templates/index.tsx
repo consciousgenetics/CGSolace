@@ -18,7 +18,7 @@ import ActiveProductFilters from '@modules/store/components/filters/active-filte
 import ProductFiltersDrawer from '@modules/store/components/filters/filters-drawer'
 import PaginatedProducts from '@modules/store/templates/paginated-products'
 
-export const runtime = 'edge'
+export const dynamic = 'force-dynamic'
 
 export default async function CategoryTemplate({
   searchParams,
@@ -28,12 +28,8 @@ export default async function CategoryTemplate({
   params: { countryCode: string; category: string[] }
 }) {
   try {
-    const { sortBy, page, collection, type, material, price } = searchParams
+    const { sortBy = 'relevance', page, collection, type, material, price } = searchParams
     const { countryCode, category } = params
-
-    // Log params for debugging
-    console.log(`Rendering category page for: ${countryCode}/${category.join('/')}`);
-    console.log(`Search params: ${JSON.stringify(searchParams)}`);
 
     // Get region data - if not found, show 404
     const region = await getRegion(countryCode)
@@ -70,22 +66,7 @@ export default async function CategoryTemplate({
     const pageNumber = page ? parseInt(page) : 1
     
     // Get filters data with error handling
-    let filters: { 
-      collection: { id: string; value: string }[]; 
-      type: { id: string; value: string }[]; 
-      material: { id: string; value: string }[]; 
-    } = {
-      collection: [],
-      type: [],
-      material: []
-    }
-    
-    try {
-      filters = await getStoreFilters()
-    } catch (err) {
-      console.error("Error fetching store filters:", err)
-      // Continue with empty filters
-    }
+    let filters = await getStoreFilters()
     
     // Search for products with error handling
     let results = []
@@ -142,7 +123,7 @@ export default async function CategoryTemplate({
               </ProductFiltersDrawer>
               <RefinementList
                 options={storeSortOptions}
-                sortBy={sortBy || 'relevance'}
+                sortBy={sortBy}
               />
             </Box>
             <ActiveProductFilters
@@ -178,13 +159,13 @@ export default async function CategoryTemplate({
       </>
     )
   } catch (error) {
-    console.error("Error in CategoryTemplate:", error)
+    console.error('Error in CategoryTemplate:', error)
     return (
       <Container>
         <p className="py-10 text-center text-lg text-secondary">
           There was an error loading this category. Please try again later.
         </p>
       </Container>
-    );
+    )
   }
 }
