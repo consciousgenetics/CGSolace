@@ -1,21 +1,12 @@
+import { notFound } from 'next/navigation'
 import { Suspense } from 'react'
 
-import { retrieveCart } from '@lib/data/cart'
-import { getProductVariantsColors } from '@lib/data/fetch'
-import { getProductsListByCollectionId } from '@lib/data/products'
 import { HttpTypes } from '@medusajs/types'
-import { Box } from '@modules/common/components/box'
-import { Container } from '@modules/common/components/container'
-import ImageGallery from '@modules/products/components/image-gallery'
-import ProductTabs from '@modules/products/components/product-tabs'
+import ProductActionsWrapper from '@modules/products/templates/product-actions-wrapper'
 import ProductInfo from '@modules/products/templates/product-info'
+import ProductTabs from '@modules/products/components/product-tabs'
+import { ProductCarousel } from '@modules/products/components/product-carousel'
 import SkeletonProductActions from '@modules/skeletons/components/skeleton-product-actions'
-import SkeletonProductsCarousel from '@modules/skeletons/templates/skeleton-products-carousel'
-import { notFound } from 'next/navigation'
-
-import { ProductCarousel } from '../components/product-carousel'
-import ProductBreadcrumbs from './breadcrumbs'
-import ProductActionsWrapper from './product-actions-wrapper'
 
 type ProductTemplateProps = {
   product: HttpTypes.StoreProduct
@@ -23,78 +14,47 @@ type ProductTemplateProps = {
   countryCode: string
 }
 
-const ProductTemplate: React.FC<ProductTemplateProps> = async ({
+const ProductTemplate = async ({
   product,
   region,
   countryCode,
 }: ProductTemplateProps) => {
-  // Fetch variant colors with error handling
-  let variantColorsData: any = { data: [] };
-  try {
-    const variantsColors = await getProductVariantsColors()
-    variantColorsData = variantsColors?.data ? { data: variantsColors.data } : { data: [] }
-  } catch (error) {
-    console.error("Error fetching product variant colors:", error);
-    variantColorsData = { data: [] };
+  if (!product || !region) {
+    return notFound()
   }
 
-  const { response: productsList } = await getProductsListByCollectionId({
-    collectionId: product.collection_id,
-    countryCode,
-    excludeProductId: product.id,
-  })
-
-  const cart = await retrieveCart()
-
-  // Guard clause to prevent the component from crashing when data is missing
-  if (!product) {
-    return notFound();
-  }
-
-  // Ensure variantColorsData is always an object with a data array
-  if (!variantColorsData || !variantColorsData.data) {
-    variantColorsData = { data: [] };
-  }
-
+  // Skip the variant colors fetch completely by using an empty array
+  // This is a temporary change to test if variant colors are causing issues
+  const variantColorsData: any[] = [];
+  
   return (
-    <>
-      <Container
-        className="relative flex flex-col gap-y-6 !py-8 small:gap-y-12"
-        data-testid="product-container"
-      >
-        <ProductBreadcrumbs product={product} countryCode={countryCode} />
-        <Box className="relative flex flex-col gap-y-6 large:flex-row large:items-start large:gap-x-16 xl:gap-x-[120px]">
-          <Box className="relative block w-full">
-            <ImageGallery
-              title={product.title}
-              images={product?.images || []}
-            />
-          </Box>
-          <Box className="flex w-full flex-col gap-y-6 py-8 large:sticky large:top-24 large:max-w-[440px] large:py-0">
+    <div>
+      <div className="container relative flex flex-col py-6 small:flex-row small:items-start">
+        <div className="flex flex-col gap-y-8 small:sticky small:top-20 small:w-[45%] small:py-8">
+          <Suspense
+            fallback={<SkeletonProductActions />}
+          >
             <ProductInfo product={product} />
-            <Suspense fallback={<SkeletonProductActions />}>
-              <ProductActionsWrapper
-                id={product.id}
-                region={region}
-                cartItems={cart?.items}
-                colors={variantColorsData}
-              />
-            </Suspense>
-            <ProductTabs product={product} />
-          </Box>
-        </Box>
-      </Container>
-
-      {productsList.products.length > 0 && (
-        <Suspense fallback={<SkeletonProductsCarousel />}>
-          <ProductCarousel
-            products={productsList.products}
-            regionId={region.id}
-            title="Complete the look"
+          </Suspense>
+        </div>
+        <div className="flex w-full flex-col py-8 small:w-[55%] small:py-8">
+          <ProductActionsWrapper
+            id={product.id}
+            region={region}
+            cartItems={[]}
+            colors={variantColorsData}
           />
-        </Suspense>
-      )}
-    </>
+          <ProductTabs product={product} />
+        </div>
+      </div>
+      <div className="w-full py-16">
+        <ProductCarousel
+          products={[]}
+          regionId={region.id}
+          title="Complete the look"
+        />
+      </div>
+    </div>
   )
 }
 
