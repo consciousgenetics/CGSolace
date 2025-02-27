@@ -139,7 +139,7 @@ export const createNavigation = (
   collections?: StoreCollection[]
 ) => [
   {
-    name: 'SHOP',
+    name: 'Shop',
     handle: '/shop',
     category_children: productCategories
       .filter((category) => !category.parent_category)
@@ -156,13 +156,21 @@ export const createNavigation = (
       })),
   },
   {
-    name: 'ABOUT',
-    handle: '/about-us',
-    category_children: null,
+    name: 'Collections',
+    handle: '/shop',
+    category_children: !collections
+      ? null
+      : collections.map((collection) => ({
+          name: collection.title,
+          type: 'collection',
+          handle: `/collections/${collection.handle}`,
+          handle_id: collection.handle,
+          category_children: null,
+        })),
   },
   {
-    name: 'CONTACT US',
-    handle: '/contact',
+    name: 'About Us',
+    handle: '/about-us',
     category_children: null,
   },
 ]

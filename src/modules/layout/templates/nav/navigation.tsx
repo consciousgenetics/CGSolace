@@ -31,17 +31,13 @@ export default function Navigation({
     handle: string
   } | null>(null)
 
-  // Make sure we have valid data before creating navigation
-  const safeProductCategories = Array.isArray(productCategories) ? productCategories : [];
-  const safeCollections = Array.isArray(collections) ? collections : [];
-
   const navigation = useMemo(
-    () => createNavigation(safeProductCategories, safeCollections),
-    [safeProductCategories, safeCollections]
+    () => createNavigation(productCategories, collections),
+    [productCategories, collections]
   )
 
   return (
-    <Box className="hidden gap-8 self-stretch large:flex">
+    <Box className="hidden gap-4 self-stretch large:flex">
       {navigation.map((item: any, index: number) => {
         const handle = item.name.toLowerCase().replace(' ', '-')
         const isCategories =
@@ -74,7 +70,7 @@ export default function Navigation({
             >
               <NavigationItem
                 href={`/${countryCode}${item.handle}`}
-                className={cn('!py-2 px-2 text-white font-bold text-lg', {
+                className={cn('!py-2 px-2', {
                   'border-b border-action-primary': active || isCategories,
                 })}
               >

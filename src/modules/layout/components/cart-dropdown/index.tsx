@@ -77,7 +77,7 @@ const CartDropdown = ({
       onMouseLeave={closeCartDropdown}
     >
       <Popover className="relative h-full">
-        <Popover.Button className="rounded-full bg-transparent !p-2 text-white hover:bg-fg-secondary-hover hover:text-white active:bg-fg-secondary-pressed active:text-white xsmall:!p-3.5">
+        <Popover.Button className="rounded-full bg-transparent !p-2 text-action-primary hover:bg-fg-secondary-hover hover:text-action-primary-hover active:bg-fg-secondary-pressed active:text-action-primary-pressed xsmall:!p-3.5">
           <LocalizedClientLink href="/cart" data-testid="nav-cart-link">
             <Box className="relative">
               <BagIcon />

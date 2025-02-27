@@ -16,60 +16,53 @@ import Navigation from './navigation'
 export default function NavContent(props: any) {
   const [isSearchOpen, setIsSearchOpen] = useState(false)
 
-  // Ensure props have default values to prevent errors
-  const safeProps = {
-    productCategories: props.productCategories || [],
-    collections: props.collections || [],
-    strapiCollections: props.strapiCollections || { data: [] },
-    products: props.products || [],
-    countryCode: props.countryCode || 'us'
-  }
-
   return (
     <>
       <Box className="flex large:hidden">
         <SideMenu
-          productCategories={safeProps.productCategories}
-          collections={safeProps.collections}
-          strapiCollections={safeProps.strapiCollections}
+          productCategories={props.productCategories}
+          collections={props.collections}
+          strapiCollections={props.strapiCollections}
         />
       </Box>
       {!isSearchOpen && (
         <Navigation
-          countryCode={safeProps.countryCode}
-          productCategories={safeProps.productCategories}
-          collections={safeProps.collections}
-          strapiCollections={safeProps.strapiCollections}
+          countryCode={props.countryCode}
+          productCategories={props.productCategories}
+          collections={props.collections}
+          strapiCollections={props.strapiCollections}
         />
       )}
       {isSearchOpen && (
         <SearchDropdown
           setIsOpen={setIsSearchOpen}
-          recommendedProducts={safeProps.products}
+          recommendedProducts={props.products}
           isOpen={isSearchOpen}
-          countryCode={safeProps.countryCode}
+          countryCode={props.countryCode}
         />
       )}
       <SearchDialog
-        recommendedProducts={safeProps.products}
-        countryCode={safeProps.countryCode}
+        recommendedProducts={props.products}
+        countryCode={props.countryCode}
         isOpen={isSearchOpen}
         handleOpenDialogChange={setIsSearchOpen}
       />
       <Box
-        className={cn('block absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2', {
-          'z-40': isSearchOpen,
+        className={cn('relative block', {
+          'medium:absolute medium:left-1/2 medium:top-1/2 medium:-translate-x-1/2 medium:-translate-y-1/2':
+            !isSearchOpen,
+          'right-0 z-40': isSearchOpen,
         })}
       >
         <LocalizedClientLink href="/">
-          <SolaceLogo className="h-10 w-auto" />
+          <SolaceLogo className="h-6 medium:h-7" />
         </LocalizedClientLink>
       </Box>
       {!isSearchOpen && (
         <Button
           variant="icon"
           withIcon
-          className="ml-auto h-auto !p-2 text-white xsmall:!p-3.5"
+          className="ml-auto h-auto !p-2 xsmall:!p-3.5"
           onClick={() => setIsSearchOpen(true)}
           data-testid="search-button"
         >
