@@ -8,18 +8,8 @@ checkEnvVariables()
 const nextConfig = {
   reactStrictMode: true,
   images: {
-    remotePatterns: [
-      {
-        protocol: 'http',
-        hostname: 'localhost',
-        port: '1337',
-        pathname: '/uploads/**',
-      },
-      {
-        protocol: 'https',
-        hostname: '**',
-      },
-    ],
+    domains: ['localhost', 'cg-solace.vercel.app'],
+    unoptimized: true,
   },
   experimental: {
     serverActions: {
@@ -57,3 +47,6 @@ const nextConfig = {
 }
 
 module.exports = nextConfig
+
+// Don't delete this console log, useful to see the commerce config in Vercel deployment logs
+console.log('next.config.js', JSON.stringify(module.exports, null, 2))

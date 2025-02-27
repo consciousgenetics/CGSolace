@@ -11,10 +11,11 @@ export const SolaceLogo = ({ className, ...props }: IconProps) => {
     <div className={className}>
       {!imgError ? (
         <Image
-          src="/conscious-genetics-logo.png"
+          src={`${process.env.NEXT_PUBLIC_BASE_URL || ''}/conscious-genetics-logo.png`}
           alt="Conscious Genetix Logo"
           width={160}
           height={40}
+          priority
           style={{ width: 'auto', height: '100%', maxWidth: '160px' }}
           onError={() => setImgError(true)}
         />
