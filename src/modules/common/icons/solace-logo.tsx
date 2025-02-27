@@ -9,6 +9,7 @@ export const SolaceLogo = ({ className, ...props }: IconProps) => {
         alt="Conscious Genetix Logo"
         width={160}
         height={45}
+        style={{ width: 'auto', height: '100%' }}
         priority
       />
     </div>
