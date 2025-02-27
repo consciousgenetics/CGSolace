@@ -1,6 +1,6 @@
 import { listCategories } from '@lib/data/categories'
 import { getCollectionsList } from '@lib/data/collections'
-import { getCollectionsData } from '@lib/data/fetch'
+import { getCollectionsData, getHeaderData } from '@lib/data/fetch'
 import { getProductsList } from '@lib/data/products'
 import { Container } from '@modules/common/components/container'
 
@@ -8,7 +8,7 @@ import NavActions from './nav-actions'
 import NavContent from './nav-content'
 
 export default async function NavWrapper(props: any) {
-  const [productCategories, { collections }, strapiCollections, { products }] =
+  const [productCategories, { collections }, strapiCollections, { products }, strapiHeader] =
     await Promise.all([
       listCategories(),
       getCollectionsList(),
@@ -18,6 +18,7 @@ export default async function NavWrapper(props: any) {
         queryParams: { limit: 4 },
         countryCode: props.countryCode,
       }).then(({ response }) => response),
+      getHeaderData(),
     ])
 
   return (
@@ -32,6 +33,7 @@ export default async function NavWrapper(props: any) {
           strapiCollections={strapiCollections}
           countryCode={props.countryCode}
           products={products}
+          strapiHeader={strapiHeader}
         />
         <NavActions />
       </Container>

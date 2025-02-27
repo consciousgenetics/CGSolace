@@ -9,7 +9,7 @@ import { formatNameForTestId } from '@lib/util/formatNameForTestId'
 import { StoreCollection, StoreProductCategory } from '@medusajs/types'
 import { Box } from '@modules/common/components/box'
 import { NavigationItem } from '@modules/common/components/navigation-item'
-import { CollectionsData } from 'types/strapi'
+import { CollectionsData, HeaderData } from 'types/strapi'
 
 import CollectionsMenu from './collections-menu'
 import DropdownMenu from './dropdown-menu'
@@ -19,11 +19,13 @@ export default function Navigation({
   productCategories,
   collections,
   strapiCollections,
+  strapiHeader,
 }: {
   countryCode: string
   productCategories: StoreProductCategory[]
   collections: StoreCollection[]
   strapiCollections: CollectionsData
+  strapiHeader?: HeaderData
 }) {
   const pathname = usePathname()
   const [openDropdown, setOpenDropdown] = useState<{
@@ -36,6 +38,40 @@ export default function Navigation({
     [productCategories, collections]
   )
 
+  // Use Strapi header links if available
+  const hasCustomLinks = strapiHeader?.data?.Links && strapiHeader.data.Links.length > 0
+  
+  if (hasCustomLinks) {
+    // Sort custom links by order property
+    const orderedLinks = [...strapiHeader.data.Links].sort((a, b) => a.order - b.order)
+    
+    return (
+      <Box className="hidden gap-4 self-stretch large:flex">
+        {orderedLinks.map((item, index) => {
+          const isActive = pathname.includes(item.Url)
+          
+          return (
+            <div
+              key={index}
+              className="flex h-full items-center"
+              data-testid={formatNameForTestId(`${item.Title}-link`)}
+            >
+              <NavigationItem
+                href={`/${countryCode}${item.Url}`}
+                className={cn('!py-2 px-2', {
+                  'border-b border-action-primary': isActive || item.isActive,
+                })}
+              >
+                {item.Title}
+              </NavigationItem>
+            </div>
+          )
+        })}
+      </Box>
+    )
+  }
+
+  // Fall back to old navigation if Strapi header is not available
   return (
     <Box className="hidden gap-4 self-stretch large:flex">
       {navigation.map((item: any, index: number) => {

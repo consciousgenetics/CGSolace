@@ -27,7 +27,7 @@ import {
   XIcon,
 } from '@modules/common/icons'
 import * as VisuallyHidden from '@radix-ui/react-visually-hidden'
-import { CollectionsData } from 'types/strapi'
+import { CollectionsData, HeaderData } from 'types/strapi'
 
 interface CategoryItem {
   name: string
@@ -38,10 +38,12 @@ const SideMenu = ({
   productCategories,
   collections,
   strapiCollections,
+  strapiHeader,
 }: {
   productCategories: StoreProductCategory[]
   collections: StoreCollection[]
   strapiCollections: CollectionsData
+  strapiHeader?: HeaderData
 }) => {
   const [categoryStack, setCategoryStack] = useState<CategoryItem[]>([])
   const currentCategory = categoryStack[categoryStack.length - 1] || null
@@ -69,6 +71,36 @@ const SideMenu = ({
     if (!open) {
       setCategoryStack([])
     }
+  }
+
+  // Use Strapi header links if available
+  const hasCustomLinks = strapiHeader?.data?.Links && strapiHeader.data.Links.length > 0
+  
+  const renderStrapiLinks = () => {
+    if (!hasCustomLinks) return null
+    
+    // Sort custom links by order property
+    const orderedLinks = [...strapiHeader.data.Links].sort((a, b) => a.order - b.order)
+    
+    return orderedLinks.map((item, index) => (
+      <Fragment key={index}>
+        <Button
+          variant="ghost"
+          className="w-full justify-between"
+          onClick={() => handleOpenDialogChange(false)}
+          asChild
+        >
+          <LocalizedClientLink href={item.Url}>
+            <span className="flex items-center gap-4">
+              {item.Title}
+            </span>
+          </LocalizedClientLink>
+        </Button>
+        {index === orderedLinks.length - 1 && (
+          <Divider className="my-4 -ml-4 w-[calc(100%+2rem)]" />
+        )}
+      </Fragment>
+    ))
   }
 
   const renderCategories = (categories: any[]) => {
@@ -171,68 +203,76 @@ const SideMenu = ({
     !currentCategory || currentCategory.name !== 'Collections'
 
   return (
-    <Dialog open={isOpen} onOpenChange={handleOpenDialogChange}>
+    <Dialog onOpenChange={handleOpenDialogChange} open={isOpen}>
       <DialogTrigger asChild>
         <Button
+          aria-label="Open menu"
           variant="icon"
           withIcon
-          className="flex h-auto !p-2 xsmall:!p-3.5 large:hidden"
+          className="h-auto !p-2 xsmall:!p-3.5"
         >
           <BarsIcon />
+          <VisuallyHidden.Root>Open Menu</VisuallyHidden.Root>
         </Button>
       </DialogTrigger>
       <DialogPortal>
-        <DialogOverlay />
-        <DialogContent
-          className="!max-h-full !max-w-full !rounded-none"
-          aria-describedby={undefined}
-        >
-          <DialogHeader className="flex items-center gap-4 !p-4 text-xl text-basic-primary small:text-2xl">
-            {currentCategory && (
-              <Button variant="tonal" withIcon size="sm" onClick={handleBack}>
-                <ArrowLeftIcon className="h-5 w-5" />
-              </Button>
-            )}
-            {currentCategory?.name || 'Menu'}
-            <Button
-              onClick={() => handleOpenDialogChange(false)}
-              variant="icon"
-              withIcon
-              size="sm"
-              className="ml-auto p-2"
-            >
-              <XIcon />
-            </Button>
-          </DialogHeader>
-          <VisuallyHidden.Root>
-            <DialogTitle>Menu modal</DialogTitle>
-          </VisuallyHidden.Root>
-          <DialogBody className="overflow-y-auto p-4 small:p-5">
-            <Box className="flex flex-col">
-              {shouldRenderButton && (
-                <Button
-                  variant="tonal"
-                  className="mb-4 w-max"
-                  size="sm"
-                  onClick={() => handleOpenDialogChange(false)}
-                  asChild={!!currentCategory}
-                >
-                  <LocalizedClientLink
-                    href={
-                      currentCategory ? `${currentCategory.handle}` : `/shop`
-                    }
+        <DialogOverlay className="xs:items-stretch md:items-center">
+          <DialogContent
+            className="bg-primary text-primary p-0 pb-0"
+          >
+            <DialogHeader className="mb-0 flex flex-row items-center gap-2 px-6 pb-4 pt-8">
+              <DialogTitle>
+                {currentCategory ? (
+                  <Button
+                    onClick={handleBack}
+                    variant="ghost"
+                    className="flex w-full items-center justify-start gap-2 !px-0"
                   >
-                    Shop all{' '}
-                    {currentCategory && currentCategory.name !== 'Shop'
-                      ? currentCategory.name
-                      : ''}
-                  </LocalizedClientLink>
-                </Button>
-              )}
-              {renderCategories(getActiveCategories())}
-            </Box>
-          </DialogBody>
-        </DialogContent>
+                    <ArrowLeftIcon className="h-6 w-6" />
+                    <span className="flex-1">
+                      {categoryStack.length === 1
+                        ? 'Main Menu'
+                        : categoryStack[categoryStack.length - 2].name}
+                    </span>
+                  </Button>
+                ) : (
+                  <span>Main Menu</span>
+                )}
+              </DialogTitle>
+              <Button
+                onClick={() => handleOpenDialogChange(false)}
+                variant="ghost"
+                className="ml-auto !px-3 !py-3"
+              >
+                <XIcon className="h-6 w-6" />
+                <VisuallyHidden.Root>Close</VisuallyHidden.Root>
+              </Button>
+            </DialogHeader>
+            <DialogBody className="content-start gap-0 px-6 pb-8">
+              <Box className="flex flex-col">
+                {currentCategory ? (
+                  renderCategories(
+                    currentCategory.handle === 'shop'
+                      ? [
+                          ...navigation[0].category_children.flatMap(
+                            (item) => item.category_children
+                          ),
+                          ...navigation[1]?.category_children || [],
+                        ]
+                      : navigation.find(
+                          (category) => category.handle === currentCategory.handle
+                        )?.category_children || []
+                  )
+                ) : (
+                  <>
+                    {hasCustomLinks ? renderStrapiLinks() : null}
+                    {renderCategories(getActiveCategories())}
+                  </>
+                )}
+              </Box>
+            </DialogBody>
+          </DialogContent>
+        </DialogOverlay>
       </DialogPortal>
     </Dialog>
   )

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Image from 'next/image'
 
 import { cn } from '@lib/util/cn'
 import { Box } from '@modules/common/components/box'
@@ -10,11 +11,16 @@ import { SearchIcon, SolaceLogo } from '@modules/common/icons'
 import SideMenu from '@modules/layout/components/side-menu'
 import { SearchDialog } from '@modules/search/components/search-dialog'
 import SearchDropdown from '@modules/search/components/search-dropdown'
+import { HeaderData } from 'types/strapi'
 
 import Navigation from './navigation'
 
 export default function NavContent(props: any) {
   const [isSearchOpen, setIsSearchOpen] = useState(false)
+  const strapiHeader = props.strapiHeader as HeaderData
+
+  // Check if we have valid Strapi header data
+  const hasHeader = strapiHeader?.data && strapiHeader.data.Logo?.Image?.url
 
   return (
     <>
@@ -31,6 +37,7 @@ export default function NavContent(props: any) {
           productCategories={props.productCategories}
           collections={props.collections}
           strapiCollections={props.strapiCollections}
+          strapiHeader={strapiHeader}
         />
       )}
       {isSearchOpen && (
@@ -55,7 +62,18 @@ export default function NavContent(props: any) {
         })}
       >
         <LocalizedClientLink href="/">
-          <SolaceLogo className="h-6 medium:h-7" />
+          {hasHeader ? (
+            <Image 
+              src={strapiHeader.data.Logo.Image.url}
+              alt={strapiHeader.data.Logo.AltText || "Solace Logo"}
+              width={150}
+              height={40}
+              className="h-6 medium:h-7 object-contain"
+              priority
+            />
+          ) : (
+            <SolaceLogo className="h-6 medium:h-7" />
+          )}
         </LocalizedClientLink>
       </Box>
       {!isSearchOpen && (
