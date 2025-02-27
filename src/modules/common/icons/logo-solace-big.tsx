@@ -1,3 +1,5 @@
+"use client"
+
 import { useState } from 'react'
 import { IconProps } from 'types/icon'
 
