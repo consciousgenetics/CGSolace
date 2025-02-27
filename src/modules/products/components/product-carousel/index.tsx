@@ -34,9 +34,13 @@ export function ProductCarousel({
         <CarouselWrapper title={title} productsCount={products.length}>
           <Box className="flex gap-2">
             {products.map((item, index) => {
-              const cheapestVariant = getProductPrice({
+              const priceData = getProductPrice({
                 product: item,
-              })
+              });
+
+              // Add null checks for cheapestPrice
+              const calculatedPrice = priceData.cheapestPrice?.calculated_price || 'N/A';
+              const originalPrice = priceData.cheapestPrice?.original_price || null;
 
               return (
                 <Box
@@ -50,9 +54,8 @@ export function ProductCarousel({
                       title: item.title,
                       handle: item.handle,
                       thumbnail: item.thumbnail,
-                      calculatedPrice:
-                        cheapestVariant.cheapestPrice.calculated_price,
-                      salePrice: cheapestVariant.cheapestPrice.original_price,
+                      calculatedPrice: calculatedPrice,
+                      salePrice: originalPrice,
                     }}
                     regionId={regionId}
                   />

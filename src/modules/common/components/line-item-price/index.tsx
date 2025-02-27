@@ -15,14 +15,26 @@ type LineItemPriceProps = {
   isInCartDropdown?: boolean
 }
 
+// Define a type for the price values to fix TypeScript errors
+type PriceValues = {
+  currency_code?: string;
+  calculated_price_number?: number;
+  original_price_number?: number;
+}
+
 const LineItemPrice = ({
   item,
   className,
   style = 'default',
   isInCartDropdown = false,
 }: LineItemPriceProps) => {
-  const { currency_code, calculated_price_number, original_price_number } =
-    getPricesForVariant(item.variant) ?? {}
+  // Safely get price data with proper typing
+  const prices = getPricesForVariant(item.variant) as PriceValues | null;
+  
+  // Use optional chaining and nullish coalescing for safer access
+  const currency_code = prices?.currency_code ?? 'USD';
+  const calculated_price_number = prices?.calculated_price_number ?? 0;
+  const original_price_number = prices?.original_price_number ?? calculated_price_number;
 
   const adjustmentsSum = (item.adjustments || []).reduce(
     (acc, adjustment) => adjustment.amount + acc,

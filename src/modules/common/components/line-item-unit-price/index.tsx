@@ -7,18 +7,36 @@ type LineItemUnitPriceProps = {
   style?: 'default' | 'tight'
 }
 
+// Define a type for price values that matches the actual return type
+type PriceValues = {
+  original_price?: string;
+  calculated_price?: string;
+  original_price_number?: number;
+  calculated_price_number?: number;
+  percentage_diff?: string | number;
+  currency_code?: string;
+  price_type?: string | null;
+}
+
 const LineItemUnitPrice = ({
   item,
   style = 'default',
 }: LineItemUnitPriceProps) => {
-  const {
-    original_price,
-    calculated_price,
-    original_price_number,
-    calculated_price_number,
-    percentage_diff,
-  } = getPricesForVariant(item.variant) ?? {}
-  const hasReducedPrice = calculated_price_number < original_price_number
+  // Get prices with a type assertion to unknown first to avoid type errors
+  const priceData = getPricesForVariant(item.variant) as unknown as PriceValues | null;
+  
+  // Use safe default values
+  const original_price = priceData?.original_price ?? 'N/A';
+  const calculated_price = priceData?.calculated_price ?? 'N/A';
+  const original_price_number = priceData?.original_price_number ?? 0;
+  const calculated_price_number = priceData?.calculated_price_number ?? 0;
+  const percentage_diff = priceData?.percentage_diff ?? 0;
+  
+  // Only show reduced price if both values exist and calculated is less than original
+  const hasReducedPrice = 
+    original_price_number > 0 && 
+    calculated_price_number > 0 && 
+    calculated_price_number < original_price_number;
 
   return (
     <div className="flex h-full flex-col justify-center text-ui-fg-muted">
