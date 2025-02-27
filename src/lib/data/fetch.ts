@@ -169,9 +169,9 @@ export const getProductVariantsColors = async (
   filter?: { id?: string }
 ): Promise<VariantColorData> => {
   try {
-    // Update endpoint to match Strapi collection name (singular form with hyphen)
+    // Update endpoint to match Strapi collection name (plural form with hyphen)
     const res = await fetchStrapiClient(
-      `/product-variant-color?populate[1]=Type&populate[2]=Type.Image&pagination[start]=0&pagination[limit]=100`,
+      `/product-variant-colors?populate[1]=Type&populate[2]=Type.Image&pagination[start]=0&pagination[limit]=100`,
       {
         next: { tags: ['variants-colors'] },
       }
