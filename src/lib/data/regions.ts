@@ -38,6 +38,12 @@ export const getRegion = cache(async function (countryCode: string) {
       })
     })
 
+    // Handle the case where 'uk' is requested but doesn't exist
+    if (countryCode === 'uk' && !regionMap.has('uk') && regionMap.has('dk')) {
+      console.log("Regions: 'uk' not found, using 'dk' region instead");
+      return regionMap.get('dk');
+    }
+
     const region = countryCode
       ? regionMap.get(countryCode)
       : regionMap.get('us')

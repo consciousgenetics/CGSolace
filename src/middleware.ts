@@ -6,6 +6,8 @@ import { HttpTypes } from '@medusajs/types'
 const BACKEND_URL = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL
 const PUBLISHABLE_API_KEY = process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY
 const DEFAULT_REGION = process.env.NEXT_PUBLIC_DEFAULT_REGION || 'uk'
+// Use 'dk' as fallback if 'uk' doesn't exist in the region map
+const FALLBACK_REGION = 'dk'
 
 const regionMapCache = {
   regionMap: new Map<string, HttpTypes.StoreRegion>(),
@@ -44,6 +46,13 @@ async function getRegionMap() {
       })
     })
 
+    // Add 'uk' to point to the same region as 'dk' if 'uk' doesn't exist but 'dk' does
+    if (!regionMapCache.regionMap.has('uk') && regionMapCache.regionMap.has('dk')) {
+      const dkRegion = regionMapCache.regionMap.get('dk');
+      regionMapCache.regionMap.set('uk', dkRegion as HttpTypes.StoreRegion);
+      console.log('Mapped "uk" to the same region as "dk"');
+    }
+
     // Log all available country codes
     console.log('Available country codes:', Array.from(regionMapCache.regionMap.keys()));
 
@@ -74,14 +83,19 @@ function getCountryCode(
     const urlCountryCode = request.nextUrl.pathname.split('/')[1]?.toLowerCase()
     console.log('URL country code:', urlCountryCode)
 
+    // Special case: If URL is explicitly /uk or /dk, keep it 
+    if (urlCountryCode === 'uk' || urlCountryCode === 'dk') {
+      return urlCountryCode;
+    }
+
     // Check if the detected country code exists in the region map
     if (urlCountryCode && regionMap.has(urlCountryCode)) {
       countryCode = urlCountryCode
     } else if (vercelCountryCode && regionMap.has(vercelCountryCode)) {
       countryCode = vercelCountryCode
     } else {
-      // Always default to UK
-      countryCode = 'uk'
+      // Always default to UK or DK if UK isn't available
+      countryCode = regionMap.has('uk') ? 'uk' : FALLBACK_REGION;
     }
 
     console.log('Selected country code:', countryCode)
@@ -92,7 +106,7 @@ function getCountryCode(
         'Middleware.ts: Error getting the country code. Did you set up regions in your Medusa Admin and define a NEXT_PUBLIC_MEDUSA_BACKEND_URL environment variable?'
       )
     }
-    // Default to UK even in case of errors
+    // Default to UK or fallback to DK in case of errors
     return 'uk'
   }
 }
