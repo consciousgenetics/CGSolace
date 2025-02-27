@@ -1,3 +1,5 @@
+'use client'
+
 import { Suspense, useEffect, useState } from 'react'
 import { notFound } from 'next/navigation'
 import type { SearchedProduct } from 'types/global'
