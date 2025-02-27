@@ -5,7 +5,6 @@ import { HttpTypes } from '@medusajs/types'
 import ProductActionsWrapper from '@modules/products/templates/product-actions-wrapper'
 import ProductInfo from '@modules/products/templates/product-info'
 import ProductTabs from '@modules/products/components/product-tabs'
-import { ProductCarousel } from '@modules/products/components/product-carousel'
 import SkeletonProductActions from '@modules/skeletons/components/skeleton-product-actions'
 
 type ProductTemplateProps = {
@@ -47,13 +46,7 @@ const ProductTemplate = async ({
           <ProductTabs product={product} />
         </div>
       </div>
-      <div className="w-full py-16">
-        <ProductCarousel
-          products={[]}
-          regionId={region.id}
-          title="Complete the look"
-        />
-      </div>
+      {/* Removed ProductCarousel to isolate potential rendering issues */}
     </div>
   )
 }
