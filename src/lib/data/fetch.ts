@@ -169,34 +169,17 @@ export const getProductVariantsColors = async (
   filter?: { id?: string }
 ): Promise<VariantColorData> => {
   try {
-    // First try the singular form
-    let res = await fetchStrapiClient(
-      `/product-variant-colors?populate=*`,
+    // Update to use variant-colors endpoint instead
+    const res = await fetchStrapiClient(
+      `/variant-colors?populate[1]=variant_types&populate[2]=variant_types.Image&pagination[start]=0&pagination[limit]=100`,
       {
         next: { tags: ['variants-colors'] },
       }
     )
-    
-    // If that fails, try the plural form
-    if (!res.ok) {
-      console.warn('Failed to fetch from /product-variant-colors, trying /product-variants-colors');
-      res = await fetchStrapiClient(
-        `/product-variants-colors?populate=*`,
-        {
-          next: { tags: ['variants-colors'] },
-        }
-      )
-    }
-
-    // In development, log more details about the response
-    if (process.env.NODE_ENV === 'development') {
-      console.log('Variant colors response:', res.ok ? 'Success' : 'Failed');
-    }
 
     return res.json()
   } catch (error) {
     console.error('Error fetching product variant colors:', error);
-    // Return a properly structured empty response
     return { data: [] };
   }
 }
