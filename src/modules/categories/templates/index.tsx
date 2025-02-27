@@ -18,7 +18,29 @@ import ActiveProductFilters from '@modules/store/components/filters/active-filte
 import ProductFiltersDrawer from '@modules/store/components/filters/filters-drawer'
 import PaginatedProducts from '@modules/store/templates/paginated-products'
 
-export const dynamic = 'force-dynamic'
+export const dynamic = 'auto'
+export const dynamicParams = true
+export const revalidate = 3600 // Revalidate every hour
+
+export async function generateStaticParams() {
+  // Pre-render the most common sorting options
+  const sortOptions = ['relevance', 'created_at', 'price_asc', 'price_desc']
+  const categories = ['seeds', 'shirts', 'sweatshirts', 'pants', 'merch']
+  const countryCodes = ['uk', 'us', 'de', 'dk', 'fr']
+  
+  const params = []
+  for (const countryCode of countryCodes) {
+    for (const category of categories) {
+      params.push({
+        countryCode,
+        category: [category],
+        searchParams: { sortBy: 'relevance' }
+      })
+    }
+  }
+  
+  return params
+}
 
 export default async function CategoryTemplate({
   searchParams,
@@ -34,7 +56,7 @@ export default async function CategoryTemplate({
     // Get region data - if not found, show 404
     const region = await getRegion(countryCode)
     if (!region) {
-      console.error(`Region not found for country code: ${countryCode}`);
+      console.error(`Region not found for country code: ${countryCode}`)
       notFound()
     }
     
@@ -43,14 +65,14 @@ export default async function CategoryTemplate({
     try {
       categoryData = await getCategoryByHandle(category)
     } catch (err) {
-      console.error(`Error fetching category data: ${err}`);
+      console.error(`Error fetching category data: ${err}`)
       return (
         <Container>
           <p className="py-10 text-center text-lg text-secondary">
             There was an error loading this category. Please try again later.
           </p>
         </Container>
-      );
+      )
     }
     
     const product_categories = categoryData?.product_categories || []
@@ -58,7 +80,7 @@ export default async function CategoryTemplate({
     // Try to get the current category from the array
     const currentCategory = product_categories[product_categories.length - 1]
     if (!currentCategory) {
-      console.error(`Category not found for handle: ${category.join('/')}`);
+      console.error(`Category not found for handle: ${category.join('/')}`)
       notFound()
     }
 
