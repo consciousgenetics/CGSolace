@@ -1,5 +1,6 @@
-import { Suspense } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 import { notFound } from 'next/navigation'
+import type { SearchedProduct } from 'types/global'
 
 import { storeSortOptions } from '@lib/constants'
 import { getCategoryByHandle } from '@lib/data/categories'
@@ -18,13 +19,10 @@ import ActiveProductFilters from '@modules/store/components/filters/active-filte
 import ProductFiltersDrawer from '@modules/store/components/filters/filters-drawer'
 import PaginatedProducts from '@modules/store/templates/paginated-products'
 
-export const dynamic = 'auto'
-export const dynamicParams = true
+export const dynamic = 'force-static'
 export const revalidate = 3600 // Revalidate every hour
 
 export async function generateStaticParams() {
-  // Pre-render the most common sorting options
-  const sortOptions = ['relevance', 'created_at', 'price_asc', 'price_desc']
   const categories = ['seeds', 'shirts', 'sweatshirts', 'pants', 'merch']
   const countryCodes = ['uk', 'us', 'de', 'dk', 'fr']
   
@@ -33,8 +31,7 @@ export async function generateStaticParams() {
     for (const category of categories) {
       params.push({
         countryCode,
-        category: [category],
-        searchParams: { sortBy: 'relevance' }
+        category: [category]
       })
     }
   }
@@ -42,15 +39,102 @@ export async function generateStaticParams() {
   return params
 }
 
+interface ClientSideSortProps {
+  initialProducts: {
+    results: SearchedProduct[]
+    count: number
+  }
+  countryCode: string
+  currentCategory: any
+  region: any
+  filters: any
+}
+
+function ClientSideSort({ 
+  initialProducts, 
+  countryCode, 
+  currentCategory,
+  region,
+  filters 
+}: ClientSideSortProps) {
+  const [products, setProducts] = useState(initialProducts.results)
+  const [count, setCount] = useState(initialProducts.count)
+  const [sortBy, setSortBy] = useState('relevance')
+  const [currentPage, setCurrentPage] = useState(1)
+  const [loading, setLoading] = useState(false)
+
+  useEffect(() => {
+    async function updateSort() {
+      if (sortBy === 'relevance') return
+
+      setLoading(true)
+      try {
+        const results = await search({
+          currency_code: region.currency_code,
+          category_id: currentCategory.id,
+          order: sortBy
+        })
+        setProducts(results.results)
+        setCount(results.count)
+      } catch (err) {
+        console.error("Error sorting products:", err)
+      }
+      setLoading(false)
+    }
+
+    updateSort()
+  }, [sortBy, currentCategory.id, region.currency_code])
+
+  return (
+    <>
+      <Box className="flex flex-col gap-4">
+        <Text className="text-md text-secondary">
+          {count === 1 ? `${count} product` : `${count} products`}
+        </Text>
+        <Box className="grid w-full grid-cols-2 items-center justify-between gap-2 small:flex small:flex-wrap">
+          <Box className="hidden small:flex">
+            <ProductFilters filters={filters} />
+          </Box>
+          <ProductFiltersDrawer>
+            <ProductFilters filters={filters} />
+          </ProductFiltersDrawer>
+          <RefinementList
+            options={storeSortOptions}
+            sortBy={sortBy}
+          />
+        </Box>
+        <ActiveProductFilters
+          filters={filters}
+          currentCategory={currentCategory}
+          countryCode={countryCode}
+        />
+      </Box>
+      <Suspense fallback={<SkeletonProductGrid />}>
+        {loading ? (
+          <SkeletonProductGrid />
+        ) : products && products.length > 0 ? (
+          <PaginatedProducts
+            products={products}
+            total={count}
+            page={currentPage}
+            countryCode={countryCode}
+          />
+        ) : (
+          <p className="py-10 text-center text-lg text-secondary">
+            No products found in this category.
+          </p>
+        )}
+      </Suspense>
+    </>
+  )
+}
+
 export default async function CategoryTemplate({
-  searchParams,
   params,
 }: {
-  searchParams: Record<string, string>
   params: { countryCode: string; category: string[] }
 }) {
   try {
-    const { sortBy = 'relevance', page, collection, type, material, price } = searchParams
     const { countryCode, category } = params
 
     // Get region data - if not found, show 404
@@ -84,33 +168,15 @@ export default async function CategoryTemplate({
       notFound()
     }
 
-    // Safely parse page number 
-    const pageNumber = page ? parseInt(page) : 1
-    
     // Get filters data with error handling
-    let filters = await getStoreFilters()
+    const filters = await getStoreFilters()
     
-    // Search for products with error handling
-    let results = []
-    let count = 0
-    try {
-      const searchResults = await search({
-        currency_code: region.currency_code,
-        category_id: currentCategory.id,
-        order: sortBy,
-        page: pageNumber,
-        collection: collection?.split(','),
-        type: type?.split(','),
-        material: material?.split(','),
-        price: price?.split(','),
-      })
-      
-      results = searchResults.results
-      count = searchResults.count
-    } catch (err) {
-      console.error("Error searching for products:", err)
-      // Continue with empty results
-    }
+    // Get initial products with default sorting
+    const initialProducts = await search({
+      currency_code: region.currency_code,
+      category_id: currentCategory.id,
+      order: 'relevance'
+    })
 
     // Get recommended products safely
     let recommendedProducts = []
@@ -132,42 +198,13 @@ export default async function CategoryTemplate({
     return (
       <>
         <Container className="flex flex-col gap-8 !pb-8 !pt-4">
-          <Box className="flex flex-col gap-4">
-            <Text className="text-md text-secondary">
-              {count === 1 ? `${count} product` : `${count} products`}
-            </Text>
-            <Box className="grid w-full grid-cols-2 items-center justify-between gap-2 small:flex small:flex-wrap">
-              <Box className="hidden small:flex">
-                <ProductFilters filters={filters} />
-              </Box>
-              <ProductFiltersDrawer>
-                <ProductFilters filters={filters} />
-              </ProductFiltersDrawer>
-              <RefinementList
-                options={storeSortOptions}
-                sortBy={sortBy}
-              />
-            </Box>
-            <ActiveProductFilters
-              filters={filters}
-              currentCategory={currentCategory}
-              countryCode={countryCode}
-            />
-          </Box>
-          <Suspense fallback={<SkeletonProductGrid />}>
-            {results && results.length > 0 ? (
-              <PaginatedProducts
-                products={results}
-                page={pageNumber}
-                total={count}
-                countryCode={countryCode}
-              />
-            ) : (
-              <p className="py-10 text-center text-lg text-secondary">
-                No products found in this category.
-              </p>
-            )}
-          </Suspense>
+          <ClientSideSort 
+            initialProducts={initialProducts}
+            countryCode={countryCode}
+            currentCategory={currentCategory}
+            region={region}
+            filters={filters}
+          />
         </Container>
         {recommendedProducts && recommendedProducts.length > 0 && (
           <Suspense fallback={<SkeletonProductsCarousel />}>
