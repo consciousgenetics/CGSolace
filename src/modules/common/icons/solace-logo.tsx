@@ -13,7 +13,7 @@ export const SolaceLogo = ({ className, ...props }: IconProps) => {
     <div className={className}>
       {!imgError ? (
         <img 
-          src={`${basePath}/images/logo/conscious-genetix-logo.png`}
+          src={`${basePath}/images/logo/conscious-genetics-logo.png`}
           alt="Conscious Genetix Logo"
           style={{ width: 'auto', height: '100%', maxWidth: '160px' }}
           onError={() => setImgError(true)}
