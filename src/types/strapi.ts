@@ -174,28 +174,3 @@ export type ContentPage = {
 export type ContentPageData = {
   data: ContentPage
 }
-
-export type HeaderLink = {
-  id: number
-  Title: string
-  Url: string
-  isActive: boolean
-  order: number
-}
-
-export type HeaderLogo = {
-  id: number
-  Image: StrapiPhotoAttributes
-  AltText: string
-}
-
-export type Header = {
-  id: number
-  Links: HeaderLink[]
-  Logo: HeaderLogo
-  MobileMenuIcon?: StrapiPhotoAttributes
-}
-
-export type HeaderData = {
-  data: Header
-}

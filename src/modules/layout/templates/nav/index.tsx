@@ -1,6 +1,6 @@
 import { listCategories } from '@lib/data/categories'
 import { getCollectionsList } from '@lib/data/collections'
-import { getCollectionsData, getHeaderData } from '@lib/data/fetch'
+import { getCollectionsData } from '@lib/data/fetch'
 import { getProductsList } from '@lib/data/products'
 import { Container } from '@modules/common/components/container'
 
@@ -8,7 +8,7 @@ import NavActions from './nav-actions'
 import NavContent from './nav-content'
 
 export default async function NavWrapper(props: any) {
-  const [productCategories, { collections }, strapiCollections, { products }, strapiHeader] =
+  const [productCategories, { collections }, strapiCollections, { products }] =
     await Promise.all([
       listCategories(),
       getCollectionsList(),
@@ -18,13 +18,12 @@ export default async function NavWrapper(props: any) {
         queryParams: { limit: 4 },
         countryCode: props.countryCode,
       }).then(({ response }) => response),
-      getHeaderData(),
     ])
 
   return (
     <Container
       as="nav"
-      className="duration-400 sticky top-0 z-50 mx-0 max-w-full border-b border-basic-primary bg-primary !py-0 transition-all ease-in-out medium:!px-14"
+      className="duration-400 sticky top-0 z-50 mx-0 max-w-full bg-black !py-4 transition-all ease-in-out medium:!px-14"
     >
       <Container className="flex items-center justify-between !p-0">
         <NavContent
@@ -33,7 +32,6 @@ export default async function NavWrapper(props: any) {
           strapiCollections={strapiCollections}
           countryCode={props.countryCode}
           products={products}
-          strapiHeader={strapiHeader}
         />
         <NavActions />
       </Container>

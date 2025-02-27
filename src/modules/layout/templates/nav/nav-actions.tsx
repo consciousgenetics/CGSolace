@@ -4,7 +4,7 @@ import ProfileButton from '@modules/layout/components/profile-button'
 
 export default function NavActions() {
   return (
-    <Box className="flex items-center !py-4">
+    <Box className="flex items-center !py-4 text-white">
       <ProfileButton />
       <CartButton />
     </Box>

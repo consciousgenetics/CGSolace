@@ -8,7 +8,6 @@ import {
   HeroBannerData,
   MidBannerData,
   VariantColorData,
-  HeaderData,
 } from 'types/strapi'
 
 export const fetchStrapiClient = async (
@@ -282,26 +281,15 @@ export const getBlogPostBySlug = async (
 }
 
 export const getAllBlogSlugs = async (): Promise<string[]> => {
-  const res = await fetchStrapiClient(`/blog-posts?fields[0]=Slug`, {
-    next: { tags: ['blog-slugs'] },
-  })
+  try {
+    const res = await fetchStrapiClient(`/blogs?populate=*`, {
+      next: { tags: ['blog-slugs'] },
+    })
 
-  const json = await res.json()
-  
-  if (!json.data || !Array.isArray(json.data)) {
+    const data = await res.json()
+    return data.data?.map((post: BlogPost) => post.Slug) || []
+  } catch (error) {
+    console.warn(`Error fetching blog slugs: ${error.message}`)
     return []
   }
-
-  return json.data.map((post: BlogPost) => post.Slug)
-}
-
-export const getHeaderData = async (): Promise<HeaderData> => {
-  const res = await fetchStrapiClient(
-    `/header?populate[0]=Links&populate[1]=Logo&populate[2]=Logo.Image&populate[3]=MobileMenuIcon`,
-    {
-      next: { tags: ['header'] },
-    }
-  )
-
-  return res.json()
 }
