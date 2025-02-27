@@ -11,7 +11,7 @@ const nextConfig = {
     domains: [
       'localhost',
       'cg-solace.vercel.app',
-      new URL(process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || 'https://your-backend-url.com').hostname
+      'cgsolacemedusav2-production.up.railway.app'
     ],
     unoptimized: true,
   },
@@ -33,23 +33,23 @@ const nextConfig = {
   staticPageGenerationTimeout: 180,
   output: 'standalone',
   env: {
-    NEXT_PUBLIC_MEDUSA_BACKEND_URL: process.NODE_ENV === 'production' 
-      ? (process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || 'https://your-backend-url.com')
+    NEXT_PUBLIC_MEDUSA_BACKEND_URL: process.env.NODE_ENV === 'production' 
+      ? 'https://cgsolacemedusav2-production.up.railway.app'
       : 'http://localhost:9000',
-    NEXT_PUBLIC_STRAPI_API_URL: process.NODE_ENV === 'production'
+    NEXT_PUBLIC_STRAPI_API_URL: process.env.NODE_ENV === 'production'
       ? (process.env.NEXT_PUBLIC_STRAPI_API_URL || 'https://your-strapi-url.com')
       : 'http://localhost:1337',
-    NEXT_PUBLIC_BASE_URL: process.NODE_ENV === 'production'
-      ? (process.env.NEXT_PUBLIC_BASE_URL || 'https://cg-solace.vercel.app')
+    NEXT_PUBLIC_BASE_URL: process.env.NODE_ENV === 'production'
+      ? 'https://cg-solace.vercel.app'
       : 'http://localhost:8000'
   },
   // Add this to handle build-time data fetching
   async rewrites() {
-    const strapiUrl = process.NODE_ENV === 'production'
+    const strapiUrl = process.env.NODE_ENV === 'production'
       ? (process.env.NEXT_PUBLIC_STRAPI_API_URL || 'https://your-strapi-url.com')
       : 'http://localhost:1337'
-    const medusaUrl = process.NODE_ENV === 'production'
-      ? (process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || 'https://your-backend-url.com')
+    const medusaUrl = process.env.NODE_ENV === 'production'
+      ? 'https://cgsolacemedusav2-production.up.railway.app'
       : 'http://localhost:9000'
     
     return {
