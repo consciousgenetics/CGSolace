@@ -21,6 +21,7 @@ import {
   LinkedinIcon,
   SolaceLogo,
   XLogoIcon,
+  ConsciousGeneticsLogo,
 } from '@modules/common/icons'
 
 function SocialMedia({ className }: { className?: string }) {
@@ -61,7 +62,7 @@ export default async function Footer({ countryCode }: { countryCode: string }) {
               href="#"
               className="w-max cursor-pointer text-static"
             >
-              <SolaceLogo />
+              <ConsciousGeneticsLogo />
             </LocalizedClientLink>
             <SocialMedia className="hidden large:flex" />
           </Box>
@@ -147,7 +148,7 @@ export default async function Footer({ countryCode }: { countryCode: string }) {
         <Divider alignment="horizontal" variant="secondary" />
         <Box className="flex flex-wrap gap-6 gap-y-1">
           <Text size="md" className="shrink-0 text-secondary">
-            © {new Date().getFullYear()} Solace. All rights reserved.
+            © {new Date().getFullYear()} Conscious Genetics. All rights reserved.
           </Text>
           {footerNavigation.other.map((link, id) => (
             <NavigationItem

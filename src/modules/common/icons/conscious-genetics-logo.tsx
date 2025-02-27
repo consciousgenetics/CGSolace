@@ -1,0 +1,20 @@
+import type { ImageProps } from 'next/image'
+import Image from 'next/image'
+
+export const ConsciousGeneticsLogo = ({ 
+  className, 
+  width = 200, 
+  height = 50, 
+  ...props 
+}: Omit<ImageProps, 'src' | 'alt'>) => {
+  return (
+    <Image
+      src="/conscious-genetics-logo.png"
+      alt="Conscious Genetics Logo"
+      width={width}
+      height={height}
+      className={className}
+      {...props}
+    />
+  )
+} 

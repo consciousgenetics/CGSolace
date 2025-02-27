@@ -6,7 +6,7 @@ import { cn } from '@lib/util/cn'
 import { Box } from '@modules/common/components/box'
 import { Button } from '@modules/common/components/button'
 import LocalizedClientLink from '@modules/common/components/localized-client-link'
-import { SearchIcon, SolaceLogo } from '@modules/common/icons'
+import { SearchIcon, SolaceLogo, ConsciousGeneticsLogo } from '@modules/common/icons'
 import SideMenu from '@modules/layout/components/side-menu'
 import { SearchDialog } from '@modules/search/components/search-dialog'
 import SearchDropdown from '@modules/search/components/search-dropdown'
@@ -55,7 +55,7 @@ export default function NavContent(props: any) {
         })}
       >
         <LocalizedClientLink href="/">
-          <SolaceLogo className="h-6 medium:h-7" />
+          <ConsciousGeneticsLogo className="h-6 medium:h-7" />
         </LocalizedClientLink>
       </Box>
       {!isSearchOpen && (
