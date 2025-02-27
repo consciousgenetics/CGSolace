@@ -6,30 +6,30 @@
 export const transformUrl = (url: string): string => {
   if (!url) return url
 
-  // If it's already an absolute URL with HTTPS, return as is
+  // If it's already an absolute HTTPS URL, return as is
   if (url.startsWith('https://')) return url
 
-  // If it's an absolute URL with HTTP in production, convert to HTTPS
-  if (process.env.NODE_ENV === 'production' && url.startsWith('http://')) {
-    return url.replace('http://', 'https://')
+  // For production environment
+  if (process.env.NODE_ENV === 'production') {
+    // If it's a localhost URL, replace with the production backend URL
+    if (url.includes('localhost')) {
+      const prodBackendUrl = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || 'https://your-backend-url.com'
+      return url.replace(/http:\/\/localhost:\d+/, prodBackendUrl).replace('http://', 'https://')
+    }
+
+    // Convert any HTTP URLs to HTTPS
+    if (url.startsWith('http://')) {
+      return url.replace('http://', 'https://')
+    }
   }
 
-  // If it's a relative URL starting with /static/, prefix with backend URL
-  if (url.startsWith('/static/')) {
-    const baseUrl = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || 'http://localhost:9000'
-    const fullUrl = `${baseUrl}${url}`
-    return process.env.NODE_ENV === 'production' 
-      ? fullUrl.replace('http://', 'https://')
-      : fullUrl
-  }
-
-  // If it starts with /, it's a relative URL from the frontend base
+  // Handle relative URLs
   if (url.startsWith('/')) {
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:8000'
-    const fullUrl = `${baseUrl}${url}`
-    return process.env.NODE_ENV === 'production'
-      ? fullUrl.replace('http://', 'https://')
-      : fullUrl
+    const baseUrl = process.env.NODE_ENV === 'production'
+      ? (process.env.NEXT_PUBLIC_BASE_URL || 'https://cg-solace.vercel.app')
+      : (process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || 'http://localhost:9000')
+    
+    return `${baseUrl}${url}`
   }
 
   return url
