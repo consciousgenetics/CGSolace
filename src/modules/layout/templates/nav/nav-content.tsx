@@ -16,34 +16,43 @@ import Navigation from './navigation'
 export default function NavContent(props: any) {
   const [isSearchOpen, setIsSearchOpen] = useState(false)
 
+  // Ensure props have default values to prevent errors
+  const safeProps = {
+    productCategories: props.productCategories || [],
+    collections: props.collections || [],
+    strapiCollections: props.strapiCollections || { data: [] },
+    products: props.products || [],
+    countryCode: props.countryCode || 'us'
+  }
+
   return (
     <>
       <Box className="flex large:hidden">
         <SideMenu
-          productCategories={props.productCategories}
-          collections={props.collections}
-          strapiCollections={props.strapiCollections}
+          productCategories={safeProps.productCategories}
+          collections={safeProps.collections}
+          strapiCollections={safeProps.strapiCollections}
         />
       </Box>
       {!isSearchOpen && (
         <Navigation
-          countryCode={props.countryCode}
-          productCategories={props.productCategories}
-          collections={props.collections}
-          strapiCollections={props.strapiCollections}
+          countryCode={safeProps.countryCode}
+          productCategories={safeProps.productCategories}
+          collections={safeProps.collections}
+          strapiCollections={safeProps.strapiCollections}
         />
       )}
       {isSearchOpen && (
         <SearchDropdown
           setIsOpen={setIsSearchOpen}
-          recommendedProducts={props.products}
+          recommendedProducts={safeProps.products}
           isOpen={isSearchOpen}
-          countryCode={props.countryCode}
+          countryCode={safeProps.countryCode}
         />
       )}
       <SearchDialog
-        recommendedProducts={props.products}
-        countryCode={props.countryCode}
+        recommendedProducts={safeProps.products}
+        countryCode={safeProps.countryCode}
         isOpen={isSearchOpen}
         handleOpenDialogChange={setIsSearchOpen}
       />

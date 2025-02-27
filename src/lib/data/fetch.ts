@@ -10,6 +10,40 @@ import {
   VariantColorData,
 } from 'types/strapi'
 
+// Fallback data for when Strapi is unavailable
+const fallbackData = {
+  collections: {
+    data: []
+  },
+  aboutUs: {
+    data: {
+      attributes: {
+        Banner: { data: null },
+        OurStory: { Image: { data: null } },
+        OurCraftsmanship: { Image: { data: null } },
+        WhyUs: { Tile: [] },
+        Numbers: []
+      }
+    }
+  },
+  faq: {
+    data: {
+      attributes: {
+        FAQSection: []
+      }
+    }
+  },
+  contentPage: {
+    data: { attributes: {} }
+  },
+  blogCategories: {
+    data: []
+  },
+  blogs: {
+    data: []
+  }
+};
+
 export const fetchStrapiClient = async (
   endpoint: string,
   params?: RequestInit
@@ -25,6 +59,26 @@ export const fetchStrapiClient = async (
         ok: true, 
         json: () => Promise.resolve({ data: [] }) 
       }
+    }
+
+    // Check if Strapi is available by sending a HEAD request first
+    try {
+      const checkResponse = await fetch(baseUrl, {
+        method: 'HEAD',
+        cache: 'no-store',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      if (!checkResponse.ok) {
+        console.warn(`Strapi seems to be unavailable at ${baseUrl}. Using fallback data.`);
+        // Return fallback data based on the endpoint
+        return getFallbackResponse(endpoint);
+      }
+    } catch (error) {
+      console.warn(`Cannot connect to Strapi at ${baseUrl}. Using fallback data.`);
+      return getFallbackResponse(endpoint);
     }
 
     console.log('Attempting to fetch from Strapi:', url);
@@ -56,10 +110,7 @@ export const fetchStrapiClient = async (
         console.error(`Status: ${response.status} ${response.statusText}`);
       }
       
-      return { 
-        ok: true, 
-        json: () => Promise.resolve({ data: [] }) 
-      }
+      return getFallbackResponse(endpoint);
     }
 
     // Create a wrapper for the json method that transforms image URLs
@@ -76,11 +127,32 @@ export const fetchStrapiClient = async (
       message: error.message,
       error: error,
     });
-    return { 
-      ok: true, 
-      json: () => Promise.resolve({ data: [] }) 
-    }
+    return getFallbackResponse(endpoint);
   }
+}
+
+// Function to determine and return appropriate fallback data based on the endpoint
+const getFallbackResponse = (endpoint: string) => {
+  let fallbackKey = 'collections';
+  
+  if (endpoint.includes('/collections')) {
+    fallbackKey = 'collections';
+  } else if (endpoint.includes('/about-us')) {
+    fallbackKey = 'aboutUs';
+  } else if (endpoint.includes('/faq')) {
+    fallbackKey = 'faq';
+  } else if (endpoint.includes('/blog-post-categories')) {
+    fallbackKey = 'blogCategories';
+  } else if (endpoint.includes('/blogs')) {
+    fallbackKey = 'blogs';
+  } else {
+    fallbackKey = 'contentPage';
+  }
+  
+  return { 
+    ok: true, 
+    json: () => Promise.resolve(fallbackData[fallbackKey]) 
+  };
 }
 
 // Helper function to transform Strapi response and fix image URLs

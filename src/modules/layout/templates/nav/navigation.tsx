@@ -31,9 +31,13 @@ export default function Navigation({
     handle: string
   } | null>(null)
 
+  // Make sure we have valid data before creating navigation
+  const safeProductCategories = Array.isArray(productCategories) ? productCategories : [];
+  const safeCollections = Array.isArray(collections) ? collections : [];
+
   const navigation = useMemo(
-    () => createNavigation(productCategories, collections),
-    [productCategories, collections]
+    () => createNavigation(safeProductCategories, safeCollections),
+    [safeProductCategories, safeCollections]
   )
 
   return (
