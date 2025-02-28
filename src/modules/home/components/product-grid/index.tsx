@@ -1,9 +1,9 @@
-import Image from 'next/image'
-import LocalizedClientLink from '@modules/common/components/localized-client-link'
+import Image from "next/image"
+import Link from "next/link"
 
-export const ProductPacks = () => {
+export default function ProductGrid() {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-0 max-w-6xl mx-auto my-10">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-0 max-w-6xl mx-auto">
       {/* All 7 Strains Pack */}
       <div className="bg-yellow-300 p-6 md:p-10 flex flex-col justify-between">
         <div className="space-y-4">
@@ -13,7 +13,7 @@ export const ProductPacks = () => {
             If you want POTV feminized seeds from our temporary breeding lines, you will receive all 7 genetics:
           </p>
           <p className="text-sm md:text-base font-semibold">
-            ZAMALAK 2.0 | DAWN CHORUS | ORANGE KUSH CAKE | BLOOD DIAMOND 2.0 | PINK PANTHER 2.0 | PINK FROST | PINK QUARTZ
+            ZAMNESIA | DARKWOOD OG | ORANGE BLAZE CAKE | BLOOD DIAMOND 2.0 | PINK PANTHER 2.0 | PINK FROST | PINK QUARTZ
           </p>
           <p className="text-sm md:text-base font-semibold">Plus Bonus Specials:</p>
           <ul className="list-disc pl-5 space-y-1 text-sm md:text-base">
@@ -23,36 +23,34 @@ export const ProductPacks = () => {
           </ul>
         </div>
         <div className="mt-6">
-          <LocalizedClientLink
-            href="/products/all-7-strains-pack"
+          <Link
+            href="#"
             className="bg-purple-700 text-white px-8 py-2 rounded-full font-bold uppercase inline-block hover:bg-purple-800 transition-colors"
           >
             Shop Now
-          </LocalizedClientLink>
+          </Link>
         </div>
       </div>
 
       {/* Strains Image */}
       <div className="relative h-80 md:h-auto">
         <Image
-          src="/images/product-packs/all-strains-pack.jpg"
+          src="/placeholder.svg?height=500&width=500"
           alt="Collection of strain packets"
           fill
           className="object-cover"
           sizes="(max-width: 768px) 100vw, 50vw"
-          priority
         />
       </div>
 
       {/* Merch Image */}
       <div className="relative h-80 md:h-auto order-4 md:order-3">
         <Image
-          src="/images/product-packs/merch-pack.jpg"
+          src="/placeholder.svg?height=500&width=500"
           alt="Person wearing merchandise"
           fill
           className="object-cover"
           sizes="(max-width: 768px) 100vw, 50vw"
-          priority
         />
       </div>
 
@@ -60,22 +58,22 @@ export const ProductPacks = () => {
       <div className="bg-purple-700 p-6 md:p-10 flex flex-col justify-between text-white order-3 md:order-4">
         <div className="space-y-4">
           <h2 className="text-3xl font-bold uppercase tracking-wide">MERCH PACK</h2>
-          <p className="text-2xl font-bold">£50.00</p>
+          <p className="text-2xl font-bold">£90.00</p>
           <p className="text-sm md:text-base">If you like a specific design that a merch pack includes:</p>
           <ul className="list-disc pl-5 space-y-1 text-sm md:text-base">
-            <li>T-shirt</li>
-            <li>Ash tray</li>
+            <li>1 shirt</li>
+            <li>Address space</li>
             <li>Sticker</li>
             <li>Lighter</li>
           </ul>
         </div>
         <div className="mt-6">
-          <LocalizedClientLink
-            href="/products/merch-pack"
+          <Link
+            href="#"
             className="bg-yellow-300 text-black px-8 py-2 rounded-full font-bold uppercase inline-block hover:bg-yellow-400 transition-colors"
           >
             Shop Now
-          </LocalizedClientLink>
+          </Link>
         </div>
       </div>
     </div>

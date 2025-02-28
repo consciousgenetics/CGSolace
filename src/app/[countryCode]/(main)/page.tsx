@@ -13,8 +13,8 @@ import { getRegion } from '@lib/data/regions'
 import { Banner } from '@modules/home/components/banner'
 import Collections from '@modules/home/components/collections'
 import { ExploreBlog } from '@modules/home/components/explore-blog'
-import { ProductPacks } from '@modules/home/components/product-packs'
 import Hero from '@modules/home/components/hero'
+import ProductGrid from '@modules/home/components/product-grid'
 import { ProductCarousel } from '@modules/products/components/product-carousel'
 import SkeletonProductsCarousel from '@modules/skeletons/templates/skeleton-products-carousel'
 import { BlogData, CollectionsData, HeroBannerData, MidBannerData } from 'types/strapi'
@@ -120,10 +120,9 @@ export default async function Home(props: {
             />
           </Suspense>
         )}
-        
-        {/* Product Packs Section */}
-        <ProductPacks />
-
+        <div className="py-12">
+          <ProductGrid />
+        </div>
         {midBannerData?.data?.MidBanner && (
           <Banner data={{ data: { HeroBanner: midBannerData.data.MidBanner } }} />
         )}
