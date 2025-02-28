@@ -1,3 +1,5 @@
+'use client'
+
 import { Metadata } from "next"
 import { Suspense } from "react"
 
@@ -8,10 +10,11 @@ import PackSection from "../components/PackSection"
 import MerchSection from "../components/MerchSection"
 import CustomerReviews from "../components/CustomerReviews"
 
-export const metadata: Metadata = {
-  title: "Home",
-  description: "Shop the latest products",
-}
+// Move metadata to layout.tsx since client components can't export metadata
+// export const metadata: Metadata = {
+//   title: "Home",
+//   description: "Shop the latest products",
+// }
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
