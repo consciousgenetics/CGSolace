@@ -120,9 +120,7 @@ export default async function Home(props: {
             />
           </Suspense>
         )}
-        <div className="py-12">
-          <ProductGrid />
-        </div>
+        <ProductGrid />
         {midBannerData?.data?.MidBanner && (
           <Banner data={{ data: { HeroBanner: midBannerData.data.MidBanner } }} />
         )}
