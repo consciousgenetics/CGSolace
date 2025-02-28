@@ -6,11 +6,10 @@ import LocalizedClientLink from '@modules/common/components/localized-client-lin
 export const ProductPacks = () => {
   return (
     <Container className="mt-10 mb-10">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-0">
-        {/* Top Row - Left: Yellow block with ALL 7 STRAINS PACK */}
-        <div 
-          className="bg-[#FFDD3C] p-6 md:p-8"
-        >
+      {/* First Row */}
+      <div className="flex flex-col sm:flex-row w-full">
+        {/* Yellow block with ALL 7 STRAINS PACK */}
+        <div className="w-full sm:w-1/2 bg-[#FFDD3C] p-6 md:p-8">
           <h2 className="text-xl md:text-2xl font-black uppercase mb-1 text-black">
             ALL 7 STRAINS PACK
           </h2>
@@ -41,34 +40,35 @@ export const ProductPacks = () => {
           </div>
         </div>
 
-        {/* Top Row - Right: Seed Packets Image */}
-        <div className="relative h-64 md:h-auto">
+        {/* Seed Packets Image */}
+        <div className="w-full sm:w-1/2 relative h-64 sm:h-auto min-h-[250px]">
           <Image
             src="/images/product-packs/all-strains-pack.jpg"
             alt="All 7 strains pack product image showing seed packets"
             fill
             className="object-cover object-center"
-            sizes="(max-width: 768px) 100vw, 50vw"
+            sizes="(max-width: 640px) 100vw, 50vw"
             priority
           />
         </div>
+      </div>
 
-        {/* Bottom Row - Left: Person in Hoodie Image */}
-        <div className="relative h-64 md:h-auto">
+      {/* Second Row */}
+      <div className="flex flex-col sm:flex-row w-full">
+        {/* Person in Hoodie Image */}
+        <div className="w-full sm:w-1/2 relative h-64 sm:h-auto min-h-[250px]">
           <Image
             src="/images/product-packs/merch-pack.jpg"
             alt="Person wearing merchandise hoodie"
             fill
             className="object-cover object-center"
-            sizes="(max-width: 768px) 100vw, 50vw"
+            sizes="(max-width: 640px) 100vw, 50vw"
             priority
           />
         </div>
 
-        {/* Bottom Row - Right: Purple block with MERCH PACK */}
-        <div 
-          className="bg-[#7A4294] p-6 md:p-8"
-        >
+        {/* Purple block with MERCH PACK */}
+        <div className="w-full sm:w-1/2 bg-[#7A4294] p-6 md:p-8">
           <h2 className="text-xl md:text-2xl font-black uppercase mb-1 text-white">
             MERCH PACK
           </h2>
