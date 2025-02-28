@@ -39,8 +39,8 @@ const nextConfig = {
   },
   // Increase timeout for static generation
   staticPageGenerationTimeout: 300,
-  // Change output to make deployment more reliable
-  output: 'standalone',
+  // Remove standalone output mode to fix client-reference-manifest issues
+  // output: 'standalone',
   // Add fallback true to handle data fetching errors gracefully
   generateBuildId: async () => {
     return 'build-' + new Date().getTime()
