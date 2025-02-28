@@ -119,6 +119,23 @@ export default async function Home(props: {
             />
           </Suspense>
         )}
+        
+        {/* New Featured Products Section */}
+        {products && products.length > 0 && region && (
+          <Suspense fallback={<SkeletonProductsCarousel />}>
+            <ProductCarousel
+              testId="featured-products-section"
+              products={products.slice(0, 6)} // Using a subset of the same products
+              regionId={region.id}
+              title="Featured Products"
+              viewAll={{
+                link: '/shop',
+                text: 'Browse collection',
+              }}
+            />
+          </Suspense>
+        )}
+        
         {midBannerData?.data?.MidBanner && (
           <Banner data={{ data: { HeroBanner: midBannerData.data.MidBanner } }} />
         )}
