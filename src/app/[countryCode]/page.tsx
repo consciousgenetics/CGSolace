@@ -1,9 +1,12 @@
 import { Metadata } from "next"
-import HeroSection from "../components/HeroSection"
-import ProductShowcase from "../components/ProductShowcase"
-import PackSection from "../components/PackSection"
-import MerchSection from "../components/MerchSection"
-import CustomerReviews from "../components/CustomerReviews"
+import dynamic from 'next/dynamic'
+
+// Dynamically import client components with ssr disabled
+const HeroSection = dynamic(() => import("../components/HeroSection"), { ssr: false })
+const ProductShowcase = dynamic(() => import("../components/ProductShowcase"), { ssr: false })
+const PackSection = dynamic(() => import("../components/PackSection"), { ssr: false })
+const MerchSection = dynamic(() => import("../components/MerchSection"), { ssr: false })
+const CustomerReviews = dynamic(() => import("../components/CustomerReviews"), { ssr: false })
 
 export const metadata: Metadata = {
   title: "Home",
