@@ -1,3 +1,5 @@
+'use server'
+
 import { Metadata } from "next"
 import HeroSection from "../components/HeroSection"
 import ProductShowcase from "../components/ProductShowcase"
