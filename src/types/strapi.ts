@@ -70,14 +70,14 @@ export type BlogData = {
 
 export type Collection = {
   id: number
-  documentId: string
+  externalId: string
   Title: string
   Handle: string
   createdAt: string
   updatedAt: string
   publishedAt: string
   Image: StrapiPhotoAttributes
-  locale: string
+  languageCode: string
   Description: string
 }
 
@@ -128,11 +128,11 @@ export type WhyUsAttributes = {
 
 export type AboutUs = {
   id: number
-  documentId: string
+  externalId: string
   createdAt: string
   updatedAt: string
   publishedAt: string
-  locale: string
+  languageCode: string
   Banner: StrapiPhotoAttributes[]
   OurStory: ContentAttributes
   WhyUs: WhyUsAttributes
@@ -167,7 +167,7 @@ export type FAQData = {
 
 export type ContentPage = {
   id: number
-  documentId: string
+  externalId: string
   PageContent: string
 }
 
