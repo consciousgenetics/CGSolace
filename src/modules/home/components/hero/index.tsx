@@ -23,7 +23,7 @@ const Hero = ({ data }: { data: HeroBannerData }) => {
 
   return (
     <>
-      <Box className="relative h-[168px] max-h-[368px] w-full small:h-[368px] 2xl:h-[468px] 2xl:max-h-[468px]">
+      <Box className="relative h-[400px] max-h-[800px] w-full small:h-[600px] 2xl:h-[800px] 2xl:max-h-[800px]">
         <Image
           src={bannerImage.url}
           alt={bannerImage.alternativeText ?? 'Banner image'}
