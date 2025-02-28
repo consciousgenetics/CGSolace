@@ -4,7 +4,7 @@ import Image from 'next/image'
 export const ConsciousGeneticsLogo = ({ 
   className, 
   width = 200, 
-  height = 50, 
+  height = 80,
   ...props 
 }: Omit<ImageProps, 'src' | 'alt'>) => {
   return (
@@ -13,7 +13,7 @@ export const ConsciousGeneticsLogo = ({
       alt="Conscious Genetics Logo"
       width={width}
       height={height}
-      className={className}
+      className={`${className} object-contain`}
       priority
       {...props}
     />
