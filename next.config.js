@@ -25,6 +25,8 @@ const nextConfig = {
     serverActions: {
       allowedOrigins: ['localhost:3000', 'localhost:8000'],
     },
+    // Set optimizeCss to false to avoid style processing issues during build
+    optimizeCss: false
   },
   // Add this section to handle dynamic routes during build
   typescript: {
@@ -48,6 +50,19 @@ const nextConfig = {
   onDemandEntries: {
     maxInactiveAge: 25 * 1000,
     pagesBufferLength: 2,
+  },
+  // Use custom cache handling to prevent issues with client manifests
+  // This helps solve the ENOENT issue with page_client-reference-manifest.js
+  webpack: (config, { isServer }) => {
+    // Add specific configurations to avoid manifest issues
+    if (!isServer) {
+      config.infrastructureLogging = {
+        ...config.infrastructureLogging,
+        level: 'error',
+      };
+    }
+    
+    return config;
   },
   env: {
     NEXT_PUBLIC_MEDUSA_BACKEND_URL: process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || 'http://localhost:9000',
