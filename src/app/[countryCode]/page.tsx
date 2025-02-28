@@ -10,7 +10,10 @@ export const metadata: Metadata = {
   description: "Shop the latest products",
 }
 
-export default function Home() {
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
+export default async function Home() {
   return (
     <div className="flex flex-col min-h-screen">
       <main className="flex-1">
