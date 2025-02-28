@@ -55,7 +55,7 @@ export default function NavContent(props: any) {
         })}
       >
         <LocalizedClientLink href="/">
-          <ConsciousGeneticsLogo className="h-26 medium:h-30" />
+          <ConsciousGeneticsLogo className="h-24 medium:h-28" />
         </LocalizedClientLink>
       </Box>
       {!isSearchOpen && (
