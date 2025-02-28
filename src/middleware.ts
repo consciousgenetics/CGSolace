@@ -9,6 +9,22 @@ const DEFAULT_REGION = process.env.NEXT_PUBLIC_DEFAULT_REGION || 'uk'
 // Use 'dk' as fallback if 'uk' doesn't exist in the region map
 const FALLBACK_REGION = 'dk'
 
+// Skip middleware for static files
+export const config = {
+  matcher: [
+    /*
+     * Match all request paths except for the ones starting with:
+     * - api (API routes)
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico (favicon file)
+     * - images/ (static image files)
+     * - *.png, *.jpg, *.jpeg, *.gif, *.svg (static image files)
+     */
+    '/((?!api|_next/static|_next/image|favicon.ico|images/|.*\\.(png|jpg|jpeg|gif|svg)$).*)',
+  ],
+}
+
 // Default regions to use when API calls fail during build/deployment
 const DEFAULT_REGIONS = [
   {
@@ -246,8 +262,4 @@ export async function middleware(request: NextRequest) {
     // Return NextResponse.next() to allow the request to continue even if there's an error
     return NextResponse.next()
   }
-}
-
-export const config = {
-  matcher: ['/((?!api|_next/static|_next/image|_vercel|favicon.ico).*)'],
 }
