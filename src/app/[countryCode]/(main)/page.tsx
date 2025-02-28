@@ -13,6 +13,7 @@ import { getRegion } from '@lib/data/regions'
 import { Banner } from '@modules/home/components/banner'
 import Collections from '@modules/home/components/collections'
 import { ExploreBlog } from '@modules/home/components/explore-blog'
+import { ProductPacks } from '@modules/home/components/product-packs'
 import Hero from '@modules/home/components/hero'
 import { ProductCarousel } from '@modules/products/components/product-carousel'
 import SkeletonProductsCarousel from '@modules/skeletons/templates/skeleton-products-carousel'
@@ -120,22 +121,9 @@ export default async function Home(props: {
           </Suspense>
         )}
         
-        {/* New Featured Products Section */}
-        {products && products.length > 0 && region && (
-          <Suspense fallback={<SkeletonProductsCarousel />}>
-            <ProductCarousel
-              testId="featured-products-section"
-              products={products.slice(0, 6)} // Using a subset of the same products
-              regionId={region.id}
-              title="Featured Products"
-              viewAll={{
-                link: '/shop',
-                text: 'Browse collection',
-              }}
-            />
-          </Suspense>
-        )}
-        
+        {/* Product Packs Section */}
+        <ProductPacks />
+
         {midBannerData?.data?.MidBanner && (
           <Banner data={{ data: { HeroBanner: midBannerData.data.MidBanner } }} />
         )}
