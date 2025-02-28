@@ -36,47 +36,31 @@ const ProductPack = ({
   buttonTextColor,
 }: ProductPackProps) => {
   return (
-    <Box 
-      className="w-full h-full"
-      style={{ backgroundColor }}
-    >
-      <Box className="grid md:grid-cols-2 grid-cols-1">
-        <Box className="p-8 flex flex-col justify-center">
-          <Heading 
-            className="text-2xl font-black uppercase mb-2" 
-            style={{ color: textColor }}
-          >
+    <Box className="w-full overflow-hidden bg-opacity-100" style={{ backgroundColor }}>
+      <div className="flex flex-col md:flex-row">
+        <div className="w-full md:w-1/2 p-5 md:p-8 flex flex-col justify-center">
+          <h2 className="text-xl md:text-2xl font-black uppercase tracking-wide mb-1" style={{ color: textColor }}>
             {title}
-          </Heading>
-          <Text 
-            className="text-2xl font-semibold mb-4" 
-            style={{ color: textColor }}
-          >
+          </h2>
+          <p className="text-xl md:text-2xl font-bold mb-3" style={{ color: textColor }}>
             {price}
-          </Text>
-          <Text 
-            className="mb-3 text-sm" 
-            style={{ color: textColor }}
-          >
+          </p>
+          <p className="text-sm mb-2 leading-snug" style={{ color: textColor }}>
             {description}
-          </Text>
+          </p>
           {bulletPoints && bulletPoints.length > 0 && (
-            <Box className="mb-4">
+            <div className="mb-3">
               {bulletPoints.map((point, index) => (
-                <Text 
-                  key={index} 
-                  className="text-sm mb-1" 
-                  style={{ color: textColor }}
-                >
+                <p key={index} className="text-xs md:text-sm mb-1 leading-tight" style={{ color: textColor }}>
                   {point}
-                </Text>
+                </p>
               ))}
-            </Box>
+            </div>
           )}
-          <Box className="mt-4">
+          <div className="mt-2 md:mt-4">
             <LocalizedClientLink 
               href={ctaLink}
-              className="inline-block rounded-full px-8 py-2 text-center font-semibold text-sm uppercase transition-opacity hover:opacity-90"
+              className="inline-block rounded-full px-6 py-1.5 text-center font-bold text-xs uppercase tracking-wide hover:opacity-90"
               style={{ 
                 backgroundColor: buttonColor,
                 color: buttonTextColor
@@ -84,27 +68,27 @@ const ProductPack = ({
             >
               {ctaText}
             </LocalizedClientLink>
-          </Box>
-        </Box>
-        <Box className="relative h-64 md:h-auto">
+          </div>
+        </div>
+        <div className="w-full md:w-1/2 h-60 md:h-auto relative">
           <Image
             src={imageSrc}
             alt={imageAlt}
             fill
-            className="object-cover object-center"
+            className="object-cover"
             sizes="(max-width: 768px) 100vw, 50vw"
             priority
           />
-        </Box>
-      </Box>
+        </div>
+      </div>
     </Box>
   )
 }
 
 export const ProductPacks = () => {
   return (
-    <Container className="mt-16 mb-16">
-      <Box className="grid grid-cols-1 gap-6">
+    <Container className="mt-10 mb-10">
+      <Box className="grid grid-cols-1 gap-3">
         <ProductPack
           title="ALL 7 STRAINS PACK"
           price="£350.00"
@@ -118,7 +102,7 @@ export const ProductPacks = () => {
           imageAlt="All 7 strains pack product image showing seed packets"
           ctaText="SHOP NOW"
           ctaLink="/products/all-7-strains-pack"
-          backgroundColor="#F7D13B" // Yellow background
+          backgroundColor="#FFDD3C" // Bright yellow background
           textColor="#222222" // Dark text
           buttonColor="#5D2C90" // Purple button
           buttonTextColor="#FFFFFF" // White text
@@ -129,7 +113,7 @@ export const ProductPacks = () => {
           description="If you like a specific design that a merch pack includes:"
           bulletPoints={[
             "T-shirt",
-            "Ash tray",
+            "Ash tray", 
             "Sticker",
             "Lighter"
           ]}
@@ -139,7 +123,7 @@ export const ProductPacks = () => {
           ctaLink="/products/merch-pack"
           backgroundColor="#7A4294" // Purple background
           textColor="#FFFFFF" // White text
-          buttonColor="#FFDF38" // Yellow button
+          buttonColor="#FFDD3C" // Bright yellow button
           buttonTextColor="#222222" // Dark text
         />
       </Box>
