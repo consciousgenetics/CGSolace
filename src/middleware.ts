@@ -13,15 +13,9 @@ const FALLBACK_REGION = 'dk'
 export const config = {
   matcher: [
     /*
-     * Match all request paths except for the ones starting with:
-     * - api (API routes)
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     * - images/ (static image files)
-     * - *.png, *.jpg, *.jpeg, *.gif, *.svg (static image files)
+     * Match all paths except static files and images
      */
-    '/((?!api|_next/static|_next/image|favicon.ico|images/|.*\\.(png|jpg|jpeg|gif|svg)$).*)',
+    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:jpg|jpeg|gif|png|svg)$).*)'
   ],
 }
 
