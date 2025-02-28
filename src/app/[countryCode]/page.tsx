@@ -1,12 +1,12 @@
 import { Metadata } from "next"
-import dynamic from 'next/dynamic'
+import { Suspense } from "react"
 
-// Dynamically import client components with ssr disabled
-const HeroSection = dynamic(() => import("../components/HeroSection"), { ssr: false })
-const ProductShowcase = dynamic(() => import("../components/ProductShowcase"), { ssr: false })
-const PackSection = dynamic(() => import("../components/PackSection"), { ssr: false })
-const MerchSection = dynamic(() => import("../components/MerchSection"), { ssr: false })
-const CustomerReviews = dynamic(() => import("../components/CustomerReviews"), { ssr: false })
+// Import components normally since they have 'use client' directives
+import HeroSection from "../components/HeroSection"
+import ProductShowcase from "../components/ProductShowcase"
+import PackSection from "../components/PackSection"
+import MerchSection from "../components/MerchSection"
+import CustomerReviews from "../components/CustomerReviews"
 
 export const metadata: Metadata = {
   title: "Home",
@@ -20,11 +20,21 @@ export default function Home() {
   return (
     <div className="flex flex-col min-h-screen">
       <main className="flex-1">
-        <HeroSection />
-        <ProductShowcase />
-        <PackSection />
-        <MerchSection />
-        <CustomerReviews />
+        <Suspense fallback={<div>Loading...</div>}>
+          <HeroSection />
+        </Suspense>
+        <Suspense fallback={<div>Loading...</div>}>
+          <ProductShowcase />
+        </Suspense>
+        <Suspense fallback={<div>Loading...</div>}>
+          <PackSection />
+        </Suspense>
+        <Suspense fallback={<div>Loading...</div>}>
+          <MerchSection />
+        </Suspense>
+        <Suspense fallback={<div>Loading...</div>}>
+          <CustomerReviews />
+        </Suspense>
       </main>
     </div>
   )
