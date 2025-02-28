@@ -3,8 +3,8 @@ import Image from 'next/image'
 
 export const ConsciousGeneticsLogo = ({ 
   className, 
-  width = 200, 
-  height = 80,
+  width = 400,
+  height = 160,
   ...props 
 }: Omit<ImageProps, 'src' | 'alt'>) => {
   return (
