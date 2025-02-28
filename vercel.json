@@ -9,5 +9,10 @@
       "memory": 1024,
       "maxDuration": 60
     }
+  },
+  "overrides": {
+    "src/app/[countryCode]/(main)/page.tsx": {
+      "prerenderFallback": false
+    }
   }
 } 
