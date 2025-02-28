@@ -36,9 +36,9 @@ const Hero = ({ data }: { data: HeroBannerData }) => {
           <Heading className="max-w-full text-4xl text-white small:max-w-[510px] medium:text-5xl">
             {Headline}
           </Heading>
-          <Box className="flex flex-col-reverse gap-8 medium:flex-row medium:items-center">
+          <Box className="flex flex-col gap-8">
             {CTA && (
-              <Button asChild className="w-max bg-white text-basic-primary hover:bg-gray-100">
+              <Button asChild className="w-max bg-yellow-400 px-8 py-4 text-lg font-semibold text-black hover:bg-yellow-500">
                 <LocalizedClientLink href={CTA.BtnLink}>
                   {CTA.BtnText}
                 </LocalizedClientLink>
@@ -46,7 +46,7 @@ const Hero = ({ data }: { data: HeroBannerData }) => {
             )}
             <Text
               size="lg"
-              className="max-w-full text-white medium:max-w-[410px] medium:text-end"
+              className="max-w-[410px] text-white"
             >
               {text}
             </Text>
