@@ -9,57 +9,95 @@ const DEFAULT_REGION = process.env.NEXT_PUBLIC_DEFAULT_REGION || 'uk'
 // Use 'dk' as fallback if 'uk' doesn't exist in the region map
 const FALLBACK_REGION = 'dk'
 
+// Default regions to use when API calls fail during build/deployment
+const DEFAULT_REGIONS = [
+  {
+    id: "reg_default",
+    name: "Default Region",
+    currency_code: "eur",
+    countries: [
+      { iso_2: "uk", display_name: "United Kingdom" },
+      { iso_2: "dk", display_name: "Denmark" },
+      { iso_2: "us", display_name: "United States" },
+    ]
+  }
+]
+
 const regionMapCache = {
   regionMap: new Map<string, HttpTypes.StoreRegion>(),
   regionMapUpdated: Date.now(),
 }
 
 async function getRegionMap() {
-  const { regionMap, regionMapUpdated } = regionMapCache
+  try {
+    const { regionMap, regionMapUpdated } = regionMapCache
 
-  if (
-    !regionMap.keys().next().value ||
-    regionMapUpdated < Date.now() - 3600 * 1000
-  ) {
-    // Fetch regions from Medusa. We can't use the JS client here because middleware is running on Edge and the client needs a Node environment.
-    const { regions } = await fetch(`${BACKEND_URL}/store/regions`, {
-      headers: {
-        'x-publishable-api-key': PUBLISHABLE_API_KEY!,
-      },
-      next: {
-        revalidate: 3600,
-        tags: ['regions'],
-      },
-    }).then((res) => res.json())
+    if (
+      !regionMap.keys().next().value ||
+      regionMapUpdated < Date.now() - 3600 * 1000
+    ) {
+      // Fetch regions from Medusa. We can't use the JS client here because middleware is running on Edge and the client needs a Node environment.
+      try {
+        const response = await fetch(`${BACKEND_URL}/store/regions`, {
+          headers: {
+            'x-publishable-api-key': PUBLISHABLE_API_KEY || '',
+          },
+          next: {
+            revalidate: 3600,
+            tags: ['regions'],
+          },
+        });
+        
+        if (!response.ok) {
+          throw new Error(`Failed to fetch regions: ${response.status}`)
+        }
+        
+        const { regions } = await response.json()
 
-    if (!regions?.length) {
-      notFound()
+        if (regions?.length) {
+          // Create a map of country codes to regions.
+          regions.forEach((region: HttpTypes.StoreRegion) => {
+            region.countries?.forEach((c) => {
+              regionMapCache.regionMap.set(c.iso_2 ?? '', region)
+            })
+          })
+        } else {
+          // Use default regions if API returns empty
+          populateDefaultRegions()
+        }
+      } catch (error) {
+        console.error("Error fetching regions:", error)
+        // Use default regions when API fails
+        populateDefaultRegions()
+      }
+
+      // Add 'uk' to point to the same region as 'dk' if 'uk' doesn't exist but 'dk' does
+      if (!regionMapCache.regionMap.has('uk') && regionMapCache.regionMap.has('dk')) {
+        const dkRegion = regionMapCache.regionMap.get('dk');
+        regionMapCache.regionMap.set('uk', dkRegion as HttpTypes.StoreRegion);
+      }
+
+      regionMapCache.regionMapUpdated = Date.now()
     }
 
-    console.log('Available regions:', regions.map((r: HttpTypes.StoreRegion) => r.name));
-    
-    // Create a map of country codes to regions.
-    regions.forEach((region: HttpTypes.StoreRegion) => {
-      region.countries?.forEach((c) => {
-        regionMapCache.regionMap.set(c.iso_2 ?? '', region)
-        console.log(`Mapping country ${c.iso_2} to region ${region.name}`);
-      })
-    })
-
-    // Add 'uk' to point to the same region as 'dk' if 'uk' doesn't exist but 'dk' does
-    if (!regionMapCache.regionMap.has('uk') && regionMapCache.regionMap.has('dk')) {
-      const dkRegion = regionMapCache.regionMap.get('dk');
-      regionMapCache.regionMap.set('uk', dkRegion as HttpTypes.StoreRegion);
-      console.log('Mapped "uk" to the same region as "dk"');
+    return regionMapCache.regionMap
+  } catch (error) {
+    console.error("Critical error in getRegionMap:", error)
+    // Ensure we always return a usable map even if everything fails
+    if (regionMapCache.regionMap.size === 0) {
+      populateDefaultRegions()
     }
-
-    // Log all available country codes
-    console.log('Available country codes:', Array.from(regionMapCache.regionMap.keys()));
-
-    regionMapCache.regionMapUpdated = Date.now()
+    return regionMapCache.regionMap
   }
+}
 
-  return regionMapCache.regionMap
+// Helper function to populate default regions when API calls fail
+function populateDefaultRegions() {
+  DEFAULT_REGIONS.forEach((region) => {
+    region.countries?.forEach((country) => {
+      regionMapCache.regionMap.set(country.iso_2 || '', region as HttpTypes.StoreRegion)
+    })
+  })
 }
 
 /**
@@ -77,11 +115,8 @@ function getCountryCode(
     const vercelCountryCode = request.headers
       .get('x-vercel-ip-country')
       ?.toLowerCase()
-    
-    console.log('Vercel detected country:', vercelCountryCode)
 
     const urlCountryCode = request.nextUrl.pathname.split('/')[1]?.toLowerCase()
-    console.log('URL country code:', urlCountryCode)
 
     // Special case: If URL is explicitly /uk or /dk, keep it 
     if (urlCountryCode === 'uk' || urlCountryCode === 'dk') {
@@ -98,7 +133,6 @@ function getCountryCode(
       countryCode = regionMap.has('uk') ? 'uk' : FALLBACK_REGION;
     }
 
-    console.log('Selected country code:', countryCode)
     return countryCode
   } catch (error) {
     if (process.env.NODE_ENV === 'development') {
@@ -123,7 +157,16 @@ export async function middleware(request: NextRequest) {
     const onboardingCookie = request.cookies.get('_medusa_onboarding')
     const cartIdCookie = request.cookies.get('_medusa_cart_id')
 
-    const regionMap = await getRegionMap()
+    // Try to get region map, but handle failures gracefully
+    let regionMap = new Map();
+    try {
+      regionMap = await getRegionMap()
+    } catch (error) {
+      console.error("Error getting region map in middleware:", error)
+      // Create a fallback map with just UK and DK
+      regionMap.set('uk', { id: 'reg_uk' } as HttpTypes.StoreRegion)
+      regionMap.set('dk', { id: 'reg_dk' } as HttpTypes.StoreRegion)
+    }
 
     const countryCode = regionMap && (await getCountryCode(request, regionMap))
 
@@ -206,5 +249,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/((?!api|_next/static|favicon.ico).*)'],
+  matcher: ['/((?!api|_next/static|_next/image|_vercel|favicon.ico).*)'],
 }

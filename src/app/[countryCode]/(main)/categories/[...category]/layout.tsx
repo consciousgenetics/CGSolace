@@ -9,51 +9,41 @@ import { Container } from '@modules/common/components/container'
 import { Heading } from '@modules/common/components/heading'
 import StoreBreadcrumbs from '@modules/store/templates/breadcrumbs'
 
+// Set dynamic rendering to prevent build-time errors
+export const dynamic = 'force-dynamic'
+
 interface CategoryPageLayoutProps {
   children: React.ReactNode
   params: Promise<{ category: string[] }>
 }
 
+// Skip static params completely for now to ensure build succeeds
 export async function generateStaticParams() {
-  const product_categories = await listCategories()
-
-  if (!product_categories) {
-    return []
-  }
-
-  const countryCodes = await listRegions().then((regions: StoreRegion[]) =>
-    regions?.map((r) => r.countries?.map((c) => c.iso_2)).flat()
-  )
-
-  const categoryHandles = product_categories.map(
-    (category: any) => category.handle
-  )
-
-  const staticParams = countryCodes
-    ?.map((countryCode: string | undefined) =>
-      categoryHandles.map((handle: any) => ({
-        countryCode,
-        category: [handle],
-      }))
-    )
-    .flat()
-
-  return staticParams
+  // Simply return an empty array to avoid build-time data fetching
+  return []
 }
 
 export async function generateMetadata(
   props: CategoryPageLayoutProps
 ): Promise<Metadata> {
-  const params = await props.params
   try {
+    const params = await props.params
     const { product_categories } = await getCategoryByHandle(params.category)
+      .catch(() => ({ product_categories: [] }))
+
+    if (!product_categories || product_categories.length === 0) {
+      return {
+        title: "Category | Solace Medusa Starter",
+        description: "Category page",
+      }
+    }
 
     const title = product_categories
       .map((category: StoreProductCategory) => category.name)
       .join(' | ')
 
     const description =
-      product_categories[product_categories.length - 1].description ??
+      product_categories[product_categories.length - 1]?.description ??
       `${title} category.`
 
     return {
@@ -64,36 +54,49 @@ export async function generateMetadata(
       },
     }
   } catch (error) {
-    notFound()
+    console.error("Error generating category metadata:", error)
+    return {
+      title: "Category | Solace Medusa Starter",
+      description: "Category page",
+    }
   }
 }
 
 export default async function CategoryPageLayout(
   props: CategoryPageLayoutProps
 ) {
-  const params = await props.params
+  try {
+    const params = await props.params
+    const { category } = params
+    const { children } = props
 
-  const { category } = params
+    const { product_categories } = await getCategoryByHandle(category)
+      .catch(() => ({ product_categories: [] }))
 
-  const { children } = props
+    if (!product_categories || product_categories.length === 0) {
+      return notFound()
+    }
 
-  const { product_categories } = await getCategoryByHandle(category)
-  const currentCategory = product_categories[product_categories.length - 1]
+    const currentCategory = product_categories[product_categories.length - 1]
 
-  return (
-    <>
-      <Container className="flex flex-col gap-8 !py-8">
-        <Box className="flex flex-col gap-4">
-          <StoreBreadcrumbs breadcrumb={currentCategory.name} />
-          <Heading
-            as="h1"
-            className="text-4xl text-basic-primary small:text-5xl"
-          >
-            {currentCategory.name}
-          </Heading>
-        </Box>
-      </Container>
-      {children}
-    </>
-  )
+    return (
+      <>
+        <Container className="flex flex-col gap-8 !py-8">
+          <Box className="flex flex-col gap-4">
+            <StoreBreadcrumbs breadcrumb={currentCategory.name} />
+            <Heading
+              as="h1"
+              className="text-4xl text-basic-primary small:text-5xl"
+            >
+              {currentCategory.name}
+            </Heading>
+          </Box>
+        </Container>
+        {children}
+      </>
+    )
+  } catch (error) {
+    console.error("Error rendering category page:", error)
+    return notFound()
+  }
 }

@@ -3,5 +3,11 @@
   "buildCommand": "npm run build",
   "installCommand": "npm install",
   "framework": "nextjs",
-  "outputDirectory": ".next"
+  "outputDirectory": ".next",
+  "functions": {
+    "src/app/[countryCode]/**/*": {
+      "memory": 1024,
+      "maxDuration": 60
+    }
+  }
 } 

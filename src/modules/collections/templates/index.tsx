@@ -21,6 +21,9 @@ import PaginatedProducts from '@modules/store/templates/paginated-products'
 
 export const runtime = 'edge'
 
+// Make sure to use dynamic rendering for build-time issues
+export const dynamic = 'force-dynamic'
+
 export default async function CollectionTemplate({
   searchParams,
   params,
@@ -31,33 +34,67 @@ export default async function CollectionTemplate({
   const { sortBy, page, type, material, price } = searchParams
   const { countryCode, handle } = params
 
-  const region = await getRegion(countryCode)
-  if (!region) notFound()
+  let region;
+  let currentCollection;
+  let filters; 
+  let results = [];
+  let count = 0;
+  let recommendedProducts = [];
+  
+  try {
+    region = await getRegion(countryCode)
+    if (!region) return notFound()
 
-  const currentCollection = await getCollectionByHandle(handle).then(
-    (collection: StoreCollection) => collection
-  )
-  if (!currentCollection) notFound()
+    currentCollection = await getCollectionByHandle(handle).then(
+      (collection: StoreCollection) => collection
+    )
+    if (!currentCollection) return notFound()
 
-  const pageNumber = page ? parseInt(page) : 1
-  const filters = await getStoreFilters()
+    const pageNumber = page ? parseInt(page) : 1
+    filters = await getStoreFilters()
 
-  const { results, count } = await search({
-    currency_code: region.currency_code,
-    order: sortBy,
-    page: pageNumber,
-    collection: [currentCollection.id],
-    type: type?.split(','),
-    material: material?.split(','),
-    price: price?.split(','),
-  })
+    // Wrap data fetching in try-catch to prevent build errors
+    try {
+      const searchResults = await search({
+        currency_code: region.currency_code,
+        order: sortBy,
+        page: pageNumber,
+        collection: [currentCollection.id],
+        type: type?.split(','),
+        material: material?.split(','),
+        price: price?.split(','),
+      })
+      
+      results = searchResults.results || []
+      count = searchResults.count || 0
+    } catch (error) {
+      console.error("Error fetching search results:", error)
+      // Continue with empty results
+    }
 
-  // TODO: Add logic in future
-  const { products: recommendedProducts } = await getProductsList({
-    pageParam: 0,
-    queryParams: { limit: 9 },
-    countryCode: params.countryCode,
-  }).then(({ response }) => response)
+    // Wrap recommended products fetching in try-catch
+    try {
+      const { products } = await getProductsList({
+        pageParam: 0,
+        queryParams: { limit: 9 },
+        countryCode: params.countryCode,
+      }).then(({ response }) => response)
+      
+      recommendedProducts = products || []
+    } catch (error) {
+      console.error("Error fetching recommended products:", error)
+      // Continue with empty recommended products
+    }
+  } catch (error) {
+    console.error("Error in collection template:", error)
+    return (
+      <Container className="py-6">
+        <Text className="text-lg font-medium">
+          Unable to load collection. Please try again later.
+        </Text>
+      </Container>
+    )
+  }
 
   return (
     <>
@@ -68,10 +105,10 @@ export default async function CollectionTemplate({
           </Text>
           <Box className="grid w-full grid-cols-2 items-center justify-between gap-2 small:flex small:flex-wrap">
             <Box className="hidden small:flex">
-              <ProductFilters filters={filters} />
+              <ProductFilters filters={filters || []} />
             </Box>
             <ProductFiltersDrawer>
-              <ProductFilters filters={filters} />
+              <ProductFilters filters={filters || []} />
             </ProductFiltersDrawer>
             <RefinementList
               options={storeSortOptions}
@@ -79,16 +116,18 @@ export default async function CollectionTemplate({
             />
           </Box>
         </Box>
-        <ActiveProductFilters
-          filters={filters}
-          currentCollection={currentCollection}
-          countryCode={countryCode}
-        />
+        {currentCollection && (
+          <ActiveProductFilters
+            filters={filters || []}
+            currentCollection={currentCollection}
+            countryCode={countryCode}
+          />
+        )}
         <Suspense fallback={<SkeletonProductGrid />}>
           {results && results.length > 0 ? (
             <PaginatedProducts
               products={results}
-              page={pageNumber}
+              page={page ? parseInt(page) : 1}
               total={count}
               countryCode={countryCode}
             />
@@ -99,7 +138,7 @@ export default async function CollectionTemplate({
           )}
         </Suspense>
       </Container>
-      {recommendedProducts && (
+      {recommendedProducts && recommendedProducts.length > 0 && region && (
         <Suspense fallback={<SkeletonProductsCarousel />}>
           <ProductCarousel
             products={recommendedProducts}
