@@ -23,20 +23,23 @@ const Hero = ({ data }: { data: HeroBannerData }) => {
 
   return (
     <>
-      <Box className="relative h-[168px] max-h-[368px] w-full small:h-[368px] 2xl:h-[468px] 2xl:max-h-[468px]">
-        <Image
-          src={bannerImage.url}
-          alt={bannerImage.alternativeText ?? 'Banner image'}
-          className="h-full w-full object-cover"
-          width={1000}
-          height={600}
-          priority
-        />
-        <Container className="absolute inset-0 flex flex-col justify-center gap-4">
-          <Heading className="max-w-full text-4xl text-white small:max-w-[510px] medium:text-5xl">
-            {Headline}
-          </Heading>
-          <Box className="flex flex-col gap-8">
+      <Box className="relative h-[600px] w-full">
+        <div className="absolute inset-0 w-1/2 bg-black"></div>
+        <div className="absolute right-0 top-0 h-full w-1/2">
+          <Image
+            src={bannerImage.url}
+            alt={bannerImage.alternativeText ?? 'Banner image'}
+            className="h-full w-full object-cover object-center"
+            width={1000}
+            height={1200}
+            priority
+          />
+        </div>
+        <Container className="relative h-full">
+          <div className="flex h-full flex-col justify-center gap-8 text-white max-w-[600px]">
+            <Heading className="text-5xl font-bold uppercase tracking-wide medium:text-7xl">
+              {Headline}
+            </Heading>
             {CTA && (
               <Button asChild className="w-max bg-yellow-400 px-8 py-4 text-lg font-semibold text-black hover:bg-yellow-500">
                 <LocalizedClientLink href={CTA.BtnLink}>
@@ -46,11 +49,11 @@ const Hero = ({ data }: { data: HeroBannerData }) => {
             )}
             <Text
               size="lg"
-              className="max-w-[410px] text-white"
+              className="max-w-[410px] text-white text-xl"
             >
               {text}
             </Text>
-          </Box>
+          </div>
         </Container>
       </Box>
     </>
