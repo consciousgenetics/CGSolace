@@ -23,30 +23,31 @@ const Hero = ({ data }: { data: HeroBannerData }) => {
 
   return (
     <>
-      <Box className="relative h-[400px] max-h-[800px] w-full small:h-[600px] 2xl:h-[800px] 2xl:max-h-[800px]">
+      <Box className="relative h-screen w-full">
         <Image
           src={bannerImage.url}
           alt={bannerImage.alternativeText ?? 'Banner image'}
           className="h-full w-full object-cover"
-          width={1000}
-          height={600}
+          width={1200}
+          height={800}
           priority
+          quality={100}
         />
         <Container className="absolute inset-0 flex flex-col justify-center">
           <div className="flex flex-col gap-6">
-            <Heading className="max-w-[600px] text-[4.5rem] font-bold leading-none tracking-tight text-white uppercase">
+            <Heading className="max-w-[800px] text-[5rem] font-bold leading-none tracking-tight text-white uppercase small:text-[6rem]">
               {Headline}
             </Heading>
             <Text
               size="lg"
-              className="text-[2rem] text-white font-light"
+              className="text-[2rem] text-white font-light small:text-[2.5rem]"
             >
               {text}
             </Text>
           </div>
-          <Box className="flex flex-col gap-8 mt-8">
+          <Box className="flex flex-col gap-8 mt-12">
             {CTA && (
-              <Button asChild className="w-max bg-yellow-400 px-8 py-4 text-lg font-bold text-black hover:bg-yellow-500 uppercase rounded-full">
+              <Button asChild className="w-max bg-yellow-400 px-12 py-6 text-xl font-bold text-black hover:bg-yellow-500 uppercase rounded-full">
                 <LocalizedClientLink href={CTA.BtnLink}>
                   {CTA.BtnText}
                 </LocalizedClientLink>
