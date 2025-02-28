@@ -1,5 +1,3 @@
-'use server'
-
 import { Metadata } from "next"
 import HeroSection from "../components/HeroSection"
 import ProductShowcase from "../components/ProductShowcase"
@@ -15,7 +13,7 @@ export const metadata: Metadata = {
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
 
-export default async function Home() {
+export default function Home() {
   return (
     <div className="flex flex-col min-h-screen">
       <main className="flex-1">
