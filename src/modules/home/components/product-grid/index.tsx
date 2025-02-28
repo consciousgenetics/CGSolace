@@ -38,8 +38,8 @@ export default function ProductGrid() {
           {/* Strains Image - Top Right */}
           <div className="relative h-full">
             <Image
-              src="/pack-image.jpg"
-              alt="Collection of strain packets"
+              src="/images/product-packs/Special packs.png"
+              alt="Collection of colorful strain seed packets"
               fill
               className="object-cover"
               sizes="50vw"
@@ -47,11 +47,11 @@ export default function ProductGrid() {
             />
           </div>
 
-          {/* Merch Image - Bottom Left */}
+          {/* Seeds Packaging Image - Bottom Left */}
           <div className="relative h-full">
             <Image
-              src="/merch1.jpg"
-              alt="Person wearing merchandise"
+              src="/images/product-packs/Conscious Genetics  Grinder Merch Pack.png"
+              alt="Person packaging seed packets"
               fill
               className="object-cover"
               sizes="50vw"
