@@ -5,7 +5,7 @@ import { Container } from "@modules/common/components/container"
 export default function ProductGrid() {
   return (
     <div className="w-full overflow-x-hidden py-16">
-      <Container className="overflow-x-hidden !max-w-none">
+      <Container className="overflow-x-hidden !max-w-none !p-0">
         <div className="grid grid-cols-2 grid-rows-2 gap-1 h-[1000px]">
           {/* All 7 Strains Pack - Top Left */}
           <div className="bg-yellow-300 p-6 small:p-10 flex flex-col justify-between h-full">
