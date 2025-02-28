@@ -23,7 +23,7 @@ const Hero = ({ data }: { data: HeroBannerData }) => {
 
   return (
     <>
-      <Box className="h-[168px] max-h-[368px] w-full small:h-[368px] 2xl:h-[468px] 2xl:max-h-[468px]">
+      <Box className="relative h-[168px] max-h-[368px] w-full small:h-[368px] 2xl:h-[468px] 2xl:max-h-[468px]">
         <Image
           src={bannerImage.url}
           alt={bannerImage.alternativeText ?? 'Banner image'}
@@ -32,27 +32,27 @@ const Hero = ({ data }: { data: HeroBannerData }) => {
           height={600}
           priority
         />
+        <Container className="absolute inset-0 flex flex-col justify-center gap-4">
+          <Heading className="max-w-full text-4xl text-white small:max-w-[510px] medium:text-5xl">
+            {Headline}
+          </Heading>
+          <Box className="flex flex-col-reverse gap-8 medium:flex-row medium:items-center">
+            {CTA && (
+              <Button asChild className="w-max bg-white text-basic-primary hover:bg-gray-100">
+                <LocalizedClientLink href={CTA.BtnLink}>
+                  {CTA.BtnText}
+                </LocalizedClientLink>
+              </Button>
+            )}
+            <Text
+              size="lg"
+              className="max-w-full text-white medium:max-w-[410px] medium:text-end"
+            >
+              {text}
+            </Text>
+          </Box>
+        </Container>
       </Box>
-      <Container className="flex flex-col gap-2 !py-6 small:gap-8 small:!py-10">
-        <Heading className="max-w-full text-4xl text-basic-primary small:max-w-[510px] medium:text-5xl">
-          {Headline}
-        </Heading>
-        <Box className="flex flex-col-reverse justify-between gap-8 medium:flex-row medium:items-center">
-          {CTA && (
-            <Button asChild className="w-max">
-              <LocalizedClientLink href={CTA.BtnLink}>
-                {CTA.BtnText}
-              </LocalizedClientLink>
-            </Button>
-          )}
-          <Text
-            size="lg"
-            className="max-w-full text-basic-primary medium:max-w-[410px] medium:text-end"
-          >
-            {text}
-          </Text>
-        </Box>
-      </Container>
     </>
   )
 }
