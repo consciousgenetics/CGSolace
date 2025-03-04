@@ -16,6 +16,7 @@ import { ExploreBlog } from '@modules/home/components/explore-blog'
 import Hero from '@modules/home/components/hero'
 import ProductGrid from '@modules/home/components/product-grid'
 import { ProductCarousel } from '@modules/products/components/product-carousel'
+import { ReviewSection } from '@modules/common/components/reviews'
 import SkeletonProductsCarousel from '@modules/skeletons/templates/skeleton-products-carousel'
 import { BlogData, CollectionsData, HeroBannerData, MidBannerData } from 'types/strapi'
 
@@ -112,7 +113,7 @@ export default async function Home(props: {
               testId="our-bestsellers-section"
               products={products}
               regionId={region.id}
-              title="Our bestsellers"
+              title="We Breed By Example"
               viewAll={{
                 link: '/shop',
                 text: 'View all',
@@ -121,6 +122,22 @@ export default async function Home(props: {
           </Suspense>
         )}
         <ProductGrid />
+        {products && products.length > 0 && region && (
+          <Suspense fallback={<SkeletonProductsCarousel />}>
+            <ProductCarousel
+              testId="clothing-section"
+              products={products}
+              regionId={region.id}
+              title="LATEST CLOTHING MERCH"
+              subtitle="Our merchandize is more than a logo printed on a product, its also more than design."
+              viewAll={{
+                link: '/shop',
+                text: 'Shop All',
+              }}
+            />
+          </Suspense>
+        )}
+        <ReviewSection />
         {midBannerData?.data?.MidBanner && (
           <Banner data={{ data: { HeroBanner: midBannerData.data.MidBanner } }} />
         )}

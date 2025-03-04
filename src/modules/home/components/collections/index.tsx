@@ -106,17 +106,19 @@ const Collections = ({
   if (!newestCollections) return null
 
   return (
-    <Container className="grid max-h-[660px] grid-rows-3 gap-2 small:max-h-[440px] small:grid-cols-2 small:grid-rows-2 large:max-h-[660px]">
-      {newestCollections.slice(0, 3).map((element, id) => (
-        <CollectionTile
-          key={id}
-          title={element.Title}
-          handle={element.Handle}
-          imgSrc={element.Image.url}
-          description={element.Description}
-          id={id}
-        />
-      ))}
+    <Container className="h-screen flex items-center justify-center py-8">
+      <div className="grid grid-rows-3 gap-4 h-[90vh] w-full small:grid-cols-2 small:grid-rows-2">
+        {newestCollections.slice(0, 3).map((element, id) => (
+          <CollectionTile
+            key={id}
+            title={element.Title}
+            handle={element.Handle}
+            imgSrc={element.Image.url}
+            description={element.Description}
+            id={id}
+          />
+        ))}
+      </div>
     </Container>
   )
 }

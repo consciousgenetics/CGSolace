@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import Image from 'next/image'
+import { PlaceholderImage } from '@modules/common/icons'
 
 export const LoadingImage = ({
   src,
@@ -21,6 +22,14 @@ export const LoadingImage = ({
   onClick?: () => void
 }) => {
   const [isLoading, setIsLoading] = useState(true)
+
+  if (!src) {
+    return (
+      <div className="relative flex h-full w-full items-center justify-center bg-gray-100" onClick={onClick}>
+        <PlaceholderImage size="24" />
+      </div>
+    )
+  }
 
   return (
     <div className="relative h-full w-full" onClick={onClick}>

@@ -46,9 +46,14 @@ async function getRegionMap() {
       !regionMap.keys().next().value ||
       regionMapUpdated < Date.now() - 3600 * 1000
     ) {
+      // Ensure the backend URL has the proper protocol
+      const backendUrl = BACKEND_URL?.startsWith('http') 
+        ? BACKEND_URL 
+        : `https://${BACKEND_URL}`
+
       // Fetch regions from Medusa. We can't use the JS client here because middleware is running on Edge and the client needs a Node environment.
       try {
-        const response = await fetch(`${BACKEND_URL}/store/regions`, {
+        const response = await fetch(`${backendUrl}/store/regions`, {
           headers: {
             'x-publishable-api-key': PUBLISHABLE_API_KEY || '',
           },

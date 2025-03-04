@@ -22,8 +22,8 @@ export const Banner = ({ data }: { data: HeroBannerData }) => {
   }
 
   return (
-    <Container>
-      <Box className="relative h-[440px] medium:h-[478]">
+    <Container className="h-screen flex items-center justify-center">
+      <Box className="relative h-full w-full">
         <Image
           src={bannerImage.url}
           alt={bannerImage.alternativeText ?? 'Banner image'}

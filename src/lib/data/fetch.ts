@@ -15,7 +15,15 @@ export const fetchStrapiClient = async (
   params?: RequestInit
 ) => {
   try {
-    const baseUrl = process.env.NEXT_PUBLIC_STRAPI_URL || 'http://127.0.0.1:1337';
+    const baseUrl = process.env.NEXT_PUBLIC_STRAPI_URL;
+    if (!baseUrl) {
+      console.error('NEXT_PUBLIC_STRAPI_URL is not set');
+      return { 
+        ok: true, 
+        json: () => Promise.resolve({ data: [] }) 
+      }
+    }
+    
     const url = `${baseUrl}/api${endpoint}`;
     
     // Skip actual fetching during build time in production

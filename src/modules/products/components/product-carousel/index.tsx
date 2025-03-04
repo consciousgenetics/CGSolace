@@ -17,6 +17,7 @@ interface ProductCarouselProps {
   products: StoreProduct[]
   regionId: string
   title: string
+  subtitle?: string
   viewAll?: ViewAllProps
   testId?: string
 }
@@ -25,14 +26,15 @@ export function ProductCarousel({
   products,
   regionId,
   title,
+  subtitle,
   viewAll,
   testId,
 }: ProductCarouselProps) {
   return (
-    <Container className="overflow-hidden" data-testid={testId}>
-      <Box className="flex flex-col gap-6 small:gap-12">
-        <CarouselWrapper title={title} productsCount={products.length}>
-          <Box className="flex gap-2">
+    <div className="w-full bg-amber-50 h-screen flex items-center">
+      <Container className="overflow-hidden !p-0 w-full max-w-[95%] 2xl:max-w-[90%]" data-testid={testId}>
+        <Box className="flex flex-col gap-8 small:gap-12 h-full w-full">
+          <CarouselWrapper title={title} subtitle={subtitle} productsCount={products.length}>
             {products.map((item, index) => {
               const priceData = getProductPrice({
                 product: item,
@@ -44,7 +46,7 @@ export function ProductCarousel({
 
               return (
                 <Box
-                  className="flex-[0_0_calc(72.666%-8px)] small:flex-[0_0_calc(62.666%-8px)] medium:flex-[0_0_calc(42.666%-8px)] xl:flex-[0_0_calc(33.333%-8px)] 2xl:flex-[0_0_calc(30.333%-8px)]"
+                  className="flex-[0_0_calc(100%/4-12px)] small:flex-[0_0_calc(100%/4-12px)] medium:flex-[0_0_calc(100%/4-12px)] large:flex-[0_0_calc(100%/4-12px)] xl:flex-[0_0_calc(100%/4-12px)] 2xl:flex-[0_0_calc(100%/4-12px)] pl-2"
                   key={index}
                 >
                   <ProductTile
@@ -62,19 +64,19 @@ export function ProductCarousel({
                 </Box>
               )
             })}
-          </Box>
-        </CarouselWrapper>
-        {viewAll && (
-          <Button asChild>
-            <LocalizedClientLink
-              href={viewAll.link}
-              className="mx-auto w-max !px-5 !py-3"
-            >
-              {viewAll.text || 'View all'}
-            </LocalizedClientLink>
-          </Button>
-        )}
-      </Box>
-    </Container>
+          </CarouselWrapper>
+          {viewAll && (
+            <Button asChild>
+              <LocalizedClientLink
+                href={viewAll.link}
+                className="mx-auto w-max !px-8 !py-4 text-lg font-bold bg-purple-700 text-white hover:bg-purple-800 transition-colors"
+              >
+                Shop All
+              </LocalizedClientLink>
+            </Button>
+          )}
+        </Box>
+      </Container>
+    </div>
   )
 }

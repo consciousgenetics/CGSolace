@@ -30,14 +30,16 @@ export function BlogContent({ content }: { content: any }) {
     <Markdown
       components={{
         img: ({ node, ...props }) => (
-          <Box className="relative h-[350px] w-full">
-            <Image
-              fill
-              src={props.src || ''}
-              alt={props.alt || ''}
-              className="w-full object-cover"
-            />
-          </Box>
+          props.src ? (
+            <Box className="relative h-[350px] w-full">
+              <Image
+                fill
+                src={props.src}
+                alt={props.alt || ''}
+                className="w-full object-cover"
+              />
+            </Box>
+          ) : null
         ),
         h2: ({ node, ...props }) => (
           <Heading

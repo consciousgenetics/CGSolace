@@ -22,8 +22,8 @@ export function ExploreBlog({ posts }: { posts: BlogPost[] }) {
   })
 
   return (
-    <Container className="overflow-hidden" data-testid="get-inspired-section">
-      <Box className="flex flex-col gap-6 small:gap-12">
+    <Container className="h-screen flex items-center justify-center overflow-hidden" data-testid="get-inspired-section">
+      <Box className="flex flex-col gap-6 small:gap-12 w-full">
         <Box className="flex items-center justify-between">
           <Heading
             as="h2"

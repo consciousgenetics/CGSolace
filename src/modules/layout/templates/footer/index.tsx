@@ -47,7 +47,16 @@ function SocialMedia({ className }: { className?: string }) {
 }
 
 export default async function Footer({ countryCode }: { countryCode: string }) {
-  const { product_categories } = await getCategoriesList()
+  let product_categories = []
+  try {
+    const categoriesData = await getCategoriesList()
+    product_categories = categoriesData?.product_categories || []
+  } catch (error) {
+    console.error('Error fetching categories:', error)
+    // Use empty array as fallback
+    product_categories = []
+  }
+
   const footerNavigation = createFooterNavigation(product_categories)
 
   return (

@@ -39,7 +39,7 @@ export function ProductTile({
       className="group flex h-full flex-col"
       data-testid={formatNameForTestId(`${product.title}-product-tile`)}
     >
-      <Box className="relative h-[290px] small:h-[504px]">
+      <Box className="relative aspect-square w-full max-w-[85%] mx-auto">
         {isNew && (
           <Box className="absolute left-3 top-3 z-10 small:left-5 small:top-5">
             <Badge label="New product" variant="brand" />
@@ -50,10 +50,22 @@ export function ProductTile({
             src={product.thumbnail}
             alt={product.title}
             loading="lazy"
-            className="h-full w-full object-cover"
+            className="h-full w-full object-cover border-2 border-black rounded-xl"
           />
         </LocalizedClientLink>
         <ProductActions productHandle={product.handle} regionId={regionId} />
+      </Box>
+      <Box className="mt-2 text-center">
+        <Text
+          title={product.title}
+          as="span"
+          className="text-lg font-['Anton'] text-black"
+        >
+          {product.title}
+        </Text>
+        <Box className="mt-1">
+          <ProductPrice calculatedPrice={product.calculatedPrice} salePrice={product.salePrice} />
+        </Box>
       </Box>
       <ProductInfo
         productHandle={product.handle}
@@ -79,16 +91,6 @@ function ProductInfo({
   return (
     <Box className="flex flex-col gap-3 p-4 small:gap-6 small:p-5">
       <div className="flex flex-1 flex-col justify-between gap-4">
-        <LocalizedClientLink href={`/products/${productHandle}`}>
-          <Text
-            title={productTitle}
-            as="span"
-            className="line-clamp-2 text-center text-lg text-basic-primary"
-          >
-            {productTitle}
-          </Text>
-        </LocalizedClientLink>
-        <ProductPrice calculatedPrice={calculatedPrice} salePrice={salePrice} />
       </div>
     </Box>
   )

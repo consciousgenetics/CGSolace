@@ -12,6 +12,17 @@ const nextConfig = {
       {
         protocol: 'http',
         hostname: 'localhost',
+        port: '9000',
+        pathname: '/static/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'cgsolacemedusav2-production.up.railway.app',
+        pathname: '/static/**',
+      },
+      {
+        protocol: 'http',
+        hostname: 'localhost',
         port: '1337',
         pathname: '/uploads/**',
       },
