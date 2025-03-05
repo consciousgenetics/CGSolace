@@ -3,12 +3,19 @@ import { Metadata } from 'next'
 import { getBaseURL } from '@lib/util/env'
 import { ProgressBar } from '@modules/common/components/progress-bar'
 import { ThemeProvider } from '@modules/common/components/theme-provider'
+import { CorsProxyProvider } from '@modules/common/components/cors-proxy-provider'
 import { Toaster } from 'sonner'
 
 import 'styles/globals.css'
 
 export const metadata: Metadata = {
   metadataBase: new URL(getBaseURL()),
+  viewport: {
+    width: 'device-width',
+    initialScale: 1,
+    maximumScale: 1,
+    userScalable: false,
+  },
 }
 
 export default function RootLayout(props: { children: React.ReactNode }) {
@@ -21,11 +28,13 @@ export default function RootLayout(props: { children: React.ReactNode }) {
           enableSystem
           disableTransitionOnChange
         >
-          <div className="text-basic-primary overflow-x-hidden">
-            <ProgressBar />
-            <Toaster position="bottom-right" offset={65} closeButton />
-            <main className="relative overflow-x-hidden">{props.children}</main>
-          </div>
+          <CorsProxyProvider>
+            <div className="text-basic-primary overflow-x-hidden">
+              <ProgressBar />
+              <Toaster position="bottom-right" offset={65} closeButton />
+              <main className="relative overflow-x-hidden">{props.children}</main>
+            </div>
+          </CorsProxyProvider>
         </ThemeProvider>
       </body>
     </html>

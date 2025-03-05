@@ -37,7 +37,8 @@ export default async function Home(props: {
     const { countryCode } = params
 
     let collectionsList = [];
-    let products = [];
+    let seedProducts = [];
+    let clothingProducts = [];
     let region = null;
     
     try {
@@ -47,17 +48,77 @@ export default async function Home(props: {
         .catch(() => ({ collections: [] }));
       collectionsList = collectionsResult?.collections || [];
       
-      const productsResult = await getProductsList({
-        pageParam: 0,
-        queryParams: { limit: 9 },
-        countryCode: countryCode,
-      })
-        .then(({ response }) => response)
-        .catch(() => ({ products: [] }));
-      products = productsResult?.products || [];
-      
       region = await getRegion(countryCode)
         .catch(() => null);
+        
+      if (region) {
+        // Get all products first as a fallback
+        const allProductsResult = await getProductsList({
+          pageParam: 0,
+          queryParams: { limit: 16 },
+          countryCode: countryCode,
+        })
+          .then(({ response }) => response)
+          .catch(() => ({ products: [] }));
+        
+        const allProducts = allProductsResult?.products || [];
+        
+        // Try to find collection IDs for seeds and clothing
+        const seedCollection = collectionsList.find(collection => 
+          collection.title?.toLowerCase().includes('feminized') || 
+          collection.title?.toLowerCase().includes('seed'));
+        
+        const clothingCollection = collectionsList.find(collection => 
+          collection.title?.toLowerCase().includes('clothing') || 
+          collection.title?.toLowerCase().includes('merch'));
+          
+        // If we found the seed collection, try to fetch those products specifically
+        if (seedCollection) {
+          try {
+            const seedProductsResult = await getProductsList({
+              pageParam: 0,
+              queryParams: { 
+                limit: 9, 
+                collection_id: [seedCollection.id]
+              },
+              countryCode: countryCode,
+            })
+              .then(({ response }) => response)
+              .catch(() => ({ products: [] }));
+            seedProducts = seedProductsResult?.products || [];
+          } catch (error) {
+            console.error("Error fetching seed products:", error);
+          }
+        }
+        
+        // If we found the clothing collection, try to fetch those products specifically
+        if (clothingCollection) {
+          try {
+            const clothingProductsResult = await getProductsList({
+              pageParam: 0,
+              queryParams: { 
+                limit: 9, 
+                collection_id: [clothingCollection.id]
+              },
+              countryCode: countryCode,
+            })
+              .then(({ response }) => response)
+              .catch(() => ({ products: [] }));
+            clothingProducts = clothingProductsResult?.products || [];
+          } catch (error) {
+            console.error("Error fetching clothing products:", error);
+          }
+        }
+        
+        // Use all products as fallback if either collection was not found
+        if (seedProducts.length === 0 && allProducts.length > 0) {
+          seedProducts = allProducts.slice(0, Math.ceil(allProducts.length / 2));
+        }
+        
+        if (clothingProducts.length === 0 && allProducts.length > 0) {
+          clothingProducts = allProducts.slice(Math.ceil(allProducts.length / 2));
+        }
+      }
     } catch (error) {
       console.error("Error fetching main data:", error);
     }
@@ -107,13 +168,14 @@ export default async function Home(props: {
             medusaCollections={collectionsList}
           />
         )}
-        {products && products.length > 0 && region && (
+        {seedProducts && seedProducts.length > 0 && region && (
           <Suspense fallback={<SkeletonProductsCarousel />}>
             <ProductCarousel
-              testId="our-bestsellers-section"
-              products={products}
+              testId="seeds-section"
+              products={seedProducts}
               regionId={region.id}
-              title="We Breed By Example"
+              title="Feminized Seeds"
+              subtitle="Premium quality feminized seeds for your growing needs."
               viewAll={{
                 link: '/shop',
                 text: 'View all',
@@ -122,14 +184,14 @@ export default async function Home(props: {
           </Suspense>
         )}
         <ProductGrid />
-        {products && products.length > 0 && region && (
+        {clothingProducts && clothingProducts.length > 0 && region && (
           <Suspense fallback={<SkeletonProductsCarousel />}>
             <ProductCarousel
               testId="clothing-section"
-              products={products}
+              products={clothingProducts}
               regionId={region.id}
-              title="LATEST CLOTHING MERCH"
-              subtitle="Our merchandize is more than a logo printed on a product, its also more than design."
+              title="Clothing"
+              subtitle="Our merchandise is more than a logo printed on a product, it's also more than design."
               viewAll={{
                 link: '/shop',
                 text: 'Shop All',

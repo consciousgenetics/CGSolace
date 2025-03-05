@@ -13,13 +13,13 @@ export default function ProductPrice({
   }
 
   return (
-    <Box className="flex items-center justify-center gap-2">
+    <Box className="flex items-center justify-center gap-1 small:gap-2">
       {salePrice !== calculatedPrice && (
-        <Text size="md" className="text-black line-through">
+        <Text className="text-sm small:text-base text-black line-through">
           {salePrice}
         </Text>
       )}
-      <Text className="font-bold text-black" size="lg">
+      <Text className="text-base small:text-lg font-bold text-black">
         {calculatedPrice}
       </Text>
     </Box>

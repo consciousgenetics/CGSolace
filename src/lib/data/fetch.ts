@@ -107,15 +107,29 @@ const transformStrapiResponse = (data: any) => {
     // If it's an object, process each property
     if (typeof item === 'object') {
       // Handle image URL properties
-      if (item.url && typeof item.url === 'string' && item.url.startsWith('/uploads/')) {
-        const baseUrl = process.env.NEXT_PUBLIC_STRAPI_URL || 'http://127.0.0.1:1337';
-        item.url = `${baseUrl}${item.url}`
+      if (item.url && typeof item.url === 'string') {
+        // Check if it's a relative URL that needs the Strapi base URL
+        if (item.url.startsWith('/uploads/')) {
+          const baseUrl = process.env.NEXT_PUBLIC_STRAPI_URL || 'http://127.0.0.1:1337';
+          item.url = `${baseUrl}${item.url}`;
+        }
+        // Ensure URL uses HTTPS in production
+        if (process.env.NODE_ENV === 'production' && item.url.startsWith('http:')) {
+          item.url = item.url.replace('http:', 'https:');
+        }
       }
       
       // Handle image objects (common in Strapi v4)
       if (item.data && item.data.attributes && item.data.attributes.url) {
-        const baseUrl = process.env.NEXT_PUBLIC_STRAPI_URL || 'http://127.0.0.1:1337';
-        item.data.attributes.url = `${baseUrl}${item.data.attributes.url}`
+        // Check if it's a relative URL that needs the Strapi base URL
+        if (item.data.attributes.url.startsWith('/uploads/')) {
+          const baseUrl = process.env.NEXT_PUBLIC_STRAPI_URL || 'http://127.0.0.1:1337';
+          item.data.attributes.url = `${baseUrl}${item.data.attributes.url}`;
+        }
+        // Ensure URL uses HTTPS in production
+        if (process.env.NODE_ENV === 'production' && item.data.attributes.url.startsWith('http:')) {
+          item.data.attributes.url = item.data.attributes.url.replace('http:', 'https:');
+        }
       }
       
       // Process nested objects

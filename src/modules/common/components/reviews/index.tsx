@@ -12,18 +12,18 @@ interface ReviewCardProps {
 
 const ReviewCard = ({ name, review, location }: ReviewCardProps) => {
   return (
-    <Box className="bg-white rounded-[30px] p-8 flex flex-col items-center text-center transform transition-all duration-300 hover:scale-105 shadow-xl hover:shadow-2xl h-full w-full min-h-[360px] justify-between"
+    <Box className="bg-white rounded-[30px] p-6 small:p-8 flex flex-col items-center text-center transform transition-all duration-300 hover:scale-105 shadow-xl hover:shadow-2xl h-full w-full min-h-[300px] small:min-h-[360px] justify-between mb-8 small:mb-0"
          style={{
            transform: "perspective(1000px) rotateX(2deg)",
            transformStyle: "preserve-3d",
            boxShadow: "0 15px 25px rgba(0, 0, 0, 0.2), 0 5px 10px rgba(0, 0, 0, 0.1)"
          }}>
       {/* Enhanced 3D Star Rating */}
-      <div className="flex mb-6">
+      <div className="flex mb-4 small:mb-6">
         {[...Array(5)].map((_, i) => (
-          <div key={i} className="relative mx-1.5 transform hover:scale-125 transition-transform duration-300">
+          <div key={i} className="relative mx-1 small:mx-1.5 transform hover:scale-125 transition-transform duration-300">
             <svg
-              className="w-9 h-9 text-orange-500 filter drop-shadow-lg"
+              className="w-7 h-7 small:w-9 small:h-9 text-orange-500 filter drop-shadow-lg"
               fill="currentColor"
               viewBox="0 0 24 24"
               style={{
@@ -39,12 +39,12 @@ const ReviewCard = ({ name, review, location }: ReviewCardProps) => {
       </div>
       
       <div className="flex-1 flex flex-col justify-center mb-4">
-        <Text className="text-2xl font-['Anton'] mb-5 transform transition-all duration-300 hover:scale-105 text-black">{name}</Text>
-        <Text className="text-gray-600 mb-6 text-lg leading-relaxed">{review}</Text>
+        <Text className="text-xl small:text-2xl font-['Anton'] mb-3 small:mb-5 transform transition-all duration-300 hover:scale-105 text-black">{name}</Text>
+        <Text className="text-gray-600 mb-4 small:mb-6 text-base small:text-lg leading-relaxed">{review}</Text>
       </div>
       
       <div className="mt-auto">
-        <Text className="text-xl font-['Anton'] text-black transform hover:translate-y-[-2px] transition-transform duration-300">{location}</Text>
+        <Text className="text-lg small:text-xl font-['Anton'] text-black transform hover:translate-y-[-2px] transition-transform duration-300">{location}</Text>
         
         {/* 3D effect bottom accent */}
         <div className="w-24 h-1 bg-black mt-4 mx-auto rounded-full shadow-md transform transition-all duration-300 hover:scale-110"></div>
@@ -73,35 +73,31 @@ export function ReviewSection() {
   ]
 
   return (
-    <div className="w-full bg-black h-screen flex items-center py-16 relative overflow-hidden">
+    <div className="w-full bg-black min-h-screen py-12 small:py-16 flex items-center relative overflow-hidden">
       {/* Background accent element */}
       <div className="absolute top-0 left-0 w-full h-32 bg-gradient-to-b from-amber-500/10 to-transparent"></div>
       
-      <div className="px-4 max-w-7xl mx-auto">
-        <Text className="text-5xl font-['Anton'] text-white text-center mb-16 relative z-10 drop-shadow-[0_5px_5px_rgba(0,0,0,0.3)]">
+      <div className="px-4 max-w-7xl mx-auto w-full">
+        <Text className="text-3xl small:text-4xl medium:text-5xl font-['Anton'] text-white text-center mb-8 small:mb-12 medium:mb-16 relative z-10 drop-shadow-[0_5px_5px_rgba(0,0,0,0.3)]">
           CUSTOMER REVIEWS
         </Text>
         
-        {/* Table-based layout for guaranteed side-by-side positioning */}
-        <div className="w-full" style={{ display: 'table', tableLayout: 'fixed' }}>
-          <div style={{ display: 'table-row' }}>
-            {reviews.map((review, index) => (
-              <div 
-                key={index} 
-                style={{ 
-                  display: 'table-cell',
-                  width: '33.333%',
-                  padding: '0 12px',
-                  verticalAlign: 'top',
-                  perspective: '1000px',
-                  transform: `rotateY(${index % 2 === 0 ? '-3deg' : '3deg'}) translateZ(0) ${index === 1 ? 'translateY(-30px)' : ''}`,
-                  transition: 'all 0.5s ease-in-out'
-                }}
-              >
-                <ReviewCard {...review} />
-              </div>
-            ))}
-          </div>
+        {/* Responsive grid layout */}
+        <div className="grid grid-cols-1 medium:grid-cols-2 large:grid-cols-3 gap-6 small:gap-8">
+          {reviews.map((review, index) => (
+            <div 
+              key={index} 
+              className={`transform transition-all duration-500 ${
+                index === 1 && 'medium:translate-y-[-20px] large:translate-y-[-30px]'
+              }`}
+              style={{ 
+                perspective: '1000px',
+                transform: `rotateY(${index % 2 === 0 ? '-3deg' : '3deg'}) translateZ(0)`,
+              }}
+            >
+              <ReviewCard {...review} />
+            </div>
+          ))}
         </div>
       </div>
       

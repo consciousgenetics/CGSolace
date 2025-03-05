@@ -56,38 +56,38 @@ export default function CarouselWrapper({
 
   return (
     <div className="w-full max-w-full">
-      <Box className="flex justify-center flex-col items-center mb-8">
-        <Heading as="h2" className="text-3xl text-black small:text-4xl font-bold">
+      <Box className="flex justify-center flex-col items-center mb-5 small:mb-8 px-4">
+        <Heading as="h2" className="text-2xl small:text-3xl medium:text-4xl text-black font-bold text-center">
           {title}
         </Heading>
-        <p className="text-base text-gray-600 mt-3 text-center max-w-2xl">
+        <p className="text-sm small:text-base text-gray-600 mt-2 small:mt-3 text-center max-w-2xl">
           {subtitle || "Every genetic that we drop is a stable, trichome covered, terpene loaded gem!"}
         </p>
       </Box>
       
       <div className="relative w-full">
         <div className="w-full max-w-full overflow-hidden px-0 cursor-grab" ref={emblaRef}>
-          <div className="w-full pl-0 flex">{children}</div>
+          <div className="w-full pl-0 flex gap-3 small:gap-4">{children}</div>
         </div>
         
         {/* Navigation buttons */}
         <button 
           onClick={scrollPrev}
           disabled={!canScrollPrev}
-          className={`absolute left-2 top-1/2 -translate-y-1/2 z-10 bg-white bg-opacity-70 rounded-full p-2 shadow-md ${!canScrollPrev ? 'opacity-30 cursor-not-allowed' : 'hover:bg-opacity-100'}`}
+          className={`absolute left-1 small:left-2 top-1/2 -translate-y-1/2 z-10 bg-white bg-opacity-70 rounded-full p-1 small:p-2 shadow-md ${!canScrollPrev ? 'opacity-30 cursor-not-allowed' : 'hover:bg-opacity-100'}`}
           aria-label="Previous products"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="small:w-6 small:h-6">
             <path d="M15 18l-6-6 6-6" />
           </svg>
         </button>
         <button 
           onClick={scrollNext}
           disabled={!canScrollNext}
-          className={`absolute right-2 top-1/2 -translate-y-1/2 z-10 bg-white bg-opacity-70 rounded-full p-2 shadow-md ${!canScrollNext ? 'opacity-30 cursor-not-allowed' : 'hover:bg-opacity-100'}`}
+          className={`absolute right-1 small:right-2 top-1/2 -translate-y-1/2 z-10 bg-white bg-opacity-70 rounded-full p-1 small:p-2 shadow-md ${!canScrollNext ? 'opacity-30 cursor-not-allowed' : 'hover:bg-opacity-100'}`}
           aria-label="Next products"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="small:w-6 small:h-6">
             <path d="M9 18l6-6-6-6" />
           </svg>
         </button>

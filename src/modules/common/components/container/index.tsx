@@ -4,7 +4,7 @@ import { cn } from '@lib/util/cn'
 import { cva } from 'cva'
 
 const containerVariants = cva({
-  base: 'small:px-14 small:py-16 mx-auto box-content px-4 py-8',
+  base: 'xsmall:px-6 small:px-10 medium:px-14 xsmall:py-8 small:py-12 medium:py-16 mx-auto box-content px-3 py-6',
   variants: {
     maxWidth: {
       sm: 'max-w-[600px]',
@@ -22,17 +22,16 @@ type ContainerProps<T extends React.ElementType> = {
   as?: T
   maxWidth?: 'sm' | 'md' | 'lg' | 'full'
   children: React.ReactNode
-}
+} & React.HTMLAttributes<HTMLElement>
 
-export function Container<T extends React.ElementType = 'div'>({
+const Container = <T extends React.ElementType = 'div'>({
   as,
   maxWidth,
-  className,
   children,
+  className,
   ...props
-}: Omit<React.ComponentPropsWithoutRef<T>, keyof ContainerProps<T>> &
-  ContainerProps<T>) {
-  const Component = as ?? ('div' as React.ElementType)
+}: ContainerProps<T> & Omit<React.ComponentPropsWithoutRef<T>, keyof ContainerProps<T>>) => {
+  const Component = as || 'div'
 
   return (
     <Component
@@ -43,3 +42,5 @@ export function Container<T extends React.ElementType = 'div'>({
     </Component>
   )
 }
+
+export { Container }

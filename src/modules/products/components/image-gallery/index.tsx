@@ -25,11 +25,20 @@ const ImageGallery = ({ images, title }: ImageGalleryProps) => {
     setSelectedImage(index)
   }
 
-  // Transform image URLs
-  const transformedImages = images.map(img => ({
-    ...img,
-    url: transformUrl(img.url)
-  }))
+  // Enhanced debugging for image URLs
+  console.log('ImageGallery rendering for:', title)
+  console.log('Original images:', images)
+
+  // Transform image URLs with additional logging
+  const transformedImages = images.map(img => {
+    console.log(`Processing image ${img.id}, original URL:`, img.url)
+    const transformedUrl = transformUrl(img.url)
+    console.log(`Transformed URL for image ${img.id}:`, transformedUrl)
+    return {
+      ...img,
+      url: transformedUrl
+    }
+  })
 
   return (
     <div className="flex flex-col justify-center gap-4">

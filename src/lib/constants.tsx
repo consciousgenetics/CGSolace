@@ -137,43 +137,90 @@ export const passwordRequirements = [
 export const createNavigation = (
   productCategories: StoreProductCategory[],
   collections?: StoreCollection[]
-) => [
-  {
-    name: 'Shop',
-    handle: '/shop',
-    category_children: productCategories
-      .filter((category) => !category.parent_category)
-      .map((category) => ({
-        name: category.name,
-        type: 'parent_category',
-        handle: `/categories/${category.handle}`,
-        category_children: category.category_children.map((subCategory) => ({
-          name: subCategory.name,
-          handle: `/categories/${subCategory.handle}`,
-          icon: null,
-          category_children: null,
-        })),
+) => {
+  // Categories to exclude from the navigation
+  const excludedCategories = [
+    'Shirts', 
+    'Sweatshirt', 
+    'Sweatshirts', 
+    'Pants', 
+    'Merch',
+    'Clothing'
+  ];
+  
+  // Create stable categories - use a seed value for deterministic ordering
+  const stableCategories = [...productCategories].sort((a, b) => 
+    a.handle.localeCompare(b.handle)
+  );
+  
+  // Filter out the excluded categories
+  const filteredCategories = stableCategories.filter(
+    category => !excludedCategories.some(excluded => 
+      category.name.toLowerCase() === excluded.toLowerCase()
+    )
+  );
+  
+  // Get top-level categories
+  const topLevelCategories = filteredCategories.filter(
+    (category) => !category.parent_category
+  );
+  
+  // Map categories to the format expected by the dropdown menu
+  const mappedCategories = topLevelCategories.map(category => {
+    // Find all child categories for this parent (also excluding unwanted categories)
+    const childCategories = filteredCategories.filter(child => 
+      child.parent_category && 
+      child.parent_category.id === category.id
+    ).sort((a, b) => a.handle.localeCompare(b.handle)); // Sort child categories for consistency
+    
+    return {
+      name: category.name,
+      type: 'parent_category',
+      handle: `/categories/${category.handle}`,
+      category_children: childCategories.map(child => ({
+        name: child.name,
+        type: 'category',
+        handle: `/categories/${category.handle}/${child.handle}`,
+        category_children: [],
       })),
-  },
-  {
-    name: 'Collections',
-    handle: '/shop',
-    category_children: !collections
-      ? null
-      : collections.map((collection) => ({
-          name: collection.title,
-          type: 'collection',
-          handle: `/collections/${collection.handle}`,
-          handle_id: collection.handle,
-          category_children: null,
-        })),
-  },
-  {
-    name: 'About Us',
-    handle: '/about-us',
-    category_children: null,
-  },
-]
+    };
+  });
+
+  // Sort collections for stability
+  const stableCollections = collections 
+    ? [...collections].sort((a, b) => a.handle.localeCompare(b.handle))
+    : null;
+
+  return [
+    {
+      name: 'Shop',
+      handle: '/shop',
+      category_children: mappedCategories,
+    },
+    {
+      name: 'Collections',
+      handle: '/shop',
+      category_children: !stableCollections
+        ? null
+        : stableCollections
+            .filter(collection => !excludedCategories.some(excluded => 
+              collection.title.toLowerCase() === excluded.toLowerCase()
+            ))
+            .map((collection) => ({
+              name: collection.title,
+              type: 'collection',
+              handle: `/collections/${collection.handle}`,
+              handle_id: collection.handle,
+              category_children: null,
+            })),
+    },
+    {
+      name: 'About Us',
+      handle: '/about-us',
+      category_children: null,
+    },
+  ];
+}
 
 export const createFooterNavigation = (
   productCategories: StoreProductCategory[]

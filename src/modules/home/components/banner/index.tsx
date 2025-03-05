@@ -7,6 +7,7 @@ import { Heading } from '@modules/common/components/heading'
 import LocalizedClientLink from '@modules/common/components/localized-client-link'
 import { Text } from '@modules/common/components/text'
 import { HeroBanner, HeroBannerData } from 'types/strapi'
+import { transformUrl } from '@lib/util/transform-url'
 
 export const Banner = ({ data }: { data: HeroBannerData }) => {
   const bannerData = data?.data?.HeroBanner
@@ -21,11 +22,14 @@ export const Banner = ({ data }: { data: HeroBannerData }) => {
     return null
   }
 
+  // Transform the banner image URL
+  const imageUrl = transformUrl(bannerImage.url)
+
   return (
     <Container className="h-screen flex items-center justify-center">
       <Box className="relative h-full w-full">
         <Image
-          src={bannerImage.url}
+          src={imageUrl}
           alt={bannerImage.alternativeText ?? 'Banner image'}
           fill
           className="object-cover object-right-top"

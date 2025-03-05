@@ -1,6 +1,4 @@
-'use client'
-
-import { Suspense, useEffect, useState } from 'react'
+import React, { Suspense } from 'react'
 import { notFound } from 'next/navigation'
 import type { SearchedProduct } from 'types/global'
 
@@ -10,7 +8,6 @@ import { getProductsList, getStoreFilters } from '@lib/data/products'
 import { getRegion } from '@lib/data/regions'
 import { Box } from '@modules/common/components/box'
 import { Container } from '@modules/common/components/container'
-import RefinementList from '@modules/common/components/sort'
 import { Text } from '@modules/common/components/text'
 import { ProductCarousel } from '@modules/products/components/product-carousel'
 import { search } from '@modules/search/actions'
@@ -20,12 +17,22 @@ import ProductFilters from '@modules/store/components/filters'
 import ActiveProductFilters from '@modules/store/components/filters/active-filters'
 import ProductFiltersDrawer from '@modules/store/components/filters/filters-drawer'
 import PaginatedProducts from '@modules/store/templates/paginated-products'
+import ClientSideSort from './client-side-sort'
 
-export const dynamic = 'force-static'
-export const revalidate = 3600 // Revalidate every hour
+export const dynamic = 'force-dynamic'
+export const revalidate = false // Disable revalidation for dynamic routes
 
 export async function generateStaticParams() {
-  const categories = ['seeds', 'shirts', 'sweatshirts', 'pants', 'merch']
+  const categories = [
+    'seeds', 
+    'seeds/feminized-seeds', 
+    'seeds/regular-seeds', 
+    'merchandise', 
+    'shirts', 
+    'sweatshirts', 
+    'pants', 
+    'merch'
+  ]
   const countryCodes = ['uk', 'us', 'de', 'dk', 'fr']
   
   const params = []
@@ -33,102 +40,12 @@ export async function generateStaticParams() {
     for (const category of categories) {
       params.push({
         countryCode,
-        category: [category]
+        category: category.split('/')
       })
     }
   }
   
   return params
-}
-
-interface ClientSideSortProps {
-  initialProducts: {
-    results: SearchedProduct[]
-    count: number
-  }
-  countryCode: string
-  currentCategory: any
-  region: any
-  filters: any
-}
-
-function ClientSideSort({ 
-  initialProducts, 
-  countryCode, 
-  currentCategory,
-  region,
-  filters 
-}: ClientSideSortProps) {
-  const [products, setProducts] = useState(initialProducts.results)
-  const [count, setCount] = useState(initialProducts.count)
-  const [sortBy, setSortBy] = useState('relevance')
-  const [currentPage, setCurrentPage] = useState(1)
-  const [loading, setLoading] = useState(false)
-
-  useEffect(() => {
-    async function updateSort() {
-      if (sortBy === 'relevance') return
-
-      setLoading(true)
-      try {
-        const results = await search({
-          currency_code: region.currency_code,
-          category_id: currentCategory.id,
-          order: sortBy
-        })
-        setProducts(results.results)
-        setCount(results.count)
-      } catch (err) {
-        console.error("Error sorting products:", err)
-      }
-      setLoading(false)
-    }
-
-    updateSort()
-  }, [sortBy, currentCategory.id, region.currency_code])
-
-  return (
-    <>
-      <Box className="flex flex-col gap-4">
-        <Text className="text-md text-secondary">
-          {count === 1 ? `${count} product` : `${count} products`}
-        </Text>
-        <Box className="grid w-full grid-cols-2 items-center justify-between gap-2 small:flex small:flex-wrap">
-          <Box className="hidden small:flex">
-            <ProductFilters filters={filters} />
-          </Box>
-          <ProductFiltersDrawer>
-            <ProductFilters filters={filters} />
-          </ProductFiltersDrawer>
-          <RefinementList
-            options={storeSortOptions}
-            sortBy={sortBy}
-          />
-        </Box>
-        <ActiveProductFilters
-          filters={filters}
-          currentCategory={currentCategory}
-          countryCode={countryCode}
-        />
-      </Box>
-      <Suspense fallback={<SkeletonProductGrid />}>
-        {loading ? (
-          <SkeletonProductGrid />
-        ) : products && products.length > 0 ? (
-          <PaginatedProducts
-            products={products}
-            total={count}
-            page={currentPage}
-            countryCode={countryCode}
-          />
-        ) : (
-          <p className="py-10 text-center text-lg text-secondary">
-            No products found in this category.
-          </p>
-        )}
-      </Suspense>
-    </>
-  )
 }
 
 export default async function CategoryTemplate({
@@ -137,7 +54,9 @@ export default async function CategoryTemplate({
   params: { countryCode: string; category: string[] }
 }) {
   try {
-    const { countryCode, category } = params
+    // Make sure params is properly awaited before destructuring
+    const paramsResolved = await Promise.resolve(params)
+    const { countryCode, category } = paramsResolved
 
     // Get region data - if not found, show 404
     const region = await getRegion(countryCode)
@@ -174,11 +93,52 @@ export default async function CategoryTemplate({
     const filters = await getStoreFilters()
     
     // Get initial products with default sorting
-    const initialProducts = await search({
-      currency_code: region.currency_code,
-      category_id: currentCategory.id,
-      order: 'relevance'
-    })
+    let initialProducts = { results: [], count: 0 };
+    try {
+      initialProducts = await search({
+        currency_code: region.currency_code,
+        category_id: currentCategory.id,
+        order: 'relevance'
+      });
+    } catch (err) {
+      console.error("Error fetching category products:", err);
+      // Continue with empty initial products
+    }
+
+    // If search API failed, try to load products directly from product API
+    if (initialProducts.results.length === 0) {
+      try {
+        console.log("Search API returned no results. Attempting to fetch products directly...");
+        const productsData = await getProductsList({
+          pageParam: 1,
+          queryParams: { 
+            category_id: [currentCategory.id],
+            limit: 12
+          },
+          countryCode: countryCode, // Use the resolved countryCode
+        });
+        
+        if (productsData && productsData.response && productsData.response.products) {
+          // Transform products to match SearchedProduct format
+          initialProducts = {
+            results: productsData.response.products.map(p => ({
+              id: p.id,
+              title: p.title,
+              handle: p.handle,
+              thumbnail: p.thumbnail,
+              created_at: p.created_at,
+              calculatedPrice: p.variants[0]?.calculated_price?.toString() || "",
+              salePrice: p.variants[0]?.calculated_price?.toString() || "",
+            })),
+            count: productsData.response.count,
+          };
+          console.log(`Found ${initialProducts.results.length} products using direct product API`);
+        }
+      } catch (directErr) {
+        console.error("Error fetching products directly:", directErr);
+        // Continue with empty initialProducts
+      }
+    }
 
     // Get recommended products safely
     let recommendedProducts = []
@@ -186,7 +146,7 @@ export default async function CategoryTemplate({
       const productsData = await getProductsList({
         pageParam: 0,
         queryParams: { limit: 9 },
-        countryCode: params.countryCode,
+        countryCode: countryCode, // Use the resolved countryCode
       })
       
       if (productsData && productsData.response) {

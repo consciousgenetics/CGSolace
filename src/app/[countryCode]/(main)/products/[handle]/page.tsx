@@ -60,16 +60,37 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
 export default async function ProductPage(props: Props) {
   try {
     const params = await props.params
+    console.log('ProductPage: Loading product with handle:', params.handle)
     
-    const region = await getRegion(params.countryCode).catch(() => null)
+    const region = await getRegion(params.countryCode).catch((error) => {
+      console.error('ProductPage: Error fetching region:', error)
+      return null
+    })
+    
     if (!region) {
+      console.error('ProductPage: Region not found for country code:', params.countryCode)
       return notFound()
     }
+    
+    console.log('ProductPage: Region found:', region.id)
 
-    const pricedProduct = await getProductByHandle(params.handle, region.id).catch(() => null)
+    const pricedProduct = await getProductByHandle(params.handle, region.id).catch((error) => {
+      console.error(`ProductPage: Error fetching product with handle "${params.handle}":`, error)
+      return null
+    })
+    
     if (!pricedProduct) {
+      console.error('ProductPage: Product not found with handle:', params.handle)
       return notFound()
     }
+    
+    console.log('ProductPage: Product found:', {
+      id: pricedProduct.id,
+      title: pricedProduct.title,
+      handle: pricedProduct.handle,
+      thumbnail: pricedProduct.thumbnail,
+      images: pricedProduct.images?.length || 0
+    })
 
     return (
       <ProductTemplate

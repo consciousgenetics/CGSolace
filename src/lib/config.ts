@@ -12,6 +12,11 @@ const finalBackendUrl = MEDUSA_BACKEND_URL.startsWith('http')
   ? MEDUSA_BACKEND_URL 
   : `https://${MEDUSA_BACKEND_URL}`
 
+// Log the backend URL for debugging
+if (process.env.NODE_ENV === 'development') {
+  console.log('Medusa Backend URL:', finalBackendUrl)
+}
+
 export const sdk = new Medusa({
   baseUrl: finalBackendUrl,
   debug: process.env.NODE_ENV === 'development',

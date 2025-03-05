@@ -52,12 +52,15 @@ export function ProductActions({
       withIcon
       disabled={isAddingToCart}
       className={cn(
-        'absolute bottom-3 right-3 opacity-100 transition-opacity duration-300 group-hover:opacity-100 small:bottom-5 small:right-5 large:opacity-0',
-        { 'pointer-events-none !px-4': isAddingToCart }
+        'absolute bottom-2 right-2 opacity-100 p-1.5 small:p-2 transition-opacity duration-300 group-hover:opacity-100 small:bottom-3 small:right-3 medium:bottom-4 medium:right-4 large:opacity-0',
+        { 'pointer-events-none !px-3 small:!px-4': isAddingToCart }
       )}
       onClick={handleAddToCart}
     >
-      {isAddingToCart ? <Spinner /> : <BagIcon />}
+      {isAddingToCart ? 
+        <Spinner className="h-4 w-4 small:h-5 small:w-5" /> : 
+        <BagIcon className="h-4 w-4 small:h-5 small:w-5" />
+      }
     </Button>
   )
 }

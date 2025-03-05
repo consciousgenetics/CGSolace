@@ -1,26 +1,46 @@
-import { getRegion } from '@lib/data/regions'
-import { convertToLocale } from '@lib/util/money'
+'use client'
+
+import { useEffect, useState } from 'react'
 import { ProductTile } from '@modules/products/components/product-tile'
 import { PRODUCT_LIMIT } from '@modules/search/actions'
 import { Pagination } from '@modules/store/components/pagination'
 import { SearchedProduct } from 'types/global'
+import { convertToLocale } from '@lib/util/money'
 
-export default async function PaginatedProducts({
+export default function PaginatedProducts({
   products,
   total,
   page,
   countryCode,
+  regionData,
 }: {
   products: SearchedProduct[]
   total: number
   page: number
   countryCode: string
+  regionData?: any // Pass the region data directly instead of fetching it
 }) {
+  const [region, setRegion] = useState(regionData)
   const totalPages = Math.ceil(total / PRODUCT_LIMIT)
-  const region = await getRegion(countryCode)
+  
+  // If region data wasn't passed in, we can fetch it on the client side
+  useEffect(() => {
+    if (!region && countryCode) {
+      // Use a simple fetch instead of the server action
+      fetch(`/api/regions?countryCode=${countryCode}`)
+        .then(response => response.json())
+        .then(data => {
+          setRegion(data.region)
+        })
+        .catch(error => {
+          console.error('Error fetching region:', error)
+        })
+    }
+  }, [region, countryCode])
 
   if (!region) {
-    return null
+    // Show loading state or skeleton while region is being fetched
+    return <div className="animate-pulse">Loading products...</div>
   }
 
   return (

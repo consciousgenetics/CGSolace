@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useId } from 'react'
 
 import { cn } from '@lib/util/cn'
 import { formatNameForTestId } from '@lib/util/formatNameForTestId'
@@ -34,6 +34,9 @@ const DropdownMenu: React.FC<DropdownMenuProps> = ({
   isOpen,
   onOpenChange,
 }) => {
+  // Generate a stable key for this dropdown instance
+  const uniqueId = useId();
+  
   const renderSubcategories = (categories: CategoryItem[]) => (
     <Container className="flex flex-col gap-6 !px-14 !pb-8 !pt-5">
       <Button
@@ -49,9 +52,9 @@ const DropdownMenu: React.FC<DropdownMenuProps> = ({
             : activeItem?.name}
         </LocalizedClientLink>
       </Button>
-      <div className="grid grid-cols-4 gap-8">
+      <div className="grid grid-cols-4 gap-8 max-h-[60vh] overflow-y-auto">
         {categories.map((subItem, index) => (
-          <div key={index} className="flex flex-col gap-2">
+          <div key={`${subItem.handle}-${index}`} className="flex flex-col gap-2">
             <NavigationItem
               href={subItem.handle}
               className="w-max py-2 text-lg text-basic-primary !duration-150 hover:border-b hover:border-action-primary"
@@ -65,7 +68,7 @@ const DropdownMenu: React.FC<DropdownMenuProps> = ({
               <div className="flex flex-col">
                 {subItem.category_children.map((childItem, childIndex) => (
                   <NavigationItem
-                    key={childIndex}
+                    key={`${childItem.handle}-${childIndex}`}
                     href={childItem.handle}
                     className="py-1.5 text-md text-secondary"
                     data-testid={formatNameForTestId(
@@ -91,7 +94,8 @@ const DropdownMenu: React.FC<DropdownMenuProps> = ({
     >
       {children}
       {item.category_children && (
-        <Box
+        <div
+          key={`dropdown-${uniqueId}-${item.name}`}
           className={cn(
             'absolute left-0 top-full z-50 w-full translate-y-0 bg-primary shadow-lg transition-all duration-300',
             isOpen
@@ -100,7 +104,7 @@ const DropdownMenu: React.FC<DropdownMenuProps> = ({
           )}
         >
           {customContent ?? renderSubcategories(item.category_children)}
-        </Box>
+        </div>
       )}
     </div>
   )

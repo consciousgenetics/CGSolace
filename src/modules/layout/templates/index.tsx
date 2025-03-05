@@ -8,9 +8,9 @@ const Layout: React.FC<{
   children: React.ReactNode
 }> = ({ params, children }) => {
   return (
-    <div>
+    <div className="flex flex-col min-h-screen">
       <NavWrapper countryCode={params.countryCode} />
-      <main className="relative">{children}</main>
+      <main className="relative pt-[80px] xsmall:pt-[90px] medium:pt-[110px] flex-grow">{children}</main>
       <Footer countryCode={params.countryCode} />
     </div>
   )

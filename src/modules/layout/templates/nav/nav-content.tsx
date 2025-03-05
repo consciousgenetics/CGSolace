@@ -55,18 +55,18 @@ export default function NavContent(props: any) {
         })}
       >
         <LocalizedClientLink href="/">
-          <ConsciousGeneticsLogo className="h-24 medium:h-28" />
+          <ConsciousGeneticsLogo className="h-16 xsmall:h-20 medium:h-28" />
         </LocalizedClientLink>
       </Box>
       {!isSearchOpen && (
         <Button
           variant="icon"
           withIcon
-          className="ml-auto h-auto !p-2 xsmall:!p-3.5"
+          className="ml-auto h-auto !p-1.5 xsmall:!p-2 medium:!p-3.5"
           onClick={() => setIsSearchOpen(true)}
           data-testid="search-button"
         >
-          <SearchIcon />
+          <SearchIcon className="h-5 w-5 xsmall:h-6 xsmall:w-6" />
         </Button>
       )}
     </>

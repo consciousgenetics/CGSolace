@@ -5,6 +5,7 @@ import { Heading } from '@modules/common/components/heading'
 import LocalizedClientLink from '@modules/common/components/localized-client-link'
 import { Text } from '@modules/common/components/text'
 import { BlogPost } from 'types/strapi'
+import { transformUrl } from '@lib/util/transform-url'
 
 const extractTextContent = (content: any): string => {
   if (typeof content === 'string') return content
@@ -25,15 +26,18 @@ const extractTextContent = (content: any): string => {
 
 export function BlogTile({ post }: { post: BlogPost }) {
   const textContent = extractTextContent(post.Content)
+  
+  // Transform the featured image URL if it exists
+  const featuredImageUrl = post.FeaturedImage?.url ? transformUrl(post.FeaturedImage.url) : null
 
   return (
     <Box className="flex min-w-40 flex-col overflow-hidden bg-secondary">
       <Box className="h-[224px] overflow-hidden large:h-[280px]">
         <LocalizedClientLink href={`/blog/${post.Slug}`}>
-          {post.FeaturedImage?.url ? (
+          {featuredImageUrl ? (
             <Image
               className="h-full w-full object-cover object-center"
-              src={post.FeaturedImage.url}
+              src={featuredImageUrl}
               alt={post.FeaturedImage.alternativeText ?? 'Blog post image'}
               width={600}
               height={600}

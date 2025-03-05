@@ -19,16 +19,48 @@ export default function CollectionsMenu({
   cmsCollections: CollectionsData
   medusaCollections: StoreCollection[]
 }) {
+  // Categories to exclude from the navigation - must match the one in constants.tsx
+  const excludedCategories = [
+    'Shirts', 
+    'Sweatshirt', 
+    'Sweatshirts', 
+    'Pants', 
+    'Merch',
+    'Clothing'
+  ];
+  
   const validCollections = useMemo(() => {
-    if (!cmsCollections.data.length || !medusaCollections.length) return null
-    const collections = cmsCollections.data.filter((cmsCollection) =>
-      medusaCollections.some(
+    if (!cmsCollections.data?.length || !medusaCollections?.length) return null
+    
+    // Sort collections for stable rendering
+    const sortedMedusaCollections = [...medusaCollections].sort((a, b) => 
+      a.handle.localeCompare(b.handle)
+    );
+    
+    // Filter out medusa collections to exclude unwanted categories
+    const filteredMedusaCollections = sortedMedusaCollections.filter(
+      collection => !excludedCategories.some(excluded => 
+        collection.title.toLowerCase() === excluded.toLowerCase()
+      )
+    )
+    
+    // Sort CMS collections for stable rendering
+    const sortedCmsCollections = [...cmsCollections.data].sort((a, b) => 
+      (a.Handle || '').localeCompare(b.Handle || '')
+    );
+    
+    // Filter CMS collections based on filtered Medusa collections
+    const collections = sortedCmsCollections.filter((cmsCollection) =>
+      filteredMedusaCollections.some(
         (medusaCollection) => medusaCollection.handle === cmsCollection.Handle
       )
     )
+    
     if (!collections || collections.length < 3) return null
+    
+    // Sort by id in descending order for consistency
     return collections.sort((a, b) => b.id - a.id)
-  }, [cmsCollections, medusaCollections])
+  }, [cmsCollections, medusaCollections, excludedCategories])
 
   const newestCollections = useMemo(() => {
     if (!validCollections) return null
@@ -39,9 +71,9 @@ export default function CollectionsMenu({
 
   return (
     <Container className="grid grid-cols-3 gap-2 !px-14 !pb-8 !pt-5">
-      {newestCollections.slice(0, 3).map((element, id) => (
+      {newestCollections.map((element, id) => (
         <CollectionTile
-          key={id}
+          key={`collection-tile-${element.Handle}-${id}`}
           title={element.Title}
           handle={element.Handle}
           imgSrc={element.Image.url}

@@ -31,6 +31,7 @@ export default function Navigation({
     handle: string
   } | null>(null)
 
+  // Generate a stable navigation structure for consistent rendering
   const navigation = useMemo(
     () => createNavigation(productCategories, collections),
     [productCategories, collections]
@@ -46,7 +47,7 @@ export default function Navigation({
 
         return (
           <DropdownMenu
-            key={index}
+            key={`nav-item-${handle}-${index}`}
             item={item}
             activeItem={openDropdown}
             isOpen={openDropdown?.name === item.name}

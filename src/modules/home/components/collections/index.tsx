@@ -10,6 +10,7 @@ import { Heading } from '@modules/common/components/heading'
 import LocalizedClientLink from '@modules/common/components/localized-client-link'
 import { Text } from '@modules/common/components/text'
 import { CollectionsData } from 'types/strapi'
+import { transformUrl } from '@lib/util/transform-url'
 
 const CollectionTile = ({
   title,
@@ -24,6 +25,9 @@ const CollectionTile = ({
   description: string
   id: number
 }) => {
+  // Transform the image URL
+  const imageUrl = transformUrl(imgSrc)
+
   return (
     <Box
       className={cn('group relative', {
@@ -31,7 +35,7 @@ const CollectionTile = ({
       })}
     >
       <Image
-        src={imgSrc}
+        src={imageUrl}
         alt={`${title} collection image`}
         width={600}
         height={300}

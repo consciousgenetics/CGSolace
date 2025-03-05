@@ -232,7 +232,14 @@ export async function middleware(request: NextRequest) {
         ? redirectPath 
         : redirectPath === '/' ? '' : `/${redirectPath}`
       
+      // Fix here: Make sure we're not adding 'us' to the path if we're already on a country page
       redirectUrl = `${request.nextUrl.origin}/${countryCode}${cleanRedirectPath}${queryString}`
+      
+      // Ensure we're not creating a /uk/us situation
+      if (redirectUrl.includes(`/${countryCode}/us`) || redirectUrl.includes(`/${countryCode}/uk`) || redirectUrl.includes(`/${countryCode}/dk`)) {
+        redirectUrl = `${request.nextUrl.origin}/${countryCode}${queryString}`
+      }
+      
       response = NextResponse.redirect(redirectUrl, 307)
     }
 

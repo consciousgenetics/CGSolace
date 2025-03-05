@@ -21,20 +21,22 @@ export default async function NavWrapper(props: any) {
     ])
 
   return (
-    <Container
-      as="nav"
-      className="duration-400 sticky top-0 z-50 mx-0 max-w-full border-b border-basic-primary bg-primary !py-0 transition-all ease-in-out medium:!px-14"
-    >
-      <Container className="flex items-center justify-between !p-0">
-        <NavContent
-          productCategories={productCategories}
-          collections={collections}
-          strapiCollections={strapiCollections}
-          countryCode={props.countryCode}
-          products={products}
-        />
-        <NavActions />
+    <div className="fixed top-0 left-0 right-0 w-full z-[1000]">
+      <Container
+        as="nav"
+        className="duration-400 h-[80px] xsmall:h-[90px] medium:h-[110px] mx-0 max-w-full border-b border-basic-primary bg-primary/95 !py-0 transition-all ease-in-out medium:!px-14 shadow-md backdrop-blur-md"
+      >
+        <Container className="flex h-full items-center justify-between !p-0">
+          <NavContent
+            productCategories={productCategories}
+            collections={collections}
+            strapiCollections={strapiCollections}
+            countryCode={props.countryCode}
+            products={products}
+          />
+          <NavActions />
+        </Container>
       </Container>
-    </Container>
+    </div>
   )
 }
