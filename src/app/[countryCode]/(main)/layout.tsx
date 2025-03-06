@@ -18,7 +18,9 @@ export default async function PageLayout(props: {
   return (
     <>
       <NavWrapper countryCode={countryCode} />
-      {props.children}
+      <div className="pt-[80px] xsmall:pt-[90px] medium:pt-[110px]">
+        {props.children}
+      </div>
       <Footer countryCode={countryCode} />
     </>
   )

@@ -6,7 +6,6 @@ import {
   getCollectionsData,
   getExploreBlogData,
   getHeroBannerData,
-  getMidBannerData,
 } from '@lib/data/fetch'
 import { getProductsList } from '@lib/data/products'
 import { getRegion } from '@lib/data/regions'
@@ -18,7 +17,7 @@ import ProductGrid from '@modules/home/components/product-grid'
 import { ProductCarousel } from '@modules/products/components/product-carousel'
 import { ReviewSection } from '@modules/common/components/reviews'
 import SkeletonProductsCarousel from '@modules/skeletons/templates/skeleton-products-carousel'
-import { BlogData, CollectionsData, HeroBannerData, MidBannerData } from 'types/strapi'
+import { BlogData, CollectionsData, HeroBannerData } from 'types/strapi'
 
 // Set dynamic rendering to prevent build-time errors
 export const dynamic = 'force-dynamic'
@@ -68,10 +67,17 @@ export default async function Home(props: {
           collection.title?.toLowerCase().includes('feminized') || 
           collection.title?.toLowerCase().includes('seed'));
         
-        const clothingCollection = collectionsList.find(collection => 
+        // Find all clothing-related collections
+        const clothingCollections = collectionsList.filter(collection => 
           collection.title?.toLowerCase().includes('clothing') || 
-          collection.title?.toLowerCase().includes('merch'));
-          
+          collection.title?.toLowerCase().includes('merch') ||
+          collection.title?.toLowerCase().includes('apparel') ||
+          collection.title?.toLowerCase().includes("men's") ||
+          collection.title?.toLowerCase().includes("women's") ||
+          collection.title?.toLowerCase().includes('shirt') ||
+          collection.title?.toLowerCase().includes('sweatshirt') ||
+          collection.title?.toLowerCase().includes('pants'));
+        
         // If we found the seed collection, try to fetch those products specifically
         if (seedCollection) {
           try {
@@ -91,14 +97,14 @@ export default async function Home(props: {
           }
         }
         
-        // If we found the clothing collection, try to fetch those products specifically
-        if (clothingCollection) {
+        // If we found any clothing collections, try to fetch those products
+        if (clothingCollections.length > 0) {
           try {
             const clothingProductsResult = await getProductsList({
               pageParam: 0,
               queryParams: { 
-                limit: 9, 
-                collection_id: [clothingCollection.id]
+                limit: 12, 
+                collection_id: clothingCollections.map(collection => collection.id)
               },
               countryCode: countryCode,
             })
@@ -140,21 +146,18 @@ export default async function Home(props: {
     // CMS data with error handling
     let strapiCollections = null;
     let heroBannerData = null;
-    let midBannerData = null;
     let posts = [];
 
     try {
       [
         strapiCollections,
         heroBannerData,
-        midBannerData,
         { data: posts = [] },
       ] = await Promise.all([
         getCollectionsData().catch(() => null),
         getHeroBannerData().catch(() => null),
-        getMidBannerData().catch(() => null),
         getExploreBlogData().catch(() => ({ data: [] })),
-      ]) as [CollectionsData | null, HeroBannerData | null, MidBannerData | null, BlogData | { data: [] }];
+      ]) as [CollectionsData | null, HeroBannerData | null, BlogData | { data: [] }];
     } catch (error) {
       console.error("Error fetching CMS data:", error);
     }
@@ -190,8 +193,8 @@ export default async function Home(props: {
               testId="clothing-section"
               products={clothingProducts}
               regionId={region.id}
-              title="Clothing"
-              subtitle="Our merchandise is more than a logo printed on a product, it's also more than design."
+              title="Clothing & Apparel"
+              subtitle="Browse our complete collection of merchandise including men's and women's apparel."
               viewAll={{
                 link: '/shop',
                 text: 'Shop All',
@@ -200,9 +203,6 @@ export default async function Home(props: {
           </Suspense>
         )}
         <ReviewSection />
-        {midBannerData?.data?.MidBanner && (
-          <Banner data={{ data: { HeroBanner: midBannerData.data.MidBanner } }} />
-        )}
         {posts && posts.length > 0 && <ExploreBlog posts={posts} />}
       </>
     )

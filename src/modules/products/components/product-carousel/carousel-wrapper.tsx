@@ -57,10 +57,10 @@ export default function CarouselWrapper({
   return (
     <div className="w-full max-w-full">
       <Box className="flex justify-center flex-col items-center mb-5 small:mb-8 px-4">
-        <Heading as="h2" className="text-2xl small:text-3xl medium:text-4xl text-black font-bold text-center">
+        <Heading as="h2" className="text-2xl small:text-3xl medium:text-4xl text-white font-bold text-center">
           {title}
         </Heading>
-        <p className="text-sm small:text-base text-gray-600 mt-2 small:mt-3 text-center max-w-2xl">
+        <p className="text-sm small:text-base text-white text-opacity-90 mt-2 small:mt-3 text-center max-w-2xl">
           {subtitle || "Every genetic that we drop is a stable, trichome covered, terpene loaded gem!"}
         </p>
       </Box>
@@ -74,7 +74,7 @@ export default function CarouselWrapper({
         <button 
           onClick={scrollPrev}
           disabled={!canScrollPrev}
-          className={`absolute left-1 small:left-2 top-1/2 -translate-y-1/2 z-10 bg-white bg-opacity-70 rounded-full p-1 small:p-2 shadow-md ${!canScrollPrev ? 'opacity-30 cursor-not-allowed' : 'hover:bg-opacity-100'}`}
+          className={`absolute left-1 small:left-2 top-1/2 -translate-y-1/2 z-10 bg-white bg-opacity-90 rounded-full p-1 small:p-2 shadow-md ${!canScrollPrev ? 'opacity-30 cursor-not-allowed' : 'hover:bg-opacity-100'}`}
           aria-label="Previous products"
         >
           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="small:w-6 small:h-6">
@@ -84,7 +84,7 @@ export default function CarouselWrapper({
         <button 
           onClick={scrollNext}
           disabled={!canScrollNext}
-          className={`absolute right-1 small:right-2 top-1/2 -translate-y-1/2 z-10 bg-white bg-opacity-70 rounded-full p-1 small:p-2 shadow-md ${!canScrollNext ? 'opacity-30 cursor-not-allowed' : 'hover:bg-opacity-100'}`}
+          className={`absolute right-1 small:right-2 top-1/2 -translate-y-1/2 z-10 bg-white bg-opacity-90 rounded-full p-1 small:p-2 shadow-md ${!canScrollNext ? 'opacity-30 cursor-not-allowed' : 'hover:bg-opacity-100'}`}
           aria-label="Next products"
         >
           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="small:w-6 small:h-6">

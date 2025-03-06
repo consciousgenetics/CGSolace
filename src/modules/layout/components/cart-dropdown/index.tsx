@@ -18,6 +18,7 @@ import { Text } from '@modules/common/components/text'
 import { BagIcon } from '@modules/common/icons/bag'
 import Thumbnail from '@modules/products/components/thumbnail'
 import SkeletonCartDropdownItems from '@modules/skeletons/components/skeleton-cart-dropdown-items'
+import { useRouter } from 'next/navigation'
 
 const CartDropdown = ({
   cart: cartState,
@@ -26,6 +27,7 @@ const CartDropdown = ({
 }) => {
   const { isOpenCartDropdown, openCartDropdown, closeCartDropdown } =
     useCartStore()
+  const router = useRouter()
 
   const [cart, setCart] = useState<HttpTypes.StoreCart | null>(cartState)
   const [totalItems, setTotalItems] = useState(0)
@@ -42,7 +44,7 @@ const CartDropdown = ({
         const enrichedItems = await enrichLineItems(
           cartState.items,
           cartState.region_id!
-        )
+        ) as HttpTypes.StoreCartLineItem[]
         cartState.items = enrichedItems
       }
 
@@ -58,7 +60,21 @@ const CartDropdown = ({
     fetchCart()
   }, [cartState])
 
-  const subtotal = cart?.subtotal ?? 0
+  // Calculate GBP subtotal from items
+  const gbpSubtotal = cart?.items?.reduce((acc, item) => {
+    // Use unit_price which should be in GBP from enrichLineItems
+    return acc + (item.unit_price || 0) * (item.quantity || 0)
+  }, 0) || 0
+
+  console.log('CartDropdown: Using GBP amounts:', {
+    subtotal: gbpSubtotal,
+    items: cart?.items?.map(item => ({
+      title: item.title,
+      unitPrice: item.unit_price,
+      quantity: item.quantity,
+      total: item.unit_price * item.quantity
+    }))
+  })
 
   useEffect(() => {
     if (isOpenCartDropdown) {
@@ -68,7 +84,7 @@ const CartDropdown = ({
 
       return () => clearTimeout(timer)
     }
-  }, [totalItems])
+  }, [isOpenCartDropdown, closeCartDropdown])
 
   return (
     <Box
@@ -190,11 +206,11 @@ const CartDropdown = ({
                     <Text
                       className="text-lg font-semibold"
                       data-testid="cart-subtotal"
-                      data-value={subtotal}
+                      data-value={gbpSubtotal}
                     >
                       {convertToLocale({
-                        amount: subtotal,
-                        currency_code: cartState.currency_code,
+                        amount: gbpSubtotal,
+                        currency_code: 'gbp',
                       })}
                     </Text>
                   </Box>

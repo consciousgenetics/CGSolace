@@ -21,32 +21,26 @@ export default function ProductPrice({
     return <div className="block h-9 w-32 animate-pulse bg-gray-100" />
   }
 
-  const calculatedPrice = selectedPrice.calculated_price || 'N/A';
-  const calculatedPriceNumber = selectedPrice.calculated_price_number || 0;
-  const originalPrice = selectedPrice.original_price || 'N/A';
-  const originalPriceNumber = selectedPrice.original_price_number || 0;
-  const priceType = selectedPrice.price_type || null;
-
   return (
     <div className="flex items-center gap-x-2">
       <span className="text-2xl text-basic-primary">
         {!variant && 'From '}
         <span
           data-testid="product-price"
-          data-value={calculatedPriceNumber}
+          data-value={selectedPrice.calculated_price_number}
         >
-          {calculatedPrice}
+          {selectedPrice.calculated_price}
         </span>
       </span>
-      {priceType === 'sale' && (
+      {selectedPrice.price_type === 'sale' && (
         <>
           <p>
             <span
               className="text-md text-secondary line-through"
               data-testid="original-product-price"
-              data-value={originalPriceNumber}
+              data-value={selectedPrice.original_price_number}
             >
-              {originalPrice}
+              {selectedPrice.original_price}
             </span>
           </p>
         </>

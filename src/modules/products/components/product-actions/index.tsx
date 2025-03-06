@@ -54,28 +54,42 @@ export default function ProductActions({
       ...prev,
       [optionId]: value,
     }))
+    // Reset quantity to 1 when variant changes
+    setQty(1)
   }
 
   // add the selected variant to the cart
   const handleAddToCart = async () => {
-    if (!selectedVariant?.id) return null
+    if (!selectedVariant?.id) {
+      console.log('No variant selected:', { options, product });
+      return null;
+    }
 
-    setIsAdding(true)
+    setIsAdding(true);
     try {
+      console.log('Adding to cart:', {
+        variantId: selectedVariant.id,
+        quantity: qty,
+        countryCode,
+        variant: selectedVariant
+      });
+
       await addToCart({
         variantId: selectedVariant.id,
         quantity: qty,
         countryCode,
-      })
-    } catch (error) {
-      toast('error', error)
-    } finally {
+      });
+      
       setTimeout(() => {
-        openCartDropdown()
-        toast('success', 'Product was added to cart!')
-      }, 1000)
-
-      setIsAdding(false)
+        openCartDropdown();
+        toast('success', 'Product was added to cart!');
+      }, 1000);
+    } catch (error) {
+      console.error('Error adding to cart:', error);
+      const errorMessage = error instanceof Error ? error.message : 'An error occurred while adding to cart';
+      toast('error', errorMessage);
+    } finally {
+      setIsAdding(false);
     }
   }
 
@@ -116,24 +130,38 @@ export default function ProductActions({
 
   // Get the max quantity
   const maxQuantity = useMemo(() => {
-    if (!selectedVariant || !cartItems) return 10
+    if (!selectedVariant) return 0
 
-    const cartQuantity =
-      cartItems.reduce((sum, item) => {
-        if (item.variant_id === selectedVariant?.id) {
-          return sum + item.quantity
-        }
-        return sum
-      }, 0) || 0
+    // Get the quantity of this variant already in the cart
+    const cartQuantity = cartItems?.reduce((sum, item) => {
+      if (item.variant_id === selectedVariant.id) {
+        return sum + item.quantity
+      }
+      return sum
+    }, 0) || 0
 
+    // If we have a specific inventory quantity, use that
     if (
-      selectedVariant?.inventory_quantity !== null &&
-      selectedVariant?.inventory_quantity !== undefined
+      selectedVariant.manage_inventory &&
+      selectedVariant.inventory_quantity !== null &&
+      selectedVariant.inventory_quantity !== undefined
     ) {
-      return Math.max(0, selectedVariant.inventory_quantity - cartQuantity)
+      const availableQuantity = selectedVariant.inventory_quantity - cartQuantity
+      console.log('maxQuantity calculation:', {
+        variant: selectedVariant.title,
+        inventoryQuantity: selectedVariant.inventory_quantity,
+        cartQuantity,
+        availableQuantity
+      })
+      return Math.max(0, availableQuantity)
     }
 
-    return 10 - cartQuantity
+    // If we allow backorders or don't manage inventory, use a reasonable limit
+    if (selectedVariant.allow_backorder || !selectedVariant.manage_inventory) {
+      return Math.max(0, 10 - cartQuantity)
+    }
+
+    return 0
   }, [selectedVariant, cartItems])
 
   // Preselect the options
@@ -151,7 +179,12 @@ export default function ProductActions({
         setOptions(variantOptions ?? {})
       }
     }
-  }, [product.variants])
+  }, [])
+
+  // Reset quantity when variant changes
+  useEffect(() => {
+    setQty(1)
+  }, [selectedVariant])
 
   return (
     <>

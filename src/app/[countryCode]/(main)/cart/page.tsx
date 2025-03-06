@@ -1,7 +1,7 @@
 import { Suspense } from 'react'
 import { Metadata } from 'next'
 
-import { enrichLineItems, retrieveCart } from '@lib/data/cart'
+import { enrichLineItems, retrieveCart, getOrSetCart } from '@lib/data/cart'
 import { getProductsList } from '@lib/data/products'
 import { getRegion } from '@lib/data/regions'
 import CartTemplate from '@modules/cart/templates'
@@ -15,7 +15,8 @@ export const metadata: Metadata = {
 }
 
 const fetchCart = async () => {
-  const cart = await retrieveCart()
+  // Always use UK region
+  const cart = await getOrSetCart('uk')
 
   if (!cart) {
     return null
@@ -33,19 +34,17 @@ export default async function Cart(props: {
   params: Promise<{ countryCode: string }>
 }) {
   const params = await props.params
-
-  const { countryCode } = params
-
   const cart = await fetchCart()
-
+  
+  // Always use UK region
   const [region, { products }] = await Promise.all([
-    getRegion(countryCode),
+    getRegion('uk'),
     getProductsList({
       pageParam: 0,
       queryParams: {
         limit: 9,
       },
-      countryCode,
+      countryCode: 'uk',
     }).then(({ response }) => response),
   ])
 

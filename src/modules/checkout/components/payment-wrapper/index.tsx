@@ -49,11 +49,14 @@ const Wrapper: React.FC<WrapperProps> = ({ cart, children }) => {
     paypalClientId !== undefined &&
     cart
   ) {
+    const currency = cart.region?.currency_code?.toUpperCase() || 'GBP';
+    console.log('PayPal: Using currency:', currency);
+    
     return (
       <PayPalScriptProvider
         options={{
           clientId: process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID || 'test',
-          currency: cart?.currency_code.toUpperCase(),
+          currency: currency,
           intent: 'authorize',
           components: 'buttons',
         }}

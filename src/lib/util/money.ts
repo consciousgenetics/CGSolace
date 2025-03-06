@@ -13,14 +13,27 @@ export const convertToLocale = ({
   currency_code,
   minimumFractionDigits,
   maximumFractionDigits,
-  locale = 'en-US',
+  locale = 'en-GB',
 }: ConvertToLocaleParams) => {
-  return currency_code && !isEmpty(currency_code)
-    ? new Intl.NumberFormat(locale, {
+  try {
+    if (currency_code && !isEmpty(currency_code)) {
+      return new Intl.NumberFormat(locale, {
         style: 'currency',
         currency: currency_code,
         minimumFractionDigits,
         maximumFractionDigits,
-      }).format(amount)
-    : amount.toString()
+      }).format(amount);
+    }
+    
+    // Default to GBP only if no currency code is provided
+    return new Intl.NumberFormat('en-GB', {
+      style: 'currency',
+      currency: 'GBP',
+      minimumFractionDigits,
+      maximumFractionDigits,
+    }).format(amount);
+  } catch (error) {
+    console.error('Error formatting currency:', error);
+    return `£${amount.toFixed(2)}`;
+  }
 }

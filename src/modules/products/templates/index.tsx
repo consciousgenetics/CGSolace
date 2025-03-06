@@ -50,27 +50,33 @@ const ProductTemplate: React.FC<ProductTemplateProps> = async ({
         className="relative flex flex-col gap-y-4 small:gap-y-6 !py-4 small:!py-8 medium:gap-y-12"
         data-testid="product-container"
       >
-        <ProductBreadcrumbs product={product} countryCode={countryCode} />
-        <Box className="relative flex flex-col gap-y-4 small:gap-y-6 large:flex-row large:items-start large:gap-x-8 xl:gap-x-[120px]">
-          <Box className="relative block w-full">
-            <ImageGallery
-              title={product.title}
-              images={product?.images || []}
-            />
-          </Box>
-          <Box className="flex w-full flex-col gap-y-4 small:gap-y-6 py-4 small:py-8 large:sticky large:top-24 large:max-w-[440px] large:py-0">
-            <ProductInfo product={product} />
-            <Suspense fallback={<SkeletonProductActions />}>
-              <ProductActionsWrapper
-                id={product.id}
-                region={region}
-                cartItems={cart?.items}
-                colors={variantColorsData}
+        <div aria-hidden id="top-of-product"></div>
+        <div className="flex flex-col gap-y-4 small:gap-y-6">
+          <ProductBreadcrumbs
+            product={product}
+            countryCode={countryCode}
+          />
+          <Box className="relative flex flex-col gap-y-4 small:gap-y-6 large:flex-row large:items-start large:gap-x-8 xl:gap-x-[120px]">
+            <Box className="relative block w-full">
+              <ImageGallery
+                title={product.title}
+                images={product?.images || []}
               />
-            </Suspense>
-            <ProductTabs product={product} />
+            </Box>
+            <Box className="flex w-full flex-col gap-y-4 small:gap-y-6 py-4 small:py-8 large:sticky large:top-24 large:max-w-[440px] large:py-0">
+              <ProductInfo product={product} />
+              <Suspense fallback={<SkeletonProductActions />}>
+                <ProductActionsWrapper
+                  id={product.id}
+                  region={region}
+                  cartItems={cart?.items}
+                  colors={variantColorsData}
+                />
+              </Suspense>
+              <ProductTabs product={product} />
+            </Box>
           </Box>
-        </Box>
+        </div>
       </Container>
 
       {productsList.products.length > 0 && (

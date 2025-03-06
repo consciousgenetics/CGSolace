@@ -60,14 +60,21 @@ export const LoadingImage = ({
   const [fallbackAttempt, setFallbackAttempt] = useState(0)
   
   // Define fallback options for problematic images
-  const getFallbacksForUrl = (url: string) => {
+  const getFallbacksForUrl = (url: string | null | undefined) => {
+    // Safety check for null or undefined URLs
+    if (!url) {
+      console.log('LoadingImage: URL is null or undefined in getFallbacksForUrl')
+      return ['/product1.jpg'] // Use existing product1.jpg as placeholder
+    }
+    
     // For conscious stoner t-shirt female
     if (url.includes('conscious') && (url.includes('shirt') || url.includes('tshirt')) && url.includes('female')) {
       return [
         '/uploads/products/female_tshirt.jpg',
         '/uploads/products/conscious_stoner_female.jpg',
         '/uploads/products/conscious_female.jpg',
-        '/uploads/products/female_t_shirt.jpg'
+        '/uploads/products/female_t_shirt.jpg',
+        '/product1.jpg' // Fallback to existing image
       ]
     }
     
@@ -75,12 +82,21 @@ export const LoadingImage = ({
     if (url.includes('merch-pack') || url.includes('merch_pack')) {
       return [
         '/uploads/products/merch_pack.jpg',
-        '/uploads/products/merch.jpg'
+        '/uploads/products/merch.jpg',
+        '/product1.jpg' // Use existing product1.jpg as fallback
       ]
     }
     
-    // Default fallback - just the URL itself
-    return [url]
+    // For pink_zheez image
+    if (url.includes('pink_zheez')) {
+      return [
+        '/product2.jpg', // Use existing product2.jpg as placeholder
+        '/product1.jpg'  // Additional fallback
+      ]
+    }
+    
+    // Default fallback - just the URL itself, plus a generic placeholder
+    return [url, '/product1.jpg']
   }
   
   // Handle loading errors by trying the next fallback
@@ -112,6 +128,13 @@ export const LoadingImage = ({
     setIsLoading(true)
     setHasError(false)
     setFallbackAttempt(0)
+    
+    if (!src) {
+      console.log('LoadingImage: Source is null or undefined in useEffect')
+      setHasError(true)
+      setIsLoading(false)
+      return
+    }
     
     // Try to fix the URL if it matches known problematic patterns
     const fallbacks = getFallbacksForUrl(src)
@@ -165,7 +188,8 @@ export const LoadingImage = ({
           console.log('Image loaded successfully:', imageSrc)
           console.log('Product name from alt text:', alt)
           // This will help us identify which image URL works for this product
-          if (alt.includes('Conscious Stoner') || src.includes('conscious') || alt.includes('conscious')) {
+          if (alt && (alt.includes('Conscious Stoner') || alt.includes('conscious')) || 
+              (src && (src.includes('conscious')))) {
             console.log('SUCCESSFUL IMAGE LOAD FOR CONSCIOUS STONER T-SHIRT:', {
               src: src,
               currentImageSrc: imageSrc,
@@ -175,8 +199,15 @@ export const LoadingImage = ({
           setIsLoading(false)
         }}
         onError={(e) => {
-          // Try the next fallback instead of immediately showing error
-          handleImageError()
+          try {
+            // Try the next fallback instead of immediately showing error
+            handleImageError()
+          } catch (error) {
+            console.error('Error in image error handler:', error)
+            // Fallback to placeholder as last resort
+            setHasError(true)
+            setIsLoading(false)
+          }
         }}
         onClick={onClick}
       />

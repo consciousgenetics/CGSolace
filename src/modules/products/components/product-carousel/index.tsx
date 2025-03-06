@@ -35,7 +35,8 @@ const fixProductThumbnail = (product) => {
   
   // Handle products by exact handle
   const handleSpecificFixes = {
-    "merch-pack": "/uploads/products/merch_pack.jpg"
+    "merch-pack": "/product1.jpg",  // Use existing image instead of merch1.jpg
+    "zheez-pink-og": "/product2.jpg" // Use existing image
   }
   
   // Direct handle-based match (most specific)
@@ -44,6 +45,15 @@ const fixProductThumbnail = (product) => {
     return {
       ...product,
       thumbnail: handleSpecificFixes[product.handle]
+    }
+  }
+  
+  // Check for problematic image URLs
+  if (product.thumbnail && product.thumbnail.includes('pink_zheez')) {
+    console.log(`ProductCarousel: Fixing problematic pink_zheez image for ${product.title}`)
+    return {
+      ...product,
+      thumbnail: "/product2.jpg"  // Use existing image
     }
   }
   
@@ -96,27 +106,56 @@ export function ProductCarousel({
   const processedProducts = products.map(fixProductThumbnail)
   
   return (
-    <div className="w-full bg-amber-50 min-h-[500px] py-10 small:py-16 flex items-center">
-      <Container className="overflow-hidden !p-0 w-full max-w-[95%] 2xl:max-w-[90%]" data-testid={testId}>
+    <div 
+      className="w-full min-h-[500px] py-10 small:py-16 flex items-center relative"
+      style={{
+        backgroundImage: 'url("/127-wide.png")',
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
+      }}
+    >
+      {/* No overlay to allow full visibility of the background image */}
+      
+      <Container className="overflow-hidden !p-0 w-full max-w-[95%] 2xl:max-w-[90%] relative z-10" data-testid={testId}>
         <Box className="flex flex-col gap-6 small:gap-8 medium:gap-12 w-full">
           <CarouselWrapper title={title} subtitle={subtitle} productsCount={products.length}>
             {processedProducts.map((item, index) => {
-              const priceData = getProductPrice({
-                product: item,
-              });
+              // Get the cheapest variant price
+              let calculatedPrice = 'N/A'
+              let originalPrice = 'N/A'
 
-              // Add null checks for cheapestPrice
-              const calculatedPrice = priceData.cheapestPrice?.calculated_price || 'N/A';
-              const originalPrice = priceData.cheapestPrice?.original_price || null;
-              
-              // CRITICAL FIX: Direct image override for the problem product
-              // This bypasses all transformations and uses a known working image
-              let finalThumbnail = item.thumbnail;
-              if (item.handle === "conscious-stoner-t-shirt-female" || 
-                 (item.title && item.title.toLowerCase().includes("conscious stoner") && 
-                  item.title.toLowerCase().includes("female"))) {
-                console.log("DIRECT IMAGE FIX APPLIED for Conscious Stoner T-Shirt Female");
-                finalThumbnail = "https://cgsolacemedusav2-production.up.railway.app/uploads/female_model_t_shirt_2_6d4e8cc3b5.jpg";
+              if (item.variants && item.variants.length > 0) {
+                // Debug variant prices
+                console.log(`Product ${item.title} variants:`, item.variants.map(v => ({
+                  id: v.id,
+                  prices: v.prices
+                })))
+
+                // Find the cheapest variant
+                const variantWithPrice = item.variants
+                  .filter(variant => variant.prices && variant.prices.length > 0)
+                  .sort((a, b) => {
+                    const aPrice = a.prices?.[0]?.amount || Infinity
+                    const bPrice = b.prices?.[0]?.amount || Infinity
+                    return aPrice - bPrice
+                  })[0]
+
+                if (variantWithPrice && variantWithPrice.prices && variantWithPrice.prices.length > 0) {
+                  const price = variantWithPrice.prices[0]
+                  console.log(`Selected price for ${item.title}:`, price)
+                  
+                  // Convert price from smallest unit to main unit
+                  const priceInPounds = Number(price.amount)
+                  console.log(`Price in smallest unit: ${price.amount}, converted to pounds: ${priceInPounds}`)
+                  
+                  calculatedPrice = `£${priceInPounds.toFixed(2)}`
+                  originalPrice = calculatedPrice
+                  
+                  console.log(`Final formatted price: ${calculatedPrice}`)
+                }
+              } else {
+                console.log(`No variants found for product ${item.title}`)
               }
 
               return (
@@ -130,8 +169,8 @@ export function ProductCarousel({
                       created_at: item.created_at,
                       title: item.title,
                       handle: item.handle,
-                      thumbnail: finalThumbnail,
-                      calculatedPrice: calculatedPrice,
+                      thumbnail: item.thumbnail,
+                      calculatedPrice,
                       salePrice: originalPrice,
                     }}
                     regionId={regionId}
@@ -144,9 +183,10 @@ export function ProductCarousel({
             <Button asChild className="mx-auto mt-6 small:mt-8">
               <LocalizedClientLink
                 href={viewAll.link}
-                className="w-max !px-6 small:!px-8 !py-3 small:!py-4 text-base small:text-lg font-bold bg-purple-700 text-white hover:bg-purple-800 transition-colors rounded-full"
+                style={{ color: '#FFD700' }} 
+                className="w-max !px-8 small:!px-10 !py-3 small:!py-4 text-lg small:text-xl font-bold bg-white hover:bg-gray-100 transition-colors rounded-full uppercase"
               >
-                Shop All
+                SHOP ALL
               </LocalizedClientLink>
             </Button>
           )}

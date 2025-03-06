@@ -1,49 +1,59 @@
 'use client'
 
 import { cn } from '@lib/util/cn'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-} from '@modules/common/components/select'
+import { Button } from '@modules/common/components/button'
 
-type ItemQtySelectProps = {
+type ItemQtyProps = {
   qty: number
   maxQuantity: number
-  action: (quantity: number) => void
+  action: (qty: number) => void
 }
 
-export default function ItemQtySelect({
-  qty,
-  maxQuantity,
-  action,
-}: ItemQtySelectProps) {
+const ItemQtySelect = ({ qty, maxQuantity, action }: ItemQtyProps) => {
+  const handleQtyChange = (type: 'inc' | 'dec') => {
+    if (type === 'inc' && qty < maxQuantity) {
+      action(qty + 1)
+    }
+    if (type === 'dec' && qty > 1) {
+      action(qty - 1)
+    }
+  }
+
   return (
-    <Select
-      value={null}
-      onValueChange={(quantity) => {
-        action(+quantity)
-      }}
-      className={cn({
-        'pointer-events-none opacity-60': maxQuantity === 0,
-      })}
-    >
-      <SelectTrigger aria-label="Choose quantity" data-testid="item-qty-select">
-        {qty}
-      </SelectTrigger>
-      <SelectContent>
-        {Array.from(
+    <div className="flex h-9 items-center rounded-md border border-gray-200">
+      <Button
+        onClick={() => handleQtyChange('dec')}
+        disabled={qty === 1}
+        variant="ghost"
+        className={cn(
+          'h-full w-8 flex items-center justify-center text-lg font-medium',
           {
-            length: Math.min(maxQuantity, 10),
-          },
-          (_, i) => (
-            <SelectItem key={i} value={String(i + 1)} className="w-[108px]">
-              {i + 1}
-            </SelectItem>
-          )
+            'opacity-50 cursor-not-allowed': qty === 1,
+          }
         )}
-      </SelectContent>
-    </Select>
+        data-testid="decrease-quantity"
+      >
+        −
+      </Button>
+      <span className="flex h-full w-8 items-center justify-center text-sm">
+        {qty}
+      </span>
+      <Button
+        onClick={() => handleQtyChange('inc')}
+        disabled={qty === maxQuantity}
+        variant="ghost"
+        className={cn(
+          'h-full w-8 flex items-center justify-center text-lg font-medium',
+          {
+            'opacity-50 cursor-not-allowed': qty === maxQuantity,
+          }
+        )}
+        data-testid="increase-quantity"
+      >
+        +
+      </Button>
+    </div>
   )
 }
+
+export default ItemQtySelect

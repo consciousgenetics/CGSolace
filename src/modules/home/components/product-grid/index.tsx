@@ -1,100 +1,120 @@
 import Image from "next/image"
 import Link from "next/link"
+import { getProductByHandle } from "@lib/data/products"
+import { getRegion } from "@lib/data/regions"
+import { convertToLocale } from "@lib/util/money"
+import ProductGridItem from "./product-grid-item"
 
-export default function ProductGrid() {
+export default async function ProductGrid() {
+  // Get region to get prices in the correct currency
+  const region = await getRegion("uk").catch(() => null)
+  
+  // Fetch actual product data if region is available
+  let allStrainsProduct = null
+  let merchPackProduct = null
+  
+  if (region) {
+    // Fetch the products by their handles
+    [allStrainsProduct, merchPackProduct] = await Promise.all([
+      getProductByHandle("all-7-strains-pack", region.id).catch(() => null),
+      getProductByHandle("merch-pack", region.id).catch(() => null)
+    ])
+  }
+  
+  // Format prices or use fallback
+  const allStrainsPrice = allStrainsProduct && allStrainsProduct.variants && allStrainsProduct.variants[0] 
+    ? convertToLocale({
+        amount: allStrainsProduct.variants[0].calculated_price,
+        currency_code: region?.currency_code || 'GBP'
+      })
+    : "Loading..." // Non-hardcoded fallback
+    
+  const merchPackPrice = merchPackProduct && merchPackProduct.variants && merchPackProduct.variants[0]
+    ? convertToLocale({
+        amount: merchPackProduct.variants[0].calculated_price,
+        currency_code: region?.currency_code || 'GBP'
+      })
+    : "Loading..." // Non-hardcoded fallback
+
   return (
-    <div className="w-full flex items-center justify-center bg-white overflow-hidden">
-      <div className="w-full max-w-[100vw] grid grid-cols-1 small:grid-cols-2 small:grid-rows-2 gap-4 small:gap-0">
+    <div className="w-full flex items-center justify-center py-24 relative overflow-hidden">
+      <div className="absolute inset-0 w-full h-full">
+        <Image
+          src="/127.png"
+          alt="Background pattern"
+          fill
+          className="object-cover"
+          sizes="100vw"
+          priority
+        />
+        <div className="absolute inset-0 bg-black/30 backdrop-blur-[2px]"></div>
+      </div>
+      
+      <div className="w-full max-w-[1400px] grid grid-cols-1 small:grid-cols-2 small:grid-rows-2 gap-12 px-4 small:px-8 relative z-10">
         {/* All 7 Strains Pack - Top Left */}
-        <div className="relative p-4 small:p-6 medium:p-8 flex flex-col justify-between h-[500px] small:h-[50vh] medium:h-[60vh]">
-          <Image
-            src="/126.png"
-            alt="Background pattern"
-            fill
-            className="object-cover"
-            sizes="(max-width: 640px) 100vw, 50vw"
-            priority
-          />
-          <div className="relative space-y-2">
-            <h2 className="text-lg small:text-xl medium:text-2xl font-bold uppercase tracking-wide break-words">ALL 7 STRAINS PACK</h2>
-            <p className="text-base small:text-lg medium:text-xl font-bold">£350.00</p>
-            <p className="text-xs small:text-sm">
-              If you want POTV feminized seeds from our temporary breeding lines, you will receive all 7 genetics:
-            </p>
-            <p className="text-xs small:text-sm font-semibold break-words">
-              ZAMNESIA | DARKWOOD OG | ORANGE BLAZE CAKE | BLOOD DIAMOND 2.0 | PINK PANTHER 2.0 | PINK FROST | PINK QUARTZ
-            </p>
-            <p className="text-xs small:text-sm font-semibold">Plus Bonus Specials:</p>
-            <ul className="list-disc pl-5 space-y-0.5 text-xs small:text-sm">
-              <li>1 strain of your choice in your email</li>
-              <li>Pack of pheno seeds (regular)</li>
-              <li>Customize your genetics strain name and see it in the online store in your checkout!</li>
-            </ul>
-          </div>
-          <div className="relative mt-3">
-            <Link
-              href="#"
-              className="bg-purple-700 text-white px-4 py-1.5 small:px-6 medium:px-8 small:py-2 rounded-full font-bold uppercase inline-block hover:bg-purple-800 transition-colors text-xs small:text-sm medium:text-base"
-            >
-              SHOP NOW
-            </Link>
-          </div>
-        </div>
+        <ProductGridItem 
+          delay={0.1}
+          title="ALL 7 STRAINS PACK"
+          price={allStrainsPrice}
+          priceLabel="Premium Pack"
+          tagText="Premium Collection"
+          tagColor="purple"
+          description="If you want POTV feminized seeds from our temporary breeding lines, you will receive all 7 genetics:"
+          tagItems={[
+            "ZAMNESIA", "DARKWOOD OG", "ORANGE BLAZE", "BLOOD DIAMOND", 
+            "PINK PANTHER", "PINK FROST", "PINK QUARTZ"
+          ]}
+          bonusItems={[
+            "1 strain of your choice in your email",
+            "Pack of pheno seeds (regular)",
+            "Customize your genetics strain name"
+          ]}
+          buttonLink="/uk/products/all-7-strains-pack"
+          buttonColor="purple"
+        />
 
         {/* Strains Image - Top Right */}
-        <div className="relative h-[400px] small:h-[50vh] medium:h-[60vh]">
-          <Image
-            src={`/special-packs.png`}
-            alt="Collection of colorful strain seed packets"
-            fill
-            className="object-cover"
-            sizes="(max-width: 640px) 100vw, 50vw"
-            priority
-          />
-        </div>
+        <ProductGridItem 
+          delay={0.2}
+          type="image"
+          backgroundColor="purple" 
+          imageSrc="/special-packs.png"
+          imageAlt="Collection of colorful strain seed packets"
+          imageTitle="Premium Seed Packs"
+          imageTag="Special Collection"
+        />
 
         {/* Seeds Packaging Image - Bottom Left */}
-        <div className="relative h-[400px] small:h-[50vh] medium:h-[60vh] order-4 small:order-3">
-          <Image
-            src={`/cg-grinder.png`}
-            alt="Person packaging seed packets"
-            fill
-            className="object-cover"
-            sizes="(max-width: 640px) 100vw, 50vw"
-            priority
-          />
-        </div>
+        <ProductGridItem 
+          delay={0.3}
+          type="image"
+          backgroundColor="purple" 
+          imageSrc="/cg-grinder.png"
+          imageAlt="Person packaging seed packets"
+          imageTitle="Quality Grinders"
+          imageTag="Premium Experience"
+          className="order-4 small:order-3"
+        />
 
         {/* Merch Pack - Bottom Right */}
-        <div className="relative p-4 small:p-6 medium:p-8 flex flex-col justify-between text-white h-[500px] small:h-[50vh] medium:h-[60vh] order-3 small:order-4">
-          <Image
-            src="/127.png"
-            alt="Background pattern"
-            fill
-            className="object-cover"
-            sizes="(max-width: 640px) 100vw, 50vw"
-            priority
-          />
-          <div className="relative space-y-2">
-            <h2 className="text-lg small:text-xl medium:text-2xl font-bold uppercase tracking-wide break-words">MERCH PACK</h2>
-            <p className="text-base small:text-lg medium:text-xl font-bold">£90.00</p>
-            <p className="text-xs small:text-sm">If you like a specific design that a merch pack includes:</p>
-            <ul className="list-disc pl-5 space-y-0.5 text-xs small:text-sm">
-              <li>1 shirt</li>
-              <li>Address space</li>
-              <li>Sticker</li>
-              <li>Lighter</li>
-            </ul>
-          </div>
-          <div className="relative mt-3">
-            <Link
-              href="#"
-              className="bg-yellow-300 text-black px-4 py-1.5 small:px-6 medium:px-8 small:py-2 rounded-full font-bold uppercase inline-block hover:bg-yellow-400 transition-colors text-xs small:text-sm medium:text-base"
-            >
-              SHOP NOW
-            </Link>
-          </div>
-        </div>
+        <ProductGridItem 
+          delay={0.4}
+          title="MERCH PACK"
+          price={merchPackPrice}
+          priceLabel="Complete Pack"
+          tagText="Fan Favorites"
+          tagColor="amber"
+          description="If you like a specific design that a merch pack includes:"
+          listItems={[
+            "1 shirt",
+            "Address space",
+            "Sticker",
+            "Lighter"
+          ]}
+          buttonLink="/uk/products/merch-pack"
+          buttonColor="amber"
+          className="order-3 small:order-4"
+        />
       </div>
     </div>
   )
