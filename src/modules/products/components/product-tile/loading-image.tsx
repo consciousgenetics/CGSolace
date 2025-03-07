@@ -26,10 +26,12 @@ export const LoadingImage = ({
   // CRITICAL FIX: Direct image override for Conscious Stoner T-Shirt Female
   // If this is the problematic image or product, use the working image directly
   if ((alt && alt.toLowerCase().includes('conscious') && alt.toLowerCase().includes('female')) ||
-      (src && src.includes('conscious') && (src.includes('shirt') || src.includes('tshirt')) && src.includes('female'))) {
+      (src && src.toLowerCase && src.toLowerCase().includes('conscious') && 
+      (src.toLowerCase().includes('shirt') || src.toLowerCase().includes('tshirt')) && 
+      src.toLowerCase().includes('female'))) {
     
     // Use the hardcoded image that works, bypassing all normal logic
-    const workingImageUrl = "https://cgsolacemedusav2-production.up.railway.app/uploads/female_model_t_shirt_2_6d4e8cc3b5.jpg";
+    const workingImageUrl = "/conscious-female-tshirt.jpg"; // Use local image instead of remote URL
     console.log("DIRECT IMAGE OVERRIDE in LoadingImage for Conscious Stoner T-Shirt Female");
     console.log("Original src:", src);
     console.log("Using direct image URL:", workingImageUrl);
@@ -43,11 +45,12 @@ export const LoadingImage = ({
           quality={100} // Use highest quality
           className={className}
           fill
-          sizes={sizes}
+          sizes={sizes || "(max-width: 768px) 100vw, 400px"}
           style={{
             objectFit: 'cover',
           }}
           onClick={onClick}
+          unoptimized={false} // Let Next.js optimize local images
         />
       </div>
     );
@@ -56,54 +59,93 @@ export const LoadingImage = ({
   // Normal flow for other images
   const [isLoading, setIsLoading] = useState(true)
   const [hasError, setHasError] = useState(false)
-  const [imageSrc, setImageSrc] = useState(src)
+  const [imageSrc, setImageSrc] = useState<string | null>(null)
   const [fallbackAttempt, setFallbackAttempt] = useState(0)
   
   // Define fallback options for problematic images
-  const getFallbacksForUrl = (url: string | null | undefined) => {
+  const getFallbacksForUrl = (url: string | null | undefined): string[] => {
     // Safety check for null or undefined URLs
     if (!url) {
       console.log('LoadingImage: URL is null or undefined in getFallbacksForUrl')
-      return ['/product1.jpg'] // Use existing product1.jpg as placeholder
+      return ['/product1.jpg'] // Use local image as fallback
+    }
+
+    // Extract the actual image path if it's in the Next.js Image format
+    const imageMatch = url.match(/image\?url=([^&]+)/)
+    const decodedUrl = imageMatch ? decodeURIComponent(imageMatch[1]) : url
+    
+    // Remove any query parameters
+    const cleanUrl = decodedUrl.split('?')[0]
+
+    // Remove country code prefix if present (e.g., /uk/, /dk/, etc.)
+    const withoutCountryCode = cleanUrl.replace(/^\/[a-z]{2}\//, '/')
+    
+    // For remote URLs (starting with http/https), use them directly
+    if (withoutCountryCode.startsWith('http')) {
+      return [withoutCountryCode]
+    }
+    
+    console.log('LoadingImage: URL processing:', {
+      original: url,
+      decoded: decodedUrl,
+      clean: cleanUrl,
+      withoutCountryCode
+    })
+    
+    // Handle numeric image names (like "126-wide.png")
+    if (withoutCountryCode.match(/^\d+.*\.(png|jpg|jpeg|gif|webp)$/i)) {
+      console.log('LoadingImage: Handling numeric image name:', withoutCountryCode)
+      // Try multiple possible paths for the numeric image
+      return [
+        withoutCountryCode.startsWith('/') ? withoutCountryCode : `/${withoutCountryCode}`,
+        `/uploads/${withoutCountryCode.replace(/^\//, '')}`,
+        `/images/${withoutCountryCode.replace(/^\//, '')}`,
+        '/product1.jpg'
+      ].map(path => path.replace(/^\/[a-z]{2}\//, '/')) // Remove any country code prefix
     }
     
     // For conscious stoner t-shirt female
-    if (url.includes('conscious') && (url.includes('shirt') || url.includes('tshirt')) && url.includes('female')) {
+    if (withoutCountryCode.toLowerCase().includes('conscious') && 
+        (withoutCountryCode.toLowerCase().includes('shirt') || withoutCountryCode.toLowerCase().includes('tshirt')) && 
+        withoutCountryCode.toLowerCase().includes('female')) {
       return [
-        '/uploads/products/female_tshirt.jpg',
-        '/uploads/products/conscious_stoner_female.jpg',
-        '/uploads/products/conscious_female.jpg',
-        '/uploads/products/female_t_shirt.jpg',
-        '/product1.jpg' // Fallback to existing image
+        '/conscious-female-tshirt.jpg',
+        '/product1.jpg'
       ]
     }
     
     // For merch pack
-    if (url.includes('merch-pack') || url.includes('merch_pack')) {
+    if (withoutCountryCode.toLowerCase().includes('merch-pack') || withoutCountryCode.toLowerCase().includes('merch_pack')) {
       return [
-        '/uploads/products/merch_pack.jpg',
-        '/uploads/products/merch.jpg',
-        '/product1.jpg' // Use existing product1.jpg as fallback
+        '/merch-pack.jpg',
+        '/product1.jpg'
       ]
     }
     
-    // For pink_zheez image
-    if (url.includes('pink_zheez')) {
-      return [
-        '/product2.jpg', // Use existing product2.jpg as placeholder
-        '/product1.jpg'  // Additional fallback
-      ]
+    // Check if the URL is a relative path without leading slash
+    if (!withoutCountryCode.startsWith('/') && !withoutCountryCode.startsWith('http')) {
+      console.log('LoadingImage: Adding leading slash to relative path:', withoutCountryCode)
+      return [`/${withoutCountryCode}`, '/product1.jpg']
     }
     
-    // Default fallback - just the URL itself, plus a generic placeholder
-    return [url, '/product1.jpg']
+    // Default fallback chain
+    return [withoutCountryCode, '/product1.jpg', '/product2.jpg']
   }
   
   // Handle loading errors by trying the next fallback
-  const handleImageError = () => {
-    console.error(`LoadingImage: Error loading image (attempt ${fallbackAttempt + 1}):`, imageSrc)
+  const handleImageError = (error: any) => {
+    // Get the current image details
+    const currentImageDetails = {
+      currentSrc: imageSrc,
+      originalSrc: src,
+      attempt: fallbackAttempt + 1
+    }
     
+    console.log('LoadingImage: Image failed to load:', currentImageDetails)
+    
+    // Get fallback options
     const fallbacks = getFallbacksForUrl(src)
+    console.log('LoadingImage: Available fallbacks:', fallbacks)
     
     // If we have more fallbacks to try
     if (fallbackAttempt < fallbacks.length - 1) {
@@ -115,9 +157,10 @@ export const LoadingImage = ({
       setFallbackAttempt(nextAttempt)
       setImageSrc(nextFallback)
       setIsLoading(true)
+      setHasError(false)
     } else {
       // We've tried all fallbacks, show placeholder
-      console.log('LoadingImage: All fallbacks failed, showing placeholder')
+      console.log('LoadingImage: All fallbacks exhausted, showing placeholder')
       setHasError(true)
       setIsLoading(false)
     }
@@ -136,17 +179,28 @@ export const LoadingImage = ({
       return
     }
     
-    // Try to fix the URL if it matches known problematic patterns
+    // Get the fallbacks and use the first one
     const fallbacks = getFallbacksForUrl(src)
-    setImageSrc(fallbacks[0])
+    
+    // Log the complete state for debugging
+    console.log('LoadingImage: Complete state:', {
+      originalSrc: src,
+      fallbacks,
+      currentAttempt: fallbackAttempt,
+      isLoading,
+      hasError
+    })
+    
+    // If the source is a Next.js image URL, try to load it directly first
+    if (src.includes('/_next/image')) {
+      setImageSrc(src)
+    } else {
+      setImageSrc(fallbacks[0])
+    }
     
     console.log('LoadingImage: Source changed, initial URL:', src)
     console.log('LoadingImage: Using URL:', fallbacks[0])
-    console.log('LoadingImage: Available fallbacks:', fallbacks)
   }, [src])
-  
-  // Add debug logging
-  console.log('LoadingImage rendering with src:', src, 'current:', imageSrc, 'attempt:', fallbackAttempt)
   
   const renderPlaceholder = () => (
     <div className="relative flex h-full w-full items-center justify-center bg-gray-100" onClick={onClick}>
@@ -154,7 +208,7 @@ export const LoadingImage = ({
     </div>
   )
   
-  if (!src) {
+  if (!imageSrc) {
     console.log('No image source provided, rendering placeholder')
     return renderPlaceholder()
   }
@@ -180,36 +234,25 @@ export const LoadingImage = ({
         quality={90}
         className={className}
         fill
-        sizes={sizes}
+        sizes={sizes || "(max-width: 768px) 100vw, 400px"}
         style={{
           objectFit: 'cover',
+          backgroundColor: 'white',
         }}
         onLoad={() => {
-          console.log('Image loaded successfully:', imageSrc)
-          console.log('Product name from alt text:', alt)
-          // This will help us identify which image URL works for this product
-          if (alt && (alt.includes('Conscious Stoner') || alt.includes('conscious')) || 
-              (src && (src.includes('conscious')))) {
-            console.log('SUCCESSFUL IMAGE LOAD FOR CONSCIOUS STONER T-SHIRT:', {
-              src: src,
-              currentImageSrc: imageSrc,
-              alt: alt
-            })
-          }
+          console.log('LoadingImage: Successfully loaded:', imageSrc)
           setIsLoading(false)
+          setHasError(false)
         }}
-        onError={(e) => {
-          try {
-            // Try the next fallback instead of immediately showing error
-            handleImageError()
-          } catch (error) {
-            console.error('Error in image error handler:', error)
-            // Fallback to placeholder as last resort
-            setHasError(true)
-            setIsLoading(false)
-          }
+        onError={() => {
+          console.log('LoadingImage: Failed to load:', imageSrc)
+          handleImageError({
+            src: imageSrc,
+            fallbackAttempt
+          })
         }}
         onClick={onClick}
+        unoptimized={true}
       />
     </div>
   )

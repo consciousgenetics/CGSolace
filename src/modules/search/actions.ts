@@ -5,7 +5,7 @@ export const BACKEND_URL = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL
 export const PUBLISHABLE_API_KEY =
   process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY
 
-export const PRODUCT_LIMIT = 12
+export const PRODUCT_LIMIT = 24
 
 // Helper function to ensure backend URL has a protocol
 export const getBackendUrl = (url = BACKEND_URL) => {
@@ -52,6 +52,7 @@ export function search({
         order: sortBy,
         offset: ((page - 1) * PRODUCT_LIMIT).toString(),
         limit: PRODUCT_LIMIT.toString(),
+        fields: '*variants.calculated_price,+variants.inventory_quantity,*variants,*variants.prices'
       })
 
       if (category_id) {

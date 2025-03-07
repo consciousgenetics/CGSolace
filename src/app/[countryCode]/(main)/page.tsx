@@ -1,5 +1,6 @@
 import { Suspense } from 'react'
 import { Metadata } from 'next'
+import Image from 'next/image'
 
 import { getCollectionsList } from '@lib/data/collections'
 import {
@@ -171,37 +172,41 @@ export default async function Home(props: {
             medusaCollections={collectionsList}
           />
         )}
-        {seedProducts && seedProducts.length > 0 && region && (
-          <Suspense fallback={<SkeletonProductsCarousel />}>
-            <ProductCarousel
-              testId="seeds-section"
-              products={seedProducts}
-              regionId={region.id}
-              title="Feminized Seeds"
-              subtitle="Premium quality feminized seeds for your growing needs."
-              viewAll={{
-                link: '/shop',
-                text: 'View all',
-              }}
-            />
-          </Suspense>
-        )}
-        <ProductGrid />
-        {clothingProducts && clothingProducts.length > 0 && region && (
-          <Suspense fallback={<SkeletonProductsCarousel />}>
-            <ProductCarousel
-              testId="clothing-section"
-              products={clothingProducts}
-              regionId={region.id}
-              title="Clothing & Apparel"
-              subtitle="Browse our complete collection of merchandise including men's and women's apparel."
-              viewAll={{
-                link: '/shop',
-                text: 'Shop All',
-              }}
-            />
-          </Suspense>
-        )}
+        <div className="w-full flex items-center justify-center relative overflow-hidden">
+          <div className="w-full relative z-10">
+            {seedProducts && seedProducts.length > 0 && region && (
+              <Suspense fallback={<SkeletonProductsCarousel />}>
+                <ProductCarousel
+                  testId="seeds-section"
+                  products={seedProducts}
+                  regionId={region.id}
+                  title="Feminized Seeds"
+                  subtitle="Premium quality feminized seeds for your growing needs."
+                  viewAll={{
+                    link: '/shop',
+                    text: 'View all',
+                  }}
+                />
+              </Suspense>
+            )}
+            <ProductGrid />
+            {clothingProducts && clothingProducts.length > 0 && region && (
+              <Suspense fallback={<SkeletonProductsCarousel />}>
+                <ProductCarousel
+                  testId="clothing-section"
+                  products={clothingProducts}
+                  regionId={region.id}
+                  title="Clothing & Apparel"
+                  subtitle="Browse our complete collection of merchandise including men's and women's apparel."
+                  viewAll={{
+                    link: '/shop',
+                    text: 'Shop All',
+                  }}
+                />
+              </Suspense>
+            )}
+          </div>
+        </div>
         <ReviewSection />
         {posts && posts.length > 0 && <ExploreBlog posts={posts} />}
       </>

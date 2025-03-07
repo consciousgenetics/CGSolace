@@ -1,4 +1,5 @@
 import { Metadata } from 'next'
+import { Inter } from 'next/font/google'
 
 import { getBaseURL } from '@lib/util/env'
 import { ProgressBar } from '@modules/common/components/progress-bar'
@@ -7,6 +8,13 @@ import { CorsProxyProvider } from '@modules/common/components/cors-proxy-provide
 import { Toaster } from 'sonner'
 
 import 'styles/globals.css'
+
+const inter = Inter({
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700', '800'],
+  style: ['normal'],
+  variable: '--font-inter',
+})
 
 export const metadata: Metadata = {
   metadataBase: new URL(getBaseURL()),
@@ -20,8 +28,8 @@ export const metadata: Metadata = {
 
 export default function RootLayout(props: { children: React.ReactNode }) {
   return (
-    <html lang="en" suppressHydrationWarning className="overflow-x-hidden">
-      <body suppressHydrationWarning className="overflow-x-hidden">
+    <html lang="en" suppressHydrationWarning className={inter.variable}>
+      <body suppressHydrationWarning>
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
@@ -29,10 +37,10 @@ export default function RootLayout(props: { children: React.ReactNode }) {
           disableTransitionOnChange
         >
           <CorsProxyProvider>
-            <div className="text-basic-primary overflow-x-hidden">
+            <div className="text-basic-primary">
               <ProgressBar />
               <Toaster position="bottom-right" offset={65} closeButton />
-              <main className="relative overflow-x-hidden">{props.children}</main>
+              <main className="relative">{props.children}</main>
             </div>
           </CorsProxyProvider>
         </ThemeProvider>

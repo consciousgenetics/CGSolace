@@ -65,11 +65,11 @@ export function ProductTile({
             </Box>
           )}
           <LocalizedClientLink href={`/products/${product.handle}`}>
-            <LoadingImage
+            <img
               src={workingImageUrl}
               alt={product.title}
-              priority={true}
               className="h-full w-full object-cover border-2 border-black rounded-xl"
+              loading="eager"
             />
           </LocalizedClientLink>
           <ProductActions productHandle={product.handle} regionId={regionId} />

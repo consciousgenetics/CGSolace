@@ -10,27 +10,19 @@ const nextConfig = {
   images: {
     remotePatterns: [
       {
-        protocol: 'http',
-        hostname: 'localhost',
-        port: '9000',
-        pathname: '/static/**',
-      },
-      {
-        protocol: 'https',
-        hostname: 'cgsolacemedusav2-production.up.railway.app',
-        pathname: '/static/**',
-      },
-      {
-        protocol: 'http',
-        hostname: 'localhost',
-        port: '1337',
-        pathname: '/uploads/**',
-      },
-      {
         protocol: 'https',
         hostname: '**',
       },
+      {
+        protocol: 'http',
+        hostname: 'localhost',
+      }
     ],
+    dangerouslyAllowSVG: true,
+    domains: ['localhost', '127.0.0.1'],
+    unoptimized: true, // Disable image optimization globally
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
+    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
   },
   experimental: {
     serverActions: {
@@ -83,6 +75,20 @@ const nextConfig = {
   async rewrites() {
     const strapiUrl = process.env.NEXT_PUBLIC_STRAPI_API_URL || 'http://localhost:1337';
     return {
+      beforeFiles: [
+        // Handle image paths with country codes
+        {
+          source: '/:countryCode/:path*',
+          destination: '/:path*',
+          has: [
+            {
+              type: 'query',
+              key: 'url',
+              value: '(.*)',
+            },
+          ],
+        },
+      ],
       fallback: [
         {
           source: '/api/:path*',

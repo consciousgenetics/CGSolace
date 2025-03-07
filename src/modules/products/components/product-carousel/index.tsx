@@ -4,6 +4,7 @@ import { Box } from '@modules/common/components/box'
 import { Button } from '@modules/common/components/button'
 import { Container } from '@modules/common/components/container'
 import LocalizedClientLink from '@modules/common/components/localized-client-link'
+import Image from 'next/image'
 
 import { ProductTile } from '../product-tile'
 import CarouselWrapper from './carousel-wrapper'
@@ -23,9 +24,11 @@ const fixProductThumbnail = (product) => {
        product.title.toLowerCase().includes("female"))) {
     console.log(`ProductCarousel: Applying special fix for Conscious Stoner T-Shirt Female`)
     
-    // Use the exact same approach as the product page
-    // This hardcoded URL is from a working product page - ensure it matches exactly what works there
-    const productPageImage = "https://cgsolacemedusav2-production.up.railway.app/uploads/female_model_t_shirt_2_6d4e8cc3b5.jpg"
+    // Use the uploaded image path
+    const productPageImage = "/female_model_t_shirt_2.jpg"
+    
+    console.log(`ProductCarousel: Original thumbnail for ${product.title}:`, product.thumbnail)
+    console.log(`ProductCarousel: Using fixed URL for ${product.title}:`, productPageImage)
     
     return {
       ...product,
@@ -107,16 +110,19 @@ export function ProductCarousel({
   
   return (
     <div 
-      className="w-full min-h-[500px] py-10 small:py-16 flex items-center relative"
-      style={{
-        backgroundImage: 'url("/127-wide.png")',
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundRepeat: 'no-repeat',
-      }}
+      className="w-full pb-10 small:pb-16 flex items-center relative overflow-hidden"
     >
-      {/* No overlay to allow full visibility of the background image */}
-      
+      <div className="absolute inset-0 w-full h-full">
+        <Image
+          src="/126-wide.png"
+          alt="Background pattern"
+          fill
+          className="object-cover"
+          sizes="100vw"
+          priority
+        />
+        <div className="absolute inset-0 bg-black/50 backdrop-blur-[2px]"></div>
+      </div>
       <Container className="overflow-hidden !p-0 w-full max-w-[95%] 2xl:max-w-[90%] relative z-10" data-testid={testId}>
         <Box className="flex flex-col gap-6 small:gap-8 medium:gap-12 w-full">
           <CarouselWrapper title={title} subtitle={subtitle} productsCount={products.length}>

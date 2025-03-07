@@ -18,7 +18,7 @@ export default async function PageLayout(props: {
   return (
     <>
       <NavWrapper countryCode={countryCode} />
-      <div className="pt-[80px] xsmall:pt-[90px] medium:pt-[110px]">
+      <div className="min-h-screen">
         {props.children}
       </div>
       <Footer countryCode={countryCode} />

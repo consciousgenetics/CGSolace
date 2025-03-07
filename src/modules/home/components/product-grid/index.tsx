@@ -58,7 +58,7 @@ export default async function ProductGrid() {
           price={allStrainsPrice}
           priceLabel="Premium Pack"
           tagText="Premium Collection"
-          tagColor="purple"
+          tagColor="amber"
           description="If you want POTV feminized seeds from our temporary breeding lines, you will receive all 7 genetics:"
           tagItems={[
             "ZAMNESIA", "DARKWOOD OG", "ORANGE BLAZE", "BLOOD DIAMOND", 
@@ -69,8 +69,8 @@ export default async function ProductGrid() {
             "Pack of pheno seeds (regular)",
             "Customize your genetics strain name"
           ]}
-          buttonLink="/uk/products/all-7-strains-pack"
-          buttonColor="purple"
+          buttonLink="/uk/products"
+          buttonColor="amber"
         />
 
         {/* Strains Image - Top Right */}
@@ -111,7 +111,7 @@ export default async function ProductGrid() {
             "Sticker",
             "Lighter"
           ]}
-          buttonLink="/uk/products/merch-pack"
+          buttonLink="/uk/products"
           buttonColor="amber"
           className="order-3 small:order-4"
         />

@@ -82,7 +82,7 @@ export const getProductsList = async function ({
 }> {
   noStore()
 
-  const limit = queryParams?.limit || 12
+  const limit = queryParams?.limit || 24
   const offset = Math.max(0, (pageParam - 1) * limit)
   const region = await getRegion(countryCode)
 
@@ -104,23 +104,13 @@ export const getProductsList = async function ({
       },
       { next: { tags: ['products'] } }
     )
-    .then(({ products }) => {
-      const filteredProducts = products.filter((product) => {
-        if (product.variants.length === 1) {
-          return product.variants[0].inventory_quantity > 0
-        }
-        return product.variants.length > 1
-      })
-
-      const filteredCount = filteredProducts.length
-      const nextPage = filteredCount > offset + limit ? pageParam + 1 : null
-
+    .then(({ products, count }) => {
       return {
         response: {
-          products: filteredProducts,
-          count: filteredCount,
+          products,
+          count,
         },
-        nextPage: nextPage,
+        nextPage: count > offset + limit ? pageParam + 1 : null,
         queryParams,
       }
     })

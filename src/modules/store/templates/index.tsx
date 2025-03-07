@@ -9,7 +9,6 @@ import { Container } from '@modules/common/components/container'
 import RefinementList from '@modules/common/components/sort'
 import { Text } from '@modules/common/components/text'
 import { ProductCarousel } from '@modules/products/components/product-carousel'
-import { search } from '@modules/search/actions'
 import SkeletonProductGrid from '@modules/skeletons/templates/skeleton-product-grid'
 import SkeletonProductsCarousel from '@modules/skeletons/templates/skeleton-products-carousel'
 
@@ -38,17 +37,21 @@ export default async function StoreTemplate({
   const pageNumber = page ? parseInt(page) : 1
   const filters = await getStoreFilters()
 
-  const { results, count } = await search({
-    currency_code: region.currency_code,
-    order: sortBy,
-    page: pageNumber,
-    collection: collection?.split(','),
-    type: type?.split(','),
-    material: material?.split(','),
-    price: price?.split(','),
+  // Get all products using getProductsList
+  const { response: { products: results, count } } = await getProductsList({
+    pageParam: pageNumber,
+    queryParams: {
+      order: sortBy === 'price_asc' ? 'calculated_price' : 
+             sortBy === 'price_desc' ? '-calculated_price' :
+             sortBy === 'created_at' ? '-created_at' : undefined,
+      collection_id: collection?.split(','),
+      type_id: type?.split(','),
+      material: material?.split(','),
+    },
+    countryCode: countryCode,
   })
 
-  // TODO: Add logic in future
+  // Get recommended products
   const { products: recommendedProducts } = await getProductsList({
     pageParam: 0,
     queryParams: { limit: 9 },
@@ -83,15 +86,16 @@ export default async function StoreTemplate({
               page={pageNumber}
               total={count}
               countryCode={countryCode}
+              regionData={region}
             />
           ) : (
             <p className="py-10 text-center text-lg text-secondary">
-              No products.
+              No products found. Please check back later.
             </p>
           )}
         </Suspense>
       </Container>
-      {recommendedProducts && (
+      {recommendedProducts && recommendedProducts.length > 0 && (
         <Suspense fallback={<SkeletonProductsCarousel />}>
           <ProductCarousel
             products={recommendedProducts}
