@@ -22,7 +22,10 @@ const createCart = async (data: {
   country_code: string
 }) => {
   try {
-    const result = await sdk.store.cart.create(data);
+    // Only send region_id to the Medusa backend
+    const result = await sdk.store.cart.create({
+      region_id: data.region_id
+    });
     return result.cart;
   } catch (error) {
     console.error('createCart: Error creating cart:', error);
@@ -76,10 +79,10 @@ export const getOrSetCart = async (countryCode: string = 'uk') => {
       }
     }
 
-    // Create a new cart
+    // Create a new cart with only region_id
     const cart = await createCart({
       region_id: region.id,
-      country_code: countryCode,
+      country_code: countryCode, // This won't be used in the API call but kept for logging
     })
 
     if (!cart) {
