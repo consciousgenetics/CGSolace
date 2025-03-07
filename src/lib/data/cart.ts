@@ -44,73 +44,49 @@ export async function retrieveCart() {
 
 export const getOrSetCart = async (countryCode: string = 'uk') => {
   try {
-    console.log('getOrSetCart: Starting with country code:', countryCode);
+    const existingCartId = await getCartId()
+    const region = await getRegion(countryCode)
 
-    // Always get the UK region
-    const region = await getRegion('uk');
     if (!region) {
-      console.error('getOrSetCart: Failed to get UK region');
-      return null;
+      console.error('getOrSetCart: Region not found for country code:', countryCode)
+      return null
     }
 
-    console.log('getOrSetCart: Using region:', {
-      id: region.id,
-      currency: region.currency_code
-    });
-
-    // Get existing cart
-    const existingCart = await retrieveCart();
-    
-    if (!existingCart) {
-      console.log('getOrSetCart: No existing cart, creating new one with UK region');
-      return createCart({
-        region_id: region.id,
-        country_code: 'gb',
-      });
-    }
-
-    // Check if cart needs region update
-    if (existingCart.region_id !== region.id || existingCart.region?.currency_code?.toLowerCase() !== 'gbp') {
-      console.log('getOrSetCart: Updating cart region to UK/GBP:', {
-        oldRegion: existingCart.region_id,
-        oldCurrency: existingCart.region?.currency_code,
-        newRegion: region.id
-      });
-
+    // If we have an existing cart, try to retrieve it
+    if (existingCartId) {
       try {
-        const updatedCart = await sdk.store.cart.update(existingCart.id, {
-          region_id: region.id,
-        });
-        
-        console.log('getOrSetCart: Cart updated successfully:', {
-          id: updatedCart.cart.id,
-          region: updatedCart.cart.region_id,
-          currency: updatedCart.cart.region?.currency_code
-        });
-        
-        return updatedCart.cart;
+        const authHeaders = await getAuthHeaders()
+        const { cart } = await sdk.store.cart.retrieve(existingCartId, {}, authHeaders)
+
+        // Check if the cart exists and has the correct region
+        if (cart && cart.region_id === region.id) {
+          return cart
+        }
+
+        // If cart doesn't exist or has wrong region, remove the cart ID
+        await removeCartId()
       } catch (error) {
-        console.error('getOrSetCart: Failed to update cart region:', error);
-        
-        // If update fails, create a new cart
-        console.log('getOrSetCart: Creating new cart with UK region');
-        return createCart({
-          region_id: region.id,
-          country_code: 'gb',
-        });
+        console.error('getOrSetCart: Error retrieving existing cart:', error)
+        await removeCartId()
       }
     }
 
-    console.log('getOrSetCart: Using existing cart:', {
-      id: existingCart.id,
-      region: existingCart.region_id,
-      currency: existingCart.region?.currency_code
-    });
+    // Create a new cart
+    const cart = await createCart({
+      region_id: region.id,
+      country_code: countryCode,
+    })
 
-    return existingCart;
+    if (!cart) {
+      console.error('getOrSetCart: Failed to create new cart')
+      return null
+    }
+
+    await setCartId(cart.id)
+    return cart
   } catch (error) {
-    console.error('getOrSetCart: Error:', error);
-    return null;
+    console.error('getOrSetCart: Error:', error)
+    return null
   }
 }
 
@@ -141,7 +117,6 @@ export async function addToCart({
   countryCode: string
 }) {
   if (!variantId) {
-    console.error('addToCart: Missing variant ID');
     throw new Error('Missing variant ID when adding to cart')
   }
 
@@ -149,40 +124,25 @@ export async function addToCart({
     // First, ensure we have a valid region
     const region = await getRegion(countryCode)
     if (!region) {
-      console.error('addToCart: Region not found for country code:', countryCode);
       throw new Error('Region not found')
     }
 
     // Get or create cart with the correct region
     const cart = await getOrSetCart(countryCode)
     if (!cart) {
-      console.error('addToCart: Failed to get or create cart');
       throw new Error('Error retrieving or creating cart')
     }
 
-    console.log('addToCart: Got cart:', {
-      cartId: cart.id,
-      regionId: cart.region_id,
-      expectedRegionId: region.id
-    });
-
     // Ensure the cart has the correct region
     if (cart.region_id !== region.id) {
-      console.log('addToCart: Updating cart region');
       await updateCart({ region_id: region.id })
     }
 
     const authHeaders = await getAuthHeaders()
 
-    console.log('addToCart: Adding line item:', {
-      cartId: cart.id,
-      variantId,
-      quantity
-    });
-
-    // Add the item to cart
-    await sdk.store.cart
-      .createLineItem(
+    // Add the item to cart with error handling
+    try {
+      await sdk.store.cart.createLineItem(
         cart.id,
         {
           variant_id: variantId,
@@ -191,14 +151,16 @@ export async function addToCart({
         {},
         authHeaders
       )
-      .then(() => {
-        console.log('addToCart: Successfully added item to cart');
-        revalidateTag('cart')
-      })
-      .catch((error) => {
-        console.error('addToCart: Error adding line item:', error)
+      revalidateTag('cart')
+    } catch (error) {
+      console.error('addToCart: Error adding line item:', error)
+      // Check if it's a server error or client error
+      if (error.response?.status >= 500) {
+        throw new Error('Server error occurred while adding to cart. Please try again.')
+      } else {
         throw error
-      })
+      }
+    }
   } catch (error) {
     console.error('addToCart: Error in main try block:', error)
     throw error
@@ -231,16 +193,33 @@ export async function addToCartCheapestVariant({
       }
     }
 
-    // Find the cheapest variant
-    const cheapestVariant = detailedProduct.variants.reduce(
-      (cheapest, current) =>
-        cheapest.calculated_price.original_amount <
-        current.calculated_price.original_amount
-          ? cheapest
-          : current
-    )
+    // Find the cheapest variant with valid price and inventory
+    const cheapestVariant = detailedProduct.variants
+      .filter(variant => 
+        variant.calculated_price && 
+        (variant.inventory_quantity === null || variant.inventory_quantity > 0)
+      )
+      .reduce((cheapest, current) => {
+        if (!current.calculated_price) return cheapest
+        const currentPrice = typeof current.calculated_price === 'string' 
+          ? parseFloat(current.calculated_price)
+          : current.calculated_price
+        const cheapestPrice = cheapest.calculated_price 
+          ? (typeof cheapest.calculated_price === 'string' 
+              ? parseFloat(cheapest.calculated_price) 
+              : cheapest.calculated_price)
+          : Infinity
+        return currentPrice < cheapestPrice ? current : cheapest
+      }, detailedProduct.variants[0])
 
-    if (cheapestVariant.inventory_quantity <= 0) {
+    if (!cheapestVariant || !cheapestVariant.id) {
+      return {
+        success: false,
+        error: 'No available variants found',
+      }
+    }
+
+    if (cheapestVariant.inventory_quantity !== null && cheapestVariant.inventory_quantity <= 0) {
       return {
         success: false,
         error: 'Product is out of stock',
@@ -248,7 +227,7 @@ export async function addToCartCheapestVariant({
     }
 
     await addToCart({
-      variantId: cheapestVariant.id, // Add the cheapest variant to the cart
+      variantId: cheapestVariant.id,
       quantity: 1,
       countryCode,
     })
@@ -261,8 +240,7 @@ export async function addToCartCheapestVariant({
     console.error('Error adding product to cart:', error)
     return {
       success: false,
-      error:
-        error instanceof Error ? error.message : 'An unknown error occurred',
+      error: error instanceof Error ? error.message : 'An unknown error occurred',
     }
   }
 }

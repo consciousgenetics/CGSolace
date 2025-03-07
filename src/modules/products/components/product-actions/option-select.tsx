@@ -30,6 +30,15 @@ const OptionSelect: React.FC<OptionSelectProps> = ({
     ?.sort((a, b) => a.value.localeCompare(b.value))
     .map((v) => v.value)
 
+  const getDisplayText = (value: string, title: string) => {
+    // For size options, show first letter
+    if (title.toLowerCase() === 'size') {
+      return value.charAt(0).toUpperCase()
+    }
+    // For other options (like seed types), show full name
+    return value
+  }
+
   return (
     <div className="flex flex-col gap-y-3">
       <Text as="p" className="text-md">
@@ -45,15 +54,16 @@ const OptionSelect: React.FC<OptionSelectProps> = ({
           const color = getVariantColor(v, variantsColors)
           const image = color?.Image
           const hex = color?.Color
+          const displayText = getDisplayText(v, title)
 
           return image ? (
             <button
               onClick={() => updateOption(option.id, v)}
               key={v}
-              className={cn('border-primary h-12 w-12 border', {
+              className={cn('border-primary h-12 w-12 border relative rounded-full overflow-hidden', {
                 'border-action-primary': v === current,
               })}
-              aria-label="Choose variant color"
+              aria-label={`Choose ${title.toLowerCase()} ${v}`}
               disabled={disabled}
               data-testid="option-button"
             >
@@ -69,14 +79,24 @@ const OptionSelect: React.FC<OptionSelectProps> = ({
             <button
               onClick={() => updateOption(option.id, v)}
               key={v}
-              className={cn('border-primary h-12 w-12 border', {
-                'border-action-primary': v === current,
-              })}
-              aria-label="Choose variant color"
+              className={cn(
+                'border-primary h-12 w-12 border relative flex items-center justify-center text-sm font-medium rounded-full', 
+                {
+                  'border-action-primary': v === current,
+                }
+              )}
+              aria-label={`Choose ${title.toLowerCase()} ${v}`}
               style={{ backgroundColor: hex }}
               disabled={disabled}
               data-testid="option-button"
-            />
+            >
+              <span className={cn(
+                'text-basic-primary',
+                { 'text-white': hex && hex.toLowerCase() !== '#ffffff' }
+              )}>
+                {displayText}
+              </span>
+            </button>
           )
         })}
       </div>

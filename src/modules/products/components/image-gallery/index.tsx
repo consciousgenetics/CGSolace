@@ -27,11 +27,68 @@ const ImageGallery = ({ images, title }: ImageGalleryProps) => {
 
   // Enhanced debugging for image URLs
   console.log('ImageGallery rendering for:', title)
-  console.log('Original images:', images)
+  console.log('Original images:', JSON.stringify(images, null, 2))
 
   // Transform image URLs with additional logging
   const transformedImages = images.map(img => {
     console.log(`Processing image ${img.id}, original URL:`, img.url)
+    
+    // Handle localhost URLs
+    if (img.url && img.url.includes('localhost:9000')) {
+      const backendUrl = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || 'https://cgsolacemedusav2-production.up.railway.app'
+      const path = img.url.split('localhost:9000')[1]
+      const absoluteUrl = `${backendUrl}${path}`
+      console.log('ImageGallery: Converting localhost URL to backend URL:', absoluteUrl)
+      return {
+        ...img,
+        url: absoluteUrl
+      }
+    }
+    
+    // Special handling for Conscious Stoner T-shirt Female
+    if (title.toLowerCase().includes('conscious') && 
+        title.toLowerCase().includes('stoner') && 
+        title.toLowerCase().includes('female')) {
+      console.log('ImageGallery: Using fallback image for Conscious Stoner T-shirt Female')
+      
+      // Check if we have a valid image URL from Medusa
+      if (img.url && img.url.startsWith('http') && !img.url.includes('localhost')) {
+        console.log('ImageGallery: Found valid remote URL:', img.url)
+        return {
+          ...img,
+          url: img.url
+        }
+      }
+      
+      // If the URL is relative, make it absolute
+      if (img.url && img.url.startsWith('/')) {
+        const backendUrl = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || 'https://cgsolacemedusav2-production.up.railway.app'
+        const absoluteUrl = `${backendUrl}${img.url}`
+        console.log('ImageGallery: Converting relative URL to absolute:', absoluteUrl)
+        return {
+          ...img,
+          url: absoluteUrl
+        }
+      }
+      
+      // Fallback to local image if no valid URL found
+      console.log('ImageGallery: Using local fallback image')
+      return {
+        ...img,
+        url: "/special-packs.png"
+      }
+    }
+    
+    // If the URL is from the problematic domain, try to fix it
+    if (img.url && img.url.includes('cgsolacemedusav2-production.up.railway.app')) {
+      console.log('ImageGallery: Fixing railway URL:', img.url)
+      // Try to use the URL as is first
+      return {
+        ...img,
+        url: img.url.replace('http://', 'https://')
+      }
+    }
+    
     const transformedUrl = transformUrl(img.url)
     console.log(`Transformed URL for image ${img.id}:`, transformedUrl)
     return {

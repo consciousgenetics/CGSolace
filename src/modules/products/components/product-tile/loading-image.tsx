@@ -30,8 +30,8 @@ export const LoadingImage = ({
       (src.toLowerCase().includes('shirt') || src.toLowerCase().includes('tshirt')) && 
       src.toLowerCase().includes('female'))) {
     
-    // Use the hardcoded image that works, bypassing all normal logic
-    const workingImageUrl = "/conscious-female-tshirt.jpg"; // Use local image instead of remote URL
+    // Use the hardcoded remote URL that works
+    const workingImageUrl = "https://cgsolacemedusav2-production.up.railway.app/uploads/female_model_t_shirt_2_6d4e8cc3b5.jpg";
     console.log("DIRECT IMAGE OVERRIDE in LoadingImage for Conscious Stoner T-Shirt Female");
     console.log("Original src:", src);
     console.log("Using direct image URL:", workingImageUrl);
@@ -41,8 +41,8 @@ export const LoadingImage = ({
         <Image
           src={workingImageUrl}
           alt={alt || 'Conscious Stoner T-Shirt Female'}
-          priority={true} // Only use priority, not loading
-          quality={100} // Use highest quality
+          priority={true}
+          quality={100}
           className={className}
           fill
           sizes={sizes || "(max-width: 768px) 100vw, 400px"}
@@ -50,7 +50,7 @@ export const LoadingImage = ({
             objectFit: 'cover',
           }}
           onClick={onClick}
-          unoptimized={false} // Let Next.js optimize local images
+          unoptimized={false}
         />
       </div>
     );

@@ -55,6 +55,26 @@ const ImageCarousel = ({ images, openDialog }: ImageCarouselProps) => {
                 priority={index <= 2}
                 className="object-cover"
                 sizes="(max-width: 768px) 100vw, (max-width: 992px) 780px"
+                onError={(e: any) => {
+                  console.error('Image failed to load, using fallback:', image.url);
+                  const imgElement = e.currentTarget as HTMLImageElement;
+                  
+                  // If it's a localhost URL, try to convert it to the backend URL
+                  if (imgElement.src.includes('localhost:9000')) {
+                    const backendUrl = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || 'https://cgsolacemedusav2-production.up.railway.app'
+                    const path = imgElement.src.split('localhost:9000')[1]
+                    const absoluteUrl = `${backendUrl}${path}`
+                    console.log('ImageCarousel: Converting localhost URL to backend URL:', absoluteUrl)
+                    imgElement.src = absoluteUrl;
+                    return;
+                  }
+                  
+                  // If it's not already using the fallback, use it
+                  if (!imgElement.src.includes('special-packs.png')) {
+                    imgElement.src = '/special-packs.png';
+                  }
+                }}
+                unoptimized={true}
               />
             </div>
           ))}

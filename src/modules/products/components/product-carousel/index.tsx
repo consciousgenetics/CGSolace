@@ -24,8 +24,8 @@ const fixProductThumbnail = (product) => {
        product.title.toLowerCase().includes("female"))) {
     console.log(`ProductCarousel: Applying special fix for Conscious Stoner T-Shirt Female`)
     
-    // Use the uploaded image path
-    const productPageImage = "/female_model_t_shirt_2.jpg"
+    // Use the remote URL instead of local path
+    const productPageImage = "https://cgsolacemedusav2-production.up.railway.app/uploads/female_model_t_shirt_2_6d4e8cc3b5.jpg"
     
     console.log(`ProductCarousel: Original thumbnail for ${product.title}:`, product.thumbnail)
     console.log(`ProductCarousel: Using fixed URL for ${product.title}:`, productPageImage)

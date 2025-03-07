@@ -16,6 +16,14 @@ export const transformUrl = (url: string): string => {
       console.log('transformUrl: Local public image detected, keeping as is:', url)
       return url
     }
+
+    // If it's a Strapi URL starting with /uploads/, add the Strapi base URL
+    if (url.startsWith('/uploads/')) {
+      const strapiUrl = process.env.NEXT_PUBLIC_STRAPI_URL || 'http://127.0.0.1:1337'
+      const absoluteUrl = `${strapiUrl}${url}`
+      console.log('transformUrl: Converting Strapi uploads URL to absolute:', absoluteUrl)
+      return absoluteUrl.replace('http://', 'https://')
+    }
     
     // Special case handling for specific product handles
     const productHandleMap: Record<string, string> = {
@@ -54,24 +62,6 @@ export const transformUrl = (url: string): string => {
       return transformed
     }
 
-    // Handle relative URLs that start with /
-    if (url.startsWith('/uploads/')) {
-      // Prefer local fallbacks for known problematic image URLs
-      if (url.toLowerCase().includes('female') && url.toLowerCase().includes('shirt')) {
-        return '/conscious-female-tshirt.jpg'
-      }
-      
-      const transformed = `${backendUrl}${url}`
-      console.log('transformUrl: Converted uploads URL to absolute:', transformed)
-      return transformed
-    }
-    
-    // Handle data URLs and other special formats
-    if (url.startsWith('data:')) {
-      console.log('transformUrl: Data URL detected, returning as is')
-      return url
-    }
-    
     // Handle URLs that might be missing the protocol (//example.com/image.jpg)
     if (url.startsWith('//')) {
       const transformed = `https:${url}`

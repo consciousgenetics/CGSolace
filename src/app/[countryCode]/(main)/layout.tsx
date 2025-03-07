@@ -19,7 +19,9 @@ export default async function PageLayout(props: {
     <>
       <NavWrapper countryCode={countryCode} />
       <div className="min-h-screen">
-        {props.children}
+        <div className="[&>*:not(:has(.hero-banner))]:pt-[80px] [&>*:not(:has(.hero-banner))]:xsmall:pt-[90px] [&>*:not(:has(.hero-banner))]:medium:pt-[110px]">
+          {props.children}
+        </div>
       </div>
       <Footer countryCode={countryCode} />
     </>
