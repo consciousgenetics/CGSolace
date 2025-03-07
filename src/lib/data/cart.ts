@@ -12,6 +12,11 @@ import { getAuthHeaders, getCartId, removeCartId, setCartId } from './cookies'
 import { getProductByHandle, getProductsById } from './products'
 import { getRegion } from './regions'
 
+// Add type definition
+type ProductVariantWithPrices = HttpTypes.StoreProductVariant & {
+  prices?: Array<{ currency_code: string; amount: number }>
+}
+
 const createCart = async (data: {
   region_id: string
   country_code: string
@@ -124,25 +129,30 @@ export async function addToCart({
     // First, ensure we have a valid region
     const region = await getRegion(countryCode)
     if (!region) {
-      throw new Error('Region not found')
+      throw new Error(`Region not found for country code: ${countryCode}`)
     }
 
     // Get or create cart with the correct region
     const cart = await getOrSetCart(countryCode)
     if (!cart) {
-      throw new Error('Error retrieving or creating cart')
+      throw new Error('Failed to create or retrieve cart')
     }
 
     // Ensure the cart has the correct region
     if (cart.region_id !== region.id) {
-      await updateCart({ region_id: region.id })
+      try {
+        await updateCart({ region_id: region.id })
+      } catch (error) {
+        console.error('Error updating cart region:', error)
+        throw new Error('Failed to update cart region')
+      }
     }
 
     const authHeaders = await getAuthHeaders()
 
     // Add the item to cart with error handling
     try {
-      await sdk.store.cart.createLineItem(
+      const response = await sdk.store.cart.createLineItem(
         cart.id,
         {
           variant_id: variantId,
@@ -151,10 +161,15 @@ export async function addToCart({
         {},
         authHeaders
       )
+
+      if (!response.cart) {
+        throw new Error('Failed to add item to cart')
+      }
+
       revalidateTag('cart')
+      return response.cart
     } catch (error) {
       console.error('addToCart: Error adding line item:', error)
-      // Check if it's a server error or client error
       if (error.response?.status >= 500) {
         throw new Error('Server error occurred while adding to cart. Please try again.')
       } else {
@@ -194,23 +209,21 @@ export async function addToCartCheapestVariant({
     }
 
     // Find the cheapest variant with valid price and inventory
-    const cheapestVariant = detailedProduct.variants
+    const variants = detailedProduct.variants as ProductVariantWithPrices[]
+    const cheapestVariant = variants
       .filter(variant => 
-        variant.calculated_price && 
+        variant.prices?.some(p => p.currency_code?.toUpperCase() === 'GBP') && 
         (variant.inventory_quantity === null || variant.inventory_quantity > 0)
       )
       .reduce((cheapest, current) => {
-        if (!current.calculated_price) return cheapest
-        const currentPrice = typeof current.calculated_price === 'string' 
-          ? parseFloat(current.calculated_price)
-          : current.calculated_price
-        const cheapestPrice = cheapest.calculated_price 
-          ? (typeof cheapest.calculated_price === 'string' 
-              ? parseFloat(cheapest.calculated_price) 
-              : cheapest.calculated_price)
-          : Infinity
-        return currentPrice < cheapestPrice ? current : cheapest
-      }, detailedProduct.variants[0])
+        const currentGbpPrice = current.prices?.find(p => p.currency_code?.toUpperCase() === 'GBP')
+        const cheapestGbpPrice = cheapest?.prices?.find(p => p.currency_code?.toUpperCase() === 'GBP')
+        
+        if (!currentGbpPrice) return cheapest
+        if (!cheapestGbpPrice) return current
+        
+        return currentGbpPrice.amount < cheapestGbpPrice.amount ? current : cheapest
+      }, variants[0])
 
     if (!cheapestVariant || !cheapestVariant.id) {
       return {
@@ -226,7 +239,7 @@ export async function addToCartCheapestVariant({
       }
     }
 
-    await addToCart({
+    const result = await addToCart({
       variantId: cheapestVariant.id,
       quantity: 1,
       countryCode,
@@ -235,6 +248,7 @@ export async function addToCartCheapestVariant({
     return {
       success: true,
       message: 'Product added to cart',
+      cart: result
     }
   } catch (error) {
     console.error('Error adding product to cart:', error)

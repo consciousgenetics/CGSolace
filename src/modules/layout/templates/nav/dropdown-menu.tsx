@@ -69,30 +69,7 @@ const DropdownMenu: React.FC<DropdownMenuProps> = ({
               )}
             >
               <span className="relative z-10 group-hover:text-amber-900 transition-colors duration-300">{subItem.name}</span>
-              {subItem.category_children && (
-                <svg className="w-3.5 h-3.5 text-amber-700/40 group-hover:text-amber-800/60 transition-colors duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5l7 7-7 7" />
-                </svg>
-              )}
             </NavigationItem>
-            {subItem.category_children && (
-              <div className="absolute left-full top-0 ml-1 opacity-0 invisible group-hover/item:opacity-100 group-hover/item:visible transition-all duration-300 -translate-x-2 group-hover/item:translate-x-0">
-                <div className="bg-amber-50/95 backdrop-blur-md shadow-lg border border-amber-200/20 py-3 min-w-[240px] rounded-lg">
-                  {subItem.category_children.map((childItem, childIndex) => (
-                    <NavigationItem
-                      key={`${childItem.handle}-${childIndex}`}
-                      href={childItem.handle}
-                      className="group relative flex items-center justify-between w-full px-4 py-2 text-[13px] text-amber-800/70 hover:bg-amber-100/50 hover:text-amber-900 transition-all duration-300"
-                      data-testid={formatNameForTestId(
-                        `${childItem.name}-category-item`
-                      )}
-                    >
-                      <span className="truncate">{childItem.name}</span>
-                    </NavigationItem>
-                  ))}
-                </div>
-              </div>
-            )}
           </div>
         ))}
       </div>
