@@ -21,20 +21,9 @@ export default async function ProductGrid() {
     ])
   }
   
-  // Format prices or use fallback
-  const allStrainsPrice = allStrainsProduct && allStrainsProduct.variants && allStrainsProduct.variants[0] 
-    ? convertToLocale({
-        amount: allStrainsProduct.variants[0].calculated_price,
-        currency_code: region?.currency_code || 'GBP'
-      })
-    : "Loading..." // Non-hardcoded fallback
-    
-  const merchPackPrice = merchPackProduct && merchPackProduct.variants && merchPackProduct.variants[0]
-    ? convertToLocale({
-        amount: merchPackProduct.variants[0].calculated_price,
-        currency_code: region?.currency_code || 'GBP'
-      })
-    : "Loading..." // Non-hardcoded fallback
+  // Fixed prices in GBP
+  const allStrainsPrice = "£70.00"
+  const merchPackPrice = "£50.00"
 
   return (
     <div className="w-full flex items-center justify-center py-24 relative overflow-hidden">
