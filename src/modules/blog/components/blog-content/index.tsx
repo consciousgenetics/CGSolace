@@ -5,42 +5,58 @@ import { Heading } from '@modules/common/components/heading'
 import { Text } from '@modules/common/components/text'
 import Markdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
-
-const extractTextContent = (content: any): string => {
-  if (typeof content === 'string') return content
-  if (Array.isArray(content)) {
-    return content
-      .map(block => {
-        if (block.children) {
-          return block.children
-            .map(child => child.text || '')
-            .join('')
-        }
-        return ''
-      })
-      .join('\n')
-  }
-  return ''
-}
+import { transformUrl } from '@lib/util/transform-url'
 
 export function BlogContent({ content }: { content: any }) {
-  const textContent = extractTextContent(content)
+  // Debug the incoming content
+  console.log('BlogContent received:', {
+    contentType: typeof content,
+    content: content
+  })
+
+  const processedContent = typeof content === 'string' 
+    ? content 
+    : Array.isArray(content)
+    ? content.map(block => {
+        if (block.type === 'paragraph' && block.children) {
+          return block.children.map(child => child.text).join('')
+        }
+        return block
+      }).join('\n\n')
+    : JSON.stringify(content)
+
+  // Debug the processed content
+  console.log('Processed content:', processedContent)
 
   return (
     <Markdown
       components={{
-        img: ({ node, ...props }) => (
-          props.src ? (
+        img: ({ node, ...props }) => {
+          if (!props.src) {
+            console.log('Image component received no src')
+            return null
+          }
+          
+          // Transform the image URL
+          const imageUrl = transformUrl(props.src)
+          console.log('Blog image processing:', {
+            node,
+            props,
+            originalSrc: props.src,
+            transformedUrl: imageUrl
+          })
+          
+          return (
             <Box className="relative h-[350px] w-full">
               <Image
                 fill
-                src={props.src}
+                src={imageUrl}
                 alt={props.alt || ''}
                 className="w-full object-cover"
               />
             </Box>
-          ) : null
-        ),
+          )
+        },
         h2: ({ node, ...props }) => (
           <Heading
             id={props.children.toString().toLowerCase().replace(/\s+/g, '-')}
@@ -66,7 +82,7 @@ export function BlogContent({ content }: { content: any }) {
       }}
       remarkPlugins={[remarkGfm]}
     >
-      {textContent}
+      {processedContent}
     </Markdown>
   )
 }

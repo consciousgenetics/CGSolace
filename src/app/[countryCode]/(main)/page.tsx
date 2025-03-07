@@ -5,20 +5,18 @@ import Image from 'next/image'
 import { getCollectionsList } from '@lib/data/collections'
 import {
   getCollectionsData,
-  getExploreBlogData,
   getHeroBannerData,
 } from '@lib/data/fetch'
 import { getProductsList } from '@lib/data/products'
 import { getRegion } from '@lib/data/regions'
 import { Banner } from '@modules/home/components/banner'
 import Collections from '@modules/home/components/collections'
-import { ExploreBlog } from '@modules/home/components/explore-blog'
 import Hero from '@modules/home/components/hero'
 import ProductGrid from '@modules/home/components/product-grid'
 import { ProductCarousel } from '@modules/products/components/product-carousel'
 import { ReviewSection } from '@modules/common/components/reviews'
 import SkeletonProductsCarousel from '@modules/skeletons/templates/skeleton-products-carousel'
-import { BlogData, CollectionsData, HeroBannerData } from 'types/strapi'
+import { CollectionsData, HeroBannerData } from 'types/strapi'
 
 // Set dynamic rendering to prevent build-time errors
 export const dynamic = 'force-dynamic'
@@ -147,18 +145,15 @@ export default async function Home(props: {
     // CMS data with error handling
     let strapiCollections = null;
     let heroBannerData = null;
-    let posts = [];
 
     try {
       [
         strapiCollections,
         heroBannerData,
-        { data: posts = [] },
       ] = await Promise.all([
         getCollectionsData().catch(() => null),
         getHeroBannerData().catch(() => null),
-        getExploreBlogData().catch(() => ({ data: [] })),
-      ]) as [CollectionsData | null, HeroBannerData | null, BlogData | { data: [] }];
+      ]) as [CollectionsData | null, HeroBannerData | null];
     } catch (error) {
       console.error("Error fetching CMS data:", error);
     }
@@ -208,7 +203,6 @@ export default async function Home(props: {
           </div>
         </div>
         <ReviewSection />
-        {posts && posts.length > 0 && <ExploreBlog posts={posts} />}
       </>
     )
   } catch (error) {

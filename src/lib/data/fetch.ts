@@ -243,6 +243,26 @@ export const getContentPage = async (
 }
 
 // Blog
+export const getBlogPostBySlug = async (
+  slug: string
+): Promise<BlogPost | null> => {
+  const res = await fetchStrapiClient(
+    `/blogs?filters[Slug][$eq]=${slug}&populate=deep`,
+    {
+      next: { tags: [`blog-${slug}`] },
+    }
+  )
+
+  const data = await res.json()
+  console.log('Blog post data:', data)
+
+  if (data.data && data.data.length > 0) {
+    return data.data[0]
+  }
+
+  return null
+}
+
 export const getBlogPosts = async ({
   sortBy = 'createdAt:desc',
   query,
@@ -252,7 +272,7 @@ export const getBlogPosts = async ({
   query?: string
   category?: string
 }): Promise<BlogData> => {
-  const baseUrl = `/blogs?populate[1]=FeaturedImage&populate[2]=Categories&sort=${sortBy}&pagination[limit]=1000`
+  const baseUrl = `/blogs?populate=deep&sort=${sortBy}&pagination[limit]=1000`
 
   let urlWithFilters = baseUrl
 
@@ -280,26 +300,6 @@ export const getBlogPostCategories = async (): Promise<BlogData> => {
   )
 
   return res.json()
-}
-
-// Blog
-export const getBlogPostBySlug = async (
-  slug: string
-): Promise<BlogPost | null> => {
-  const res = await fetchStrapiClient(
-    `/blogs?filters[Slug][$eq]=${slug}&populate=*`,
-    {
-      next: { tags: [`blog-${slug}`] },
-    }
-  )
-
-  const data = await res.json()
-
-  if (data.data && data.data.length > 0) {
-    return data.data[0]
-  }
-
-  return null
 }
 
 export const getAllBlogSlugs = async (): Promise<string[]> => {

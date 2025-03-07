@@ -8,7 +8,9 @@ import { TableOfContents } from '@modules/blog/components/blog-table-of-contents
 import { Box } from '@modules/common/components/box'
 import { Container } from '@modules/common/components/container'
 import { Heading } from '@modules/common/components/heading'
+import { Text } from '@modules/common/components/text'
 import { BlogPost } from 'types/strapi'
+import { transformUrl } from '@lib/util/transform-url'
 
 export default async function BlogPostTemplate({
   article,
@@ -17,6 +19,13 @@ export default async function BlogPostTemplate({
   countryCode: string
   article: BlogPost
 }) {
+  // Debug logs
+  console.log('Blog article data:', {
+    title: article.Title,
+    content: article.Content,
+    featuredImage: article.FeaturedImage
+  })
+
   const getContentAsString = (content: string | Array<{ type: string; children: Array<{ type: string; text: string }> }>) => {
     if (typeof content === 'string') {
       return content
@@ -55,6 +64,13 @@ export default async function BlogPostTemplate({
   const firstParagraph = paragraphs[0]
   const restOfContent = paragraphs.slice(1).join('\n\n')
 
+  // Transform featured image URL if it exists
+  const featuredImageUrl = article.FeaturedImage?.url ? transformUrl(article.FeaturedImage.url) : null
+  console.log('Featured image URL:', {
+    original: article.FeaturedImage?.url,
+    transformed: featuredImageUrl
+  })
+
   return (
     <Container className="flex flex-col gap-6 !py-8 medium:gap-8">
       <Box className="flex flex-col gap-4">
@@ -80,14 +96,20 @@ export default async function BlogPostTemplate({
               : 'large:col-span-12 large:col-start-1'
           )}
         >
-          <Box className="relative h-[400px] w-full">
-            <Image
-              src={article.FeaturedImage.url}
-              alt={`${article.FeaturedImage.alternativeText ? article.FeaturedImage.alternativeText : article.Title}`}
-              fill
-              className="w-full object-cover"
-            />
-          </Box>
+          {featuredImageUrl ? (
+            <Box className="relative h-[400px] w-full">
+              <Image
+                src={featuredImageUrl}
+                alt={article.FeaturedImage?.alternativeText || article.Title}
+                fill
+                className="w-full object-cover"
+              />
+            </Box>
+          ) : (
+            <Box className="flex h-[400px] w-full items-center justify-center bg-gray-100">
+              <Text>No image available</Text>
+            </Box>
+          )}
           <BlogInfo
             createdAt={article.createdAt}
             readTime={readTime(article.Content)}

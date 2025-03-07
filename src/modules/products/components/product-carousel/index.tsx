@@ -189,8 +189,7 @@ export function ProductCarousel({
             <Button asChild className="mx-auto mt-6 small:mt-8">
               <LocalizedClientLink
                 href={viewAll.link}
-                style={{ color: '#FFD700' }} 
-                className="w-max !px-8 small:!px-10 !py-3 small:!py-4 text-lg small:text-xl font-bold bg-white hover:bg-gray-100 transition-colors rounded-full uppercase"
+                className="w-max !px-8 small:!px-10 !py-3 small:!py-4 text-lg small:text-xl font-bold bg-amber-400 hover:bg-amber-500 text-black transition-colors rounded-full uppercase"
               >
                 SHOP ALL
               </LocalizedClientLink>

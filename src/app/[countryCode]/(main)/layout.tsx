@@ -2,7 +2,6 @@ import React from 'react'
 import { Metadata } from 'next'
 
 import { getBaseURL } from '@lib/util/env'
-import Footer from '@modules/layout/templates/footer'
 import NavWrapper from '@modules/layout/templates/nav'
 
 export const metadata: Metadata = {
@@ -23,7 +22,6 @@ export default async function PageLayout(props: {
           {props.children}
         </div>
       </div>
-      <Footer countryCode={countryCode} />
     </>
   )
 }
