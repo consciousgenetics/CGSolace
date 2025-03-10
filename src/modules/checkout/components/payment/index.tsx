@@ -95,15 +95,25 @@ const Payment = ({
   const handlePaymentMethodChange = async (value: string) => {
     setSelectedPaymentMethod(value)
     await handleSubmit(value)
+    
+    // After payment method is selected and session is initiated, update URL to show payment step
+    router.push(pathname + '?' + createQueryString('step', 'payment'), {
+      scroll: false,
+    })
   }
 
   const handleSubmit = async (paymentMethodId: string) => {
     setIsLoading(true)
+    setError(null)
 
     try {
-      await initiatePaymentSession(cart, {
+      const result = await initiatePaymentSession(cart, {
         provider_id: paymentMethodId,
       })
+      if (result) {
+        // Force a refresh of the cart to get the new payment session
+        window.location.reload()
+      }
     } catch (err: any) {
       setError(err.message)
     } finally {
@@ -111,20 +121,21 @@ const Payment = ({
     }
   }
 
-  // Set payment method if there is only one available
+  // Set payment method if there is only one available or if we're on the payment step
   useEffect(() => {
     setError(null)
 
     if (
-      isOpen &&
-      availablePaymentMethods.length === 1 &&
-      !selectedPaymentMethod
+      (availablePaymentMethods.length === 1 || isOpen) &&
+      !selectedPaymentMethod &&
+      !activeSession
     ) {
-      const singlePaymentMethod = availablePaymentMethods[0].id
-      handlePaymentMethodChange(singlePaymentMethod)
+      const paymentMethod = availablePaymentMethods[0]?.id
+      if (paymentMethod) {
+        handlePaymentMethodChange(paymentMethod)
+      }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isOpen, availablePaymentMethods, selectedPaymentMethod])
+  }, [availablePaymentMethods, selectedPaymentMethod, isOpen, activeSession])
 
   useEffect(() => {
     setError(null)

@@ -78,7 +78,7 @@ export function ProductTile({
           <Text
             title={product.title}
             as="span"
-            className="text-base small:text-lg font-['Anton'] text-black line-clamp-1"
+            className="text-lg small:text-xl font-['Anton'] text-black line-clamp-1 uppercase"
           >
             {product.title}
           </Text>
@@ -173,7 +173,7 @@ export function ProductTile({
         <Text
           title={product.title}
           as="span"
-          className="text-base small:text-lg font-['Anton'] text-black line-clamp-1"
+          className="text-lg small:text-xl font-['Anton'] text-black line-clamp-1 uppercase"
         >
           {product.title}
         </Text>

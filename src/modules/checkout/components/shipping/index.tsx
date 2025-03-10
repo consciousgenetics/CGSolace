@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 
 import { RadioGroup } from '@headlessui/react'
@@ -31,6 +31,7 @@ const Shipping: React.FC<ShippingProps> = ({
 }) => {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [selectedMethods, setSelectedMethods] = useState<Record<string, string>>({})
 
   const searchParams = useSearchParams()
   const router = useRouter()
@@ -38,33 +39,93 @@ const Shipping: React.FC<ShippingProps> = ({
 
   const isOpen = searchParams.get('step') === 'delivery'
 
-  const selectedShippingMethod = availableShippingMethods?.find(
-    // To do: remove the previously selected shipping method instead of using the last one
-    (method) => method.id === cart.shipping_methods?.at(-1)?.shipping_option_id
-  )
+  // Group shipping options by shipping profile
+  const shippingOptionsByProfile = useMemo(() => {
+    if (!availableShippingMethods) return {}
+    
+    return availableShippingMethods.reduce((acc, method) => {
+      const profileId = method.shipping_profile_id
+      if (!acc[profileId]) {
+        acc[profileId] = []
+      }
+      acc[profileId].push(method)
+      return acc
+    }, {} as Record<string, HttpTypes.StoreCartShippingOption[]>)
+  }, [availableShippingMethods])
+
+  // Check if we have multiple shipping profiles
+  const hasMultipleProfiles = Object.keys(shippingOptionsByProfile).length > 1
+
+  // Initialize selected methods from cart
+  useEffect(() => {
+    if (cart.shipping_methods && cart.shipping_methods.length > 0) {
+      const methods = cart.shipping_methods.reduce((acc, method) => {
+        const option = availableShippingMethods?.find(
+          opt => opt.id === method.shipping_option_id
+        )
+        if (option) {
+          acc[option.shipping_profile_id] = option.id
+        }
+        return acc
+      }, {} as Record<string, string>)
+      
+      setSelectedMethods(methods)
+    }
+  }, [cart.shipping_methods, availableShippingMethods])
 
   const handleEdit = () => {
     router.push(pathname + '?step=delivery', { scroll: false })
   }
 
   const handleSubmit = () => {
+    // Check if all profiles have a selected method
+    const profileIds = Object.keys(shippingOptionsByProfile)
+    const allProfilesHaveMethod = profileIds.every(profileId => 
+      selectedMethods[profileId] !== undefined
+    )
+    
+    if (!allProfilesHaveMethod && hasMultipleProfiles) {
+      setError('Please select a shipping method for each product type')
+      return
+    }
+    
     router.push(pathname + '?step=payment', { scroll: false })
   }
 
-  const set = async (id: string) => {
+  const set = async (id: string, profileId: string) => {
     setIsLoading(true)
-    await setShippingMethod({ cartId: cart.id, shippingMethodId: id })
-      .catch((err) => {
-        setError(err.message)
-      })
-      .finally(() => {
-        setIsLoading(false)
-      })
+    setError(null)
+    
+    try {
+      // Update local state first for better UX
+      setSelectedMethods(prev => ({
+        ...prev,
+        [profileId]: id
+      }))
+      
+      await setShippingMethod({ cartId: cart.id, shippingMethodId: id })
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   useEffect(() => {
     setError(null)
   }, [isOpen])
+
+  // Get profile names for better UX
+  const getProfileName = (profileId: string) => {
+    // This is a simplified approach - in a real app, you might want to fetch profile names from the backend
+    const firstOption = shippingOptionsByProfile[profileId]?.[0]
+    if (!firstOption) return 'Products'
+    
+    // Try to extract a meaningful name from the shipping option
+    if (firstOption.name.toLowerCase().includes('digital')) return 'Digital Products'
+    if (firstOption.name.toLowerCase().includes('gift card')) return 'Gift Cards'
+    return 'Physical Products'
+  }
 
   return (
     <Box className="bg-primary p-5">
@@ -105,45 +166,66 @@ const Shipping: React.FC<ShippingProps> = ({
       </Box>
       {isOpen ? (
         <Box data-testid="delivery-options-container">
-          <RadioGroup value={selectedShippingMethod?.id || ''} onChange={set}>
-            {availableShippingMethods?.map((option) => {
-              return (
-                <RadioGroup.Option
-                  key={option.id}
-                  value={option.id}
-                  data-testid="delivery-option-radio"
-                  className={cn(
-                    'flex cursor-pointer flex-row items-center justify-between gap-1 border p-2 !pr-4 text-basic-primary transition-all duration-200',
-                    {
-                      'border-action-primary':
-                        option.id === selectedShippingMethod?.id,
-                    }
-                  )}
-                >
-                  <Box className="flex w-full items-center gap-x-2">
-                    <RadioGroupRoot className="m-3">
-                      <RadioGroupItem
-                        id={option.id}
-                        value={option.id}
-                        checked={option.id === selectedShippingMethod?.id}
-                      >
-                        <RadioGroupIndicator />
-                      </RadioGroupItem>
-                    </RadioGroupRoot>
-                    <Box className="flex w-full flex-col gap-1 small:flex-row small:items-center small:justify-between">
-                      <span className="text-lg">{option.name}</span>
-                      <span className="justify-self-end text-md">
-                        {convertToLocale({
-                          amount: option.amount,
-                          currency_code: cart?.currency_code,
-                        })}
-                      </span>
-                    </Box>
-                  </Box>
-                </RadioGroup.Option>
-              )
-            })}
-          </RadioGroup>
+          {hasMultipleProfiles && (
+            <Text className="mb-4 text-md font-medium text-basic-primary">
+              Your cart contains different types of products that require separate shipping methods. 
+              Please select a shipping method for each product type.
+            </Text>
+          )}
+          
+          {Object.entries(shippingOptionsByProfile).map(([profileId, options]) => (
+            <Box key={profileId} className="mb-6">
+              {hasMultipleProfiles && (
+                <Text className="mb-2 text-md font-medium text-basic-primary">
+                  {getProfileName(profileId)}:
+                </Text>
+              )}
+              
+              <RadioGroup 
+                value={selectedMethods[profileId] || ''} 
+                onChange={(id) => set(id, profileId)}
+              >
+                {options.map((option) => {
+                  return (
+                    <RadioGroup.Option
+                      key={option.id}
+                      value={option.id}
+                      data-testid="delivery-option-radio"
+                      className={cn(
+                        'flex cursor-pointer flex-row items-center justify-between gap-1 border p-2 !pr-4 text-basic-primary transition-all duration-200',
+                        {
+                          'border-action-primary':
+                            option.id === selectedMethods[profileId],
+                        }
+                      )}
+                    >
+                      <Box className="flex w-full items-center gap-x-2">
+                        <RadioGroupRoot className="m-3">
+                          <RadioGroupItem
+                            id={option.id}
+                            value={option.id}
+                            checked={option.id === selectedMethods[profileId]}
+                          >
+                            <RadioGroupIndicator />
+                          </RadioGroupItem>
+                        </RadioGroupRoot>
+                        <Box className="flex w-full flex-col gap-1 small:flex-row small:items-center small:justify-between">
+                          <span className="text-lg">{option.name}</span>
+                          <span className="justify-self-end text-md">
+                            {convertToLocale({
+                              amount: option.amount,
+                              currency_code: cart?.currency_code,
+                            })}
+                          </span>
+                        </Box>
+                      </Box>
+                    </RadioGroup.Option>
+                  )
+                })}
+              </RadioGroup>
+            </Box>
+          ))}
+          
           <ErrorMessage
             error={error}
             data-testid="delivery-option-error-message"
@@ -152,7 +234,7 @@ const Shipping: React.FC<ShippingProps> = ({
             className="mt-6"
             onClick={handleSubmit}
             isLoading={isLoading}
-            disabled={!cart.shipping_methods?.[0]}
+            disabled={Object.keys(selectedMethods).length === 0}
             data-testid="submit-delivery-option-button"
           >
             Proceed to payment
@@ -163,15 +245,23 @@ const Shipping: React.FC<ShippingProps> = ({
           {cart && (cart.shipping_methods?.length ?? 0) > 0 && (
             <div className="flex flex-col p-4">
               <Text size="lg" className="text-basic-primary">
-                Delivery method
+                Delivery method{cart.shipping_methods.length > 1 ? 's' : ''}
               </Text>
-              <Text className="text-secondary">
-                {selectedShippingMethod?.name},{' '}
-                {convertToLocale({
-                  amount: selectedShippingMethod?.amount,
-                  currency_code: cart?.currency_code,
-                })}
-              </Text>
+              {cart.shipping_methods.map((method, index) => {
+                const option = availableShippingMethods?.find(
+                  opt => opt.id === method.shipping_option_id
+                )
+                
+                return (
+                  <Text key={method.id} className="text-secondary">
+                    {option?.name || "Selected shipping method"},{' '}
+                    {convertToLocale({
+                      amount: option?.amount || 0,
+                      currency_code: cart?.currency_code,
+                    })}
+                  </Text>
+                )
+              })}
             </div>
           )}
         </Box>

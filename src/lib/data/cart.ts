@@ -585,22 +585,47 @@ export async function placeOrder() {
 
   const authHeaders = await getAuthHeaders()
 
-  const cartRes = await sdk.store.cart
-    .complete(cartId, {}, authHeaders)
-    .then((cartRes) => {
-      revalidateTag('cart')
-      return cartRes
-    })
-    .catch(medusaError)
+  try {
+    // First, check if the cart has shipping methods
+    const cart = await sdk.store.cart.retrieve(cartId, {}, authHeaders)
+    
+    if (!cart.cart.shipping_methods || cart.cart.shipping_methods.length === 0) {
+      throw new Error('No shipping methods selected. Please select a shipping method before placing your order.')
+    }
 
-  if (cartRes?.type === 'order') {
-    const countryCode =
-      cartRes.order.shipping_address?.country_code?.toLowerCase()
-    removeCartId()
-    redirect(`/${countryCode}/order/confirmed/${cartRes?.order.id}`)
+    // Log shipping methods for debugging
+    console.log('Placing order with shipping methods:', cart.cart.shipping_methods)
+
+    const cartRes = await sdk.store.cart
+      .complete(cartId, {}, authHeaders)
+      .then((cartRes) => {
+        revalidateTag('cart')
+        return cartRes
+      })
+      .catch((error) => {
+        console.error('Error completing cart:', error)
+        throw error
+      })
+
+    if (cartRes?.type === 'order') {
+      const countryCode =
+        cartRes.order.shipping_address?.country_code?.toLowerCase()
+      removeCartId()
+      redirect(`/${countryCode}/order/confirmed/${cartRes?.order.id}`)
+    }
+
+    return cartRes.cart
+  } catch (error) {
+    console.error('Error placing order:', error)
+    
+    // Check if it's a shipping profile error
+    if (error.message && error.message.includes('shipping profiles')) {
+      throw new Error('Some items in your cart require different shipping methods. Please go back to the delivery step and select all required shipping methods.')
+    }
+    
+    // Re-throw the original error
+    throw error
   }
-
-  return cartRes.cart
 }
 
 /**

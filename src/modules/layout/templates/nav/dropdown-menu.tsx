@@ -42,7 +42,7 @@ const DropdownMenu: React.FC<DropdownMenuProps> = ({
       <div className="mb-2 px-4">
         <Button
           variant="tonal"
-          className="group relative flex w-full items-center justify-between !px-4 !py-2 text-[13px] font-medium bg-amber-50/50 hover:bg-amber-100/50 text-amber-800 transition-all duration-300 rounded-lg overflow-hidden"
+          className="group relative flex w-full items-center justify-between !px-4 !py-2 text-[13px] font-medium bg-amber-400 hover:bg-amber-500 text-black transition-all duration-300 rounded-lg overflow-hidden"
           onClick={() => onOpenChange(false)}
           asChild
         >
@@ -63,12 +63,12 @@ const DropdownMenu: React.FC<DropdownMenuProps> = ({
           <div key={`${subItem.handle}-${index}`} className="group/item relative">
             <NavigationItem
               href={subItem.handle}
-              className="group relative flex items-center justify-between w-full px-4 py-2 text-[13px] font-medium text-amber-800/90 hover:bg-amber-50/50 transition-all duration-300"
+              className="group relative flex items-center justify-between w-full px-4 py-2 text-[13px] font-medium text-black hover:bg-amber-500/50 transition-all duration-300"
               data-testid={formatNameForTestId(
                 `${subItem.name}-category-title`
               )}
             >
-              <span className="relative z-10 group-hover:text-amber-900 transition-colors duration-300">{subItem.name}</span>
+              <span className="relative z-10 group-hover:text-black transition-colors duration-300">{subItem.name}</span>
             </NavigationItem>
           </div>
         ))}
@@ -87,10 +87,10 @@ const DropdownMenu: React.FC<DropdownMenuProps> = ({
         <div
           key={`dropdown-${uniqueId}-${item.name}`}
           className={cn(
-            'absolute left-0 top-full z-50 translate-y-2 bg-amber-50/95 backdrop-blur-md border border-amber-200/20 shadow-lg rounded-lg transition-all duration-300',
+            'absolute left-0 top-full z-50 translate-y-1 bg-amber-400 backdrop-blur-md border border-amber-500/20 shadow-lg rounded-lg transition-all duration-300',
             isOpen
-              ? 'pointer-events-auto opacity-100 translate-y-1'
-              : 'pointer-events-none invisible opacity-0 translate-y-3'
+              ? 'pointer-events-auto opacity-100 translate-y-0.5'
+              : 'pointer-events-none invisible opacity-0 translate-y-2'
           )}
         >
           {customContent ?? renderSubcategories(item.category_children)}

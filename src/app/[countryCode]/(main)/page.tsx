@@ -1,7 +1,4 @@
-import { Suspense } from 'react'
-import { Metadata } from 'next'
-import Image from 'next/image'
-
+import React, { Suspense } from 'react'
 import { getCollectionsList } from '@lib/data/collections'
 import {
   getCollectionsData,
@@ -12,20 +9,14 @@ import { getRegion } from '@lib/data/regions'
 import { Banner } from '@modules/home/components/banner'
 import Collections from '@modules/home/components/collections'
 import Hero from '@modules/home/components/hero'
-import ProductGrid from '@modules/home/components/product-grid'
 import { ProductCarousel } from '@modules/products/components/product-carousel'
 import { ReviewSection } from '@modules/common/components/reviews'
 import SkeletonProductsCarousel from '@modules/skeletons/templates/skeleton-products-carousel'
 import { CollectionsData, HeroBannerData } from 'types/strapi'
+import SeedLineCountdown from '@modules/home/components/seed-line-countdown'
 
 // Set dynamic rendering to prevent build-time errors
 export const dynamic = 'force-dynamic'
-
-export const metadata: Metadata = {
-  title: 'Solace Medusa Starter Template',
-  description:
-    'A performant frontend ecommerce starter template with Next.js 14 and Medusa 2.0.',
-}
 
 export default async function Home(props: {
   params: Promise<{ countryCode: string }>
@@ -38,6 +29,8 @@ export default async function Home(props: {
     let seedProducts = [];
     let clothingProducts = [];
     let region = null;
+    let strapiCollections = null;
+    let heroBannerData = null;
     
     try {
       // Split the data fetching into separate try-catch blocks
@@ -61,36 +54,113 @@ export default async function Home(props: {
         
         const allProducts = allProductsResult?.products || [];
         
-        // Try to find collection IDs for seeds and clothing
-        const seedCollection = collectionsList.find(collection => 
-          collection.title?.toLowerCase().includes('feminized') || 
-          collection.title?.toLowerCase().includes('seed'));
+        // Try to find collection IDs for seeds
+        const seedCollections = collectionsList.filter(collection => {
+          const title = (collection.title || '').toLowerCase();
+          const handle = (collection.handle || '').toLowerCase();
+          
+          // Log each collection for debugging
+          console.log('Checking collection:', {
+            title,
+            handle,
+            id: collection.id,
+            full: collection
+          });
+          
+          // Check for seed collections
+          return handle.includes('seed') || 
+                 title.includes('seed') || 
+                 handle.includes('regular') || 
+                 title.includes('regular') ||
+                 handle.includes('feminized') || 
+                 title.includes('feminized');
+        });
+
+        // Separate regular and feminized collections
+        const regularSeedCollections = seedCollections.filter(collection => {
+          const title = (collection.title || '').toLowerCase();
+          const handle = (collection.handle || '').toLowerCase();
+          return handle.includes('regular') || title.includes('regular');
+        });
+
+        const feminizedSeedCollections = seedCollections.filter(collection => {
+          const title = (collection.title || '').toLowerCase();
+          const handle = (collection.handle || '').toLowerCase();
+          return handle.includes('feminized') || title.includes('feminized');
+        });
+
+        // Log collections for debugging
+        console.log('Regular seed collections:', regularSeedCollections.map(c => ({
+          id: c.id,
+          title: c.title,
+          handle: c.handle
+        })));
         
+        console.log('Feminized seed collections:', feminizedSeedCollections.map(c => ({
+          id: c.id,
+          title: c.title,
+          handle: c.handle
+        })));
+
         // Find all clothing-related collections
-        const clothingCollections = collectionsList.filter(collection => 
-          collection.title?.toLowerCase().includes('clothing') || 
-          collection.title?.toLowerCase().includes('merch') ||
-          collection.title?.toLowerCase().includes('apparel') ||
-          collection.title?.toLowerCase().includes("men's") ||
-          collection.title?.toLowerCase().includes("women's") ||
-          collection.title?.toLowerCase().includes('shirt') ||
-          collection.title?.toLowerCase().includes('sweatshirt') ||
-          collection.title?.toLowerCase().includes('pants'));
-        
-        // If we found the seed collection, try to fetch those products specifically
-        if (seedCollection) {
+        const clothingCollections = collectionsList.filter(collection => {
+          const title = (collection.title || '').toLowerCase();
+          const handle = (collection.handle || '').toLowerCase();
+          
+          // Log each collection for debugging
+          console.log('Checking clothing collection:', {
+            title,
+            handle,
+            id: collection.id
+          });
+          
+          return handle.includes('mens-merch') || 
+                 handle.includes('womens-merch') || 
+                 handle.includes('accessories') ||
+                 title.includes('mens merch') ||
+                 title.includes('womens merch') ||
+                 title.includes('accessories');
+        });
+
+        // Log found clothing collections
+        console.log('Found clothing collections:', clothingCollections.map(c => ({
+          id: c.id,
+          title: c.title,
+          handle: c.handle
+        })));
+
+        // If we found seed collections, try to fetch those products specifically
+        if (seedCollections.length > 0) {
           try {
-            const seedProductsResult = await getProductsList({
+            // Fetch regular seed products
+            const regularSeedProductsResult = await getProductsList({
               pageParam: 0,
               queryParams: { 
                 limit: 9, 
-                collection_id: [seedCollection.id]
+                collection_id: regularSeedCollections.map(collection => collection.id)
               },
               countryCode: countryCode,
             })
               .then(({ response }) => response)
               .catch(() => ({ products: [] }));
-            seedProducts = seedProductsResult?.products || [];
+
+            // Fetch feminized seed products
+            const feminizedSeedProductsResult = await getProductsList({
+              pageParam: 0,
+              queryParams: { 
+                limit: 9, 
+                collection_id: feminizedSeedCollections.map(collection => collection.id)
+              },
+              countryCode: countryCode,
+            })
+              .then(({ response }) => response)
+              .catch(() => ({ products: [] }));
+
+            // Combine both types of products
+            seedProducts = [
+              ...regularSeedProductsResult?.products || [],
+              ...feminizedSeedProductsResult?.products || []
+            ];
           } catch (error) {
             console.error("Error fetching seed products:", error);
           }
@@ -142,10 +212,6 @@ export default async function Home(props: {
       );
     }
 
-    // CMS data with error handling
-    let strapiCollections = null;
-    let heroBannerData = null;
-
     try {
       [
         strapiCollections,
@@ -178,13 +244,76 @@ export default async function Home(props: {
                   title="Feminized Seeds"
                   subtitle="Premium quality feminized seeds for your growing needs."
                   viewAll={{
-                    link: '/shop',
+                    link: `/${countryCode}/shop`,
                     text: 'View all',
                   }}
                 />
               </Suspense>
             )}
-            <ProductGrid />
+            {/* Seed Line Section */}
+            <div className="w-full bg-black text-white py-0 my-0">
+              <div className="max-w-7xl mx-auto px-4 py-16">
+                <h2 className="text-5xl font-bold text-center mb-4">SEED LINE</h2>
+                <p className="text-center text-xl mb-12">Every genetic that we drop is a stable, trichome covered, terpene loaded gem!</p>
+                
+                <div className="grid grid-cols-4 gap-6 overflow-x-auto min-w-0">
+                  {/* Zappet Card */}
+                  <div className="bg-black rounded-2xl border-2 min-w-[250px] aspect-square" style={{ borderColor: '#fdd729' }}>
+                    <div className="w-full h-full relative overflow-hidden rounded-2xl">
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <img 
+                          src="/Zapplez.png" 
+                          alt="Zappet" 
+                          className="w-full h-full object-contain p-4"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Pink Waferz Card */}
+                  <div className="bg-black rounded-2xl border-2 min-w-[250px] aspect-square" style={{ borderColor: '#fdd729' }}>
+                    <div className="w-full h-full relative overflow-hidden rounded-2xl">
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <img 
+                          src="/Pink-waflfles.png" 
+                          alt="Pink Waferz" 
+                          className="w-full h-full object-contain p-4"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Chronic's Kush Card */}
+                  <div className="bg-black rounded-2xl border-2 min-w-[250px] aspect-square" style={{ borderColor: '#fdd729' }}>
+                    <div className="w-full h-full relative overflow-hidden rounded-2xl">
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <img 
+                          src="/Chronic_kush.png" 
+                          alt="Chronic's Kush" 
+                          className="w-full h-full object-contain p-4"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Conscious Genetics Card */}
+                  <div className="bg-black rounded-2xl border-2 min-w-[250px] aspect-square" style={{ borderColor: '#fdd729' }}>
+                    <div className="w-full h-full relative overflow-hidden rounded-2xl">
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <img 
+                          src="/conscious-genetics-logo.png" 
+                          alt="Conscious Genetics" 
+                          className="w-full h-full object-contain p-4"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Countdown Timer */}
+                <SeedLineCountdown />
+              </div>
+            </div>
             {clothingProducts && clothingProducts.length > 0 && region && (
               <Suspense fallback={<SkeletonProductsCarousel />}>
                 <ProductCarousel
@@ -194,7 +323,7 @@ export default async function Home(props: {
                   title="Clothing & Apparel"
                   subtitle="Browse our complete collection of merchandise including men's and women's apparel."
                   viewAll={{
-                    link: '/shop',
+                    link: `/${countryCode}/shop`,
                     text: 'Shop All',
                   }}
                 />

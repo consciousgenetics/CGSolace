@@ -23,7 +23,7 @@ export default async function NavWrapper(props: any) {
 
   return (
     <div className="fixed top-0 left-0 right-0 w-full z-[1000]">
-      <div className="bg-amber-400 transition-all duration-300">
+      <div className="bg-white transition-all duration-300">
         <Container className="!p-0">
           <CountdownTimer />
         </Container>

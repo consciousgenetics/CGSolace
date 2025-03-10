@@ -193,13 +193,50 @@ export const createNavigation = (
 
   return [
     {
-      name: 'Shop',
+      name: 'Seeds',
       handle: '/shop',
-      category_children: mappedCategories,
+      category_children: [
+        {
+          name: 'Regular Seeds',
+          type: 'category',
+          handle: '/categories/regular-seeds',
+          category_children: [],
+        },
+        {
+          name: 'Feminized Seeds',
+          type: 'category',
+          handle: '/categories/feminized-seeds',
+          category_children: [],
+        }
+      ],
+    },
+    {
+      name: 'Merch',
+      handle: '/shop',
+      category_children: [
+        {
+          name: 'Mens Merch',
+          type: 'category',
+          handle: '/categories/mens-merch',
+          category_children: [],
+        },
+        {
+          name: 'Womens Merch',
+          type: 'category',
+          handle: '/categories/womens-merch',
+          category_children: [],
+        },
+        {
+          name: 'Accessories',
+          type: 'category',
+          handle: '/categories/accessories',
+          category_children: [],
+        }
+      ],
     },
     {
       name: 'Collections',
-      handle: '/shop',
+      handle: '/collections',
       category_children: !stableCollections
         ? null
         : stableCollections

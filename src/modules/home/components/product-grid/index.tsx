@@ -36,7 +36,7 @@ export default async function ProductGrid() {
           sizes="100vw"
           priority
         />
-        <div className="absolute inset-0 bg-black/30 backdrop-blur-[2px]"></div>
+       
       </div>
       
       <div className="w-full max-w-[1400px] grid grid-cols-1 small:grid-cols-2 small:grid-rows-2 gap-12 px-4 small:px-8 relative z-10">

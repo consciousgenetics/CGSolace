@@ -37,7 +37,14 @@ const PaymentButton: React.FC<PaymentButtonProps> = ({
   //   return <GiftCardPaymentButton />
   // }
 
-  const paymentSession = cart.payment_collection?.payment_sessions?.[0]
+  const paymentSession = cart.payment_collection?.payment_sessions?.find(
+    (s) => s.status === 'pending'
+  )
+
+  // If no payment session is selected yet, show a disabled button
+  if (!paymentSession) {
+    return <Button disabled>Select a payment method</Button>
+  }
 
   switch (true) {
     case isStripe(paymentSession?.provider_id):
@@ -51,7 +58,10 @@ const PaymentButton: React.FC<PaymentButtonProps> = ({
       )
     case isManual(paymentSession?.provider_id):
       return (
-        <ManualTestPaymentButton notReady={notReady} data-testid={dataTestId} />
+        <ManualTestPaymentButton 
+          notReady={notReady} 
+          data-testid={dataTestId}
+        />
       )
     case isPaypal(paymentSession?.provider_id):
       return (
@@ -290,40 +300,47 @@ const PayPalPaymentButton = ({
   }
 }
 
-const ManualTestPaymentButton = ({ notReady }: { notReady: boolean }) => {
+const ManualTestPaymentButton = ({
+  notReady,
+  'data-testid': dataTestId,
+}: {
+  notReady: boolean
+  'data-testid'?: string
+}) => {
   const [submitting, setSubmitting] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
-  const onPaymentCompleted = async () => {
-    await placeOrder()
-      .catch((err) => {
-        setErrorMessage(err.message)
-      })
-      .finally(() => {
-        setSubmitting(false)
-      })
-  }
-
-  const handlePayment = () => {
+  const handleOrder = async () => {
     setSubmitting(true)
+    setErrorMessage(null)
 
-    onPaymentCompleted()
+    try {
+      await placeOrder()
+    } catch (err: any) {
+      console.error('Error placing order:', err)
+      
+      // Provide more user-friendly error messages
+      if (err.message && err.message.includes('shipping profiles')) {
+        setErrorMessage('Some items in your cart require different shipping methods. Please go back to the delivery step and select all required shipping methods.')
+      } else {
+        setErrorMessage(err.message || 'An error occurred while placing your order. Please try again.')
+      }
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   return (
     <>
       <Button
-        disabled={notReady}
+        onClick={handleOrder}
         isLoading={submitting}
-        onClick={handlePayment}
-        data-testid="submit-order-button"
+        disabled={notReady}
+        data-testid={dataTestId}
       >
         Place order
       </Button>
-      <ErrorMessage
-        error={errorMessage}
-        data-testid="manual-payment-error-message"
-      />
+      <ErrorMessage error={errorMessage} data-testid="manual-payment-error-message" />
     </>
   )
 }

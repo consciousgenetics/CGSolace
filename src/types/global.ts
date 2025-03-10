@@ -32,14 +32,18 @@ export type ProductFilters = {
 
 export type SearchedProduct = {
   id: string
+  created_at: string
   title: string
   handle: string
   thumbnail: string
-  calculated_price: string
+  calculated_price: number | null
   sale_price: string
-  regular_price: string
-  created_at: string
-  updated_at: string
+  variants?: Array<{
+    calculated_price?: number
+    prices?: Array<{
+      amount: number
+    }>
+  }>
 }
 
 export type SearchedProducts = {

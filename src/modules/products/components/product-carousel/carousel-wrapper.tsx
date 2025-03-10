@@ -10,15 +10,13 @@ import Image from 'next/image'
 
 interface CarouselWrapperProps {
   children: React.ReactNode
-  title: string
+  title?: string
   subtitle?: string
   productsCount: number
 }
 
 export default function CarouselWrapper({
   children,
-  title,
-  subtitle,
   productsCount,
 }: CarouselWrapperProps) {
   const [emblaRef, emblaApi] = useEmblaCarousel({
@@ -58,15 +56,6 @@ export default function CarouselWrapper({
   return (
     <div className="w-full max-w-full relative min-h-[600px]">
       <div className="relative z-10 py-8">
-        <Box className="flex justify-center flex-col items-center mb-5 small:mb-8 px-4">
-          <Heading as="h2" className="text-2xl small:text-3xl medium:text-4xl text-white font-bold text-center">
-            {title}
-          </Heading>
-          <p className="text-sm small:text-base text-white text-opacity-90 mt-2 small:mt-3 text-center max-w-2xl">
-            {subtitle || "Every genetic that we drop is a stable, trichome covered, terpene loaded gem!"}
-          </p>
-        </Box>
-        
         <div className="relative w-full">
           <div className="w-full max-w-full overflow-hidden px-0 cursor-grab" ref={emblaRef}>
             <div className="w-full pl-0 flex gap-3 small:gap-4">{children}</div>

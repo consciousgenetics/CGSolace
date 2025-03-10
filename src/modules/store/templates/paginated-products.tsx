@@ -50,9 +50,16 @@ export default function PaginatedProducts({
         data-testid="products-list"
       >
         {products.map((p) => {
-          const calculatedPrice = p.calculated_price !== null && p.calculated_price !== undefined
+          // Find the lowest price among all variants
+          const lowestPrice = p.variants?.reduce((lowest, variant) => {
+            const variantPrice = variant.calculated_price || 
+              (variant.prices?.[0]?.amount ?? Infinity);
+            return Math.min(lowest, variantPrice);
+          }, Infinity);
+
+          const calculatedPrice = lowestPrice !== Infinity
             ? convertToLocale({
-                amount: Number(p.calculated_price),
+                amount: lowestPrice,
                 currency_code: region.currency_code,
               })
             : 'N/A';
@@ -67,7 +74,7 @@ export default function PaginatedProducts({
                   handle: p.handle,
                   thumbnail: p.thumbnail,
                   calculatedPrice: calculatedPrice,
-                  salePrice: p.sale_price,
+                  salePrice: calculatedPrice, // Use the same price since we're showing the lowest
                 }}
                 regionId={region.id}
               />

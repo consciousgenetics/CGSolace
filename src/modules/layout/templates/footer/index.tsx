@@ -62,7 +62,7 @@ export default async function Footer({ countryCode }: { countryCode: string }) {
   return (
     <Container
       as="footer"
-      className="mx-0 max-w-full border-t border-basic-primary bg-static px-0 py-0 small:px-0 small:py-0"
+      className="mx-0 max-w-full border-t border-basic-primary bg-static px-0 py-0 small:px-0 small:py-0 relative z-20"
     >
       <Container className="flex flex-col gap-6 text-static small:gap-12">
         <Box className="flex flex-col gap-8 small:gap-12 large:flex-row xl:gap-0">

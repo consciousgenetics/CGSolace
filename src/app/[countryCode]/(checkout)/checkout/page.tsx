@@ -8,6 +8,7 @@ import Wrapper from '@modules/checkout/components/payment-wrapper'
 import CheckoutForm from '@modules/checkout/templates/checkout-form'
 import CheckoutSummary from '@modules/checkout/templates/checkout-summary'
 import { Container } from '@modules/common/components/container'
+import { HttpTypes } from '@medusajs/types'
 
 export const metadata: Metadata = {
   title: 'Checkout',
@@ -29,7 +30,7 @@ const fetchCart = async (countryCode: string) => {
   });
 
   if (cart?.items?.length) {
-    const enrichedItems = await enrichLineItems(cart?.items, cart?.region_id)
+    const enrichedItems = await enrichLineItems(cart?.items, cart?.region_id) as HttpTypes.StoreCartLineItem[]
     cart.items = enrichedItems
   }
 
@@ -61,11 +62,14 @@ export default async function Checkout({
   const cart = await fetchCart(countryCode)
   const customer = await getCustomer()
 
+  // Ensure searchParams is properly typed
+  const step = typeof searchParams.step === 'string' ? searchParams.step : undefined
+
   return (
     <Container className="mx-0 grid max-w-full grid-cols-1 gap-y-4 bg-secondary large:grid-cols-[1fr_416px] large:gap-x-10 2xl:gap-x-40">
       <Wrapper cart={cart}>
         <CheckoutForm cart={cart} customer={customer} />
-        <CheckoutSummary cart={cart} searchParams={searchParams} />
+        <CheckoutSummary cart={cart} searchParams={{ step }} />
       </Wrapper>
     </Container>
   )

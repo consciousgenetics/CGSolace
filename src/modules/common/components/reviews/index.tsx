@@ -74,9 +74,9 @@ export function ReviewSection() {
   ]
 
   return (
-    <div className="w-full min-h-screen py-12 small:py-16 flex items-center relative overflow-hidden">
+    <div className="w-full min-h-screen py-12 small:py-16 flex items-center relative overflow-hidden" data-testid="reviews-section">
       {/* Background - copied from ProductGrid */}
-      <div className="absolute inset-0 w-full h-full">
+      <div className="absolute inset-0 w-full h-full z-10">
         <Image
           src="/127.png"
           alt="Background pattern"
@@ -88,7 +88,7 @@ export function ReviewSection() {
         <div className="absolute inset-0 bg-black/30 backdrop-blur-[2px]"></div>
       </div>
       
-      <div className="px-4 max-w-7xl mx-auto w-full relative z-10">
+      <div className="px-4 max-w-7xl mx-auto w-full relative z-20">
         <Text className="text-3xl small:text-4xl medium:text-5xl font-['Anton'] text-white text-center mb-8 small:mb-12 medium:mb-16 relative z-10 drop-shadow-[0_5px_5px_rgba(0,0,0,0.3)]">
           CUSTOMER REVIEWS
         </Text>
