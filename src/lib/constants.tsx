@@ -192,15 +192,27 @@ export const createNavigation = (
       handle: '/shop',
       category_children: [
         {
-          name: 'Regular Seeds',
+          name: "Chronic's Kush",
           type: 'category',
-          handle: '/categories/seeds',
+          handle: '/chronics-kush',
           category_children: [],
         },
         {
-          name: 'Feminized Seeds',
+          name: 'Zapplez',
           type: 'category',
-          handle: '/categories/feminized-seeds',
+          handle: '/zapplez',
+          category_children: [],
+        },
+        {
+          name: 'Pink Waferz',
+          type: 'category',
+          handle: '/pink-waferz',
+          category_children: [],
+        },
+        {
+          name: 'Red Kachina',
+          type: 'category',
+          handle: '/red-kachina',
           category_children: [],
         }
       ],
