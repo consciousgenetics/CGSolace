@@ -256,9 +256,10 @@ export default async function Home(props: {
                 <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-center mb-4">SEED LINE</h2>
                 <p className="text-center text-base sm:text-lg md:text-xl mb-8 sm:mb-12 px-4">Every genetic that we drop is a stable, trichome covered, terpene loaded gem!</p>
                 
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+                {/* Grid container with responsive layout */}
+                <div className="flex flex-col lg:flex-row gap-6 lg:gap-4 items-center justify-center">
                   {/* Zappet Card */}
-                  <div className="bg-black rounded-2xl border-2 w-full aspect-square mx-auto max-w-[280px]" style={{ borderColor: '#fdd729' }}>
+                  <div className="bg-black rounded-2xl border-2 w-full lg:w-1/4 aspect-square max-w-[280px]" style={{ borderColor: '#fdd729' }}>
                     <div className="w-full h-full relative overflow-hidden rounded-2xl">
                       <div className="absolute inset-0 flex items-center justify-center">
                         <img 
@@ -271,7 +272,7 @@ export default async function Home(props: {
                   </div>
                   
                   {/* Pink Waferz Card */}
-                  <div className="bg-black rounded-2xl border-2 w-full aspect-square mx-auto max-w-[280px]" style={{ borderColor: '#fdd729' }}>
+                  <div className="bg-black rounded-2xl border-2 w-full lg:w-1/4 aspect-square max-w-[280px]" style={{ borderColor: '#fdd729' }}>
                     <div className="w-full h-full relative overflow-hidden rounded-2xl">
                       <div className="absolute inset-0 flex items-center justify-center">
                         <img 
@@ -284,7 +285,7 @@ export default async function Home(props: {
                   </div>
                   
                   {/* Chronic's Kush Card */}
-                  <div className="bg-black rounded-2xl border-2 w-full aspect-square mx-auto max-w-[280px]" style={{ borderColor: '#fdd729' }}>
+                  <div className="bg-black rounded-2xl border-2 w-full lg:w-1/4 aspect-square max-w-[280px]" style={{ borderColor: '#fdd729' }}>
                     <div className="w-full h-full relative overflow-hidden rounded-2xl">
                       <div className="absolute inset-0 flex items-center justify-center">
                         <img 
@@ -297,7 +298,7 @@ export default async function Home(props: {
                   </div>
                   
                   {/* Conscious Genetics Card */}
-                  <div className="bg-black rounded-2xl border-2 w-full aspect-square mx-auto max-w-[280px]" style={{ borderColor: '#fdd729' }}>
+                  <div className="bg-black rounded-2xl border-2 w-full lg:w-1/4 aspect-square max-w-[280px]" style={{ borderColor: '#fdd729' }}>
                     <div className="w-full h-full relative overflow-hidden rounded-2xl">
                       <div className="absolute inset-0 flex items-center justify-center">
                         <img 
