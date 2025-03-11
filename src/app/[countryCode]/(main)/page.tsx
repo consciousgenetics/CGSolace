@@ -203,7 +203,7 @@ export default async function Home(props: {
       return (
         <div className="py-10">
           <h1 className="text-2xl font-bold text-center">
-            Welcome to Solace Medusa Store
+            Welcome to Conscious Genetics
           </h1>
           <p className="text-center mt-4">
             Unable to load store data. Please try again later.
@@ -252,13 +252,13 @@ export default async function Home(props: {
             )}
             {/* Seed Line Section */}
             <div className="w-full bg-black text-white py-0 my-0">
-              <div className="max-w-7xl mx-auto px-4 py-16">
-                <h2 className="text-5xl font-bold text-center mb-4">SEED LINE</h2>
-                <p className="text-center text-xl mb-12">Every genetic that we drop is a stable, trichome covered, terpene loaded gem!</p>
+              <div className="max-w-7xl mx-auto px-4 py-8 sm:py-16">
+                <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-center mb-4">SEED LINE</h2>
+                <p className="text-center text-base sm:text-lg md:text-xl mb-8 sm:mb-12 px-4">Every genetic that we drop is a stable, trichome covered, terpene loaded gem!</p>
                 
-                <div className="grid grid-cols-4 gap-6 overflow-x-auto min-w-0">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
                   {/* Zappet Card */}
-                  <div className="bg-black rounded-2xl border-2 min-w-[250px] aspect-square" style={{ borderColor: '#fdd729' }}>
+                  <div className="bg-black rounded-2xl border-2 w-full aspect-square mx-auto max-w-[280px]" style={{ borderColor: '#fdd729' }}>
                     <div className="w-full h-full relative overflow-hidden rounded-2xl">
                       <div className="absolute inset-0 flex items-center justify-center">
                         <img 
@@ -271,7 +271,7 @@ export default async function Home(props: {
                   </div>
                   
                   {/* Pink Waferz Card */}
-                  <div className="bg-black rounded-2xl border-2 min-w-[250px] aspect-square" style={{ borderColor: '#fdd729' }}>
+                  <div className="bg-black rounded-2xl border-2 w-full aspect-square mx-auto max-w-[280px]" style={{ borderColor: '#fdd729' }}>
                     <div className="w-full h-full relative overflow-hidden rounded-2xl">
                       <div className="absolute inset-0 flex items-center justify-center">
                         <img 
@@ -284,7 +284,7 @@ export default async function Home(props: {
                   </div>
                   
                   {/* Chronic's Kush Card */}
-                  <div className="bg-black rounded-2xl border-2 min-w-[250px] aspect-square" style={{ borderColor: '#fdd729' }}>
+                  <div className="bg-black rounded-2xl border-2 w-full aspect-square mx-auto max-w-[280px]" style={{ borderColor: '#fdd729' }}>
                     <div className="w-full h-full relative overflow-hidden rounded-2xl">
                       <div className="absolute inset-0 flex items-center justify-center">
                         <img 
@@ -297,7 +297,7 @@ export default async function Home(props: {
                   </div>
                   
                   {/* Conscious Genetics Card */}
-                  <div className="bg-black rounded-2xl border-2 min-w-[250px] aspect-square" style={{ borderColor: '#fdd729' }}>
+                  <div className="bg-black rounded-2xl border-2 w-full aspect-square mx-auto max-w-[280px]" style={{ borderColor: '#fdd729' }}>
                     <div className="w-full h-full relative overflow-hidden rounded-2xl">
                       <div className="absolute inset-0 flex items-center justify-center">
                         <img 
@@ -340,7 +340,7 @@ export default async function Home(props: {
     return (
       <div className="py-10">
         <h1 className="text-2xl font-bold text-center">
-          Welcome to Solace Medusa Store
+          Welcome to Conscious Genetics
         </h1>
         <p className="text-center mt-4">
           Something went wrong. Please try again later.

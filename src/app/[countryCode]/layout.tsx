@@ -5,7 +5,7 @@ import AgeVerificationWrapper from '@modules/common/components/age-verification/
 import { CountdownProvider } from '@lib/context/CountdownContext'
 
 export const metadata: Metadata = {
-  title: 'Solace Store',
+  title: 'Conscious Genetics',
   description: 'Your premium cannabis store',
 }
 

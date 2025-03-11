@@ -35,19 +35,19 @@ export async function generateMetadata(
 
     if (!collection) {
       return {
-        title: "Collection | Solace Medusa Starter",
+        title: "Collection | Conscious Genetics",
         description: "Collection page",
       }
     }
 
     return {
-      title: `${collection.title} | Solace Medusa Starter`,
+      title: `${collection.title} | Conscious Genetics`,
       description: `${collection.title} collection`,
     }
   } catch (error) {
     console.error("Error generating collection metadata:", error)
     return {
-      title: "Collection | Solace Medusa Starter",
+      title: "Collection | Conscious Genetics",
       description: "Collection page",
     }
   }

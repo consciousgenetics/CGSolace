@@ -33,7 +33,7 @@ export async function generateMetadata(
 
     if (!product_categories || product_categories.length === 0) {
       return {
-        title: "Category | Solace Medusa Starter",
+        title: "Category | Conscious Genetics",
         description: "Category page",
       }
     }
@@ -47,7 +47,7 @@ export async function generateMetadata(
       `${title} category.`
 
     return {
-      title: `${title} | Solace Medusa Starter`,
+      title: `${title} | Conscious Genetics`,
       description,
       alternates: {
         canonical: `${params.category.join('/')}`,
@@ -56,7 +56,7 @@ export async function generateMetadata(
   } catch (error) {
     console.error("Error generating category metadata:", error)
     return {
-      title: "Category | Solace Medusa Starter",
+      title: "Category | Conscious Genetics",
       description: "Category page",
     }
   }

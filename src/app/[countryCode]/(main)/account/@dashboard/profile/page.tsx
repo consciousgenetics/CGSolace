@@ -8,7 +8,7 @@ import Divider from '@modules/common/components/divider'
 
 export const metadata: Metadata = {
   title: 'Profile',
-  description: 'View and edit your Solace Medusa Starter profile.',
+  description: 'View and edit your Conscious Genetics profile.',
 }
 
 export default async function Profile() {
