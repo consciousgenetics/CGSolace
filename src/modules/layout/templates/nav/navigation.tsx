@@ -9,21 +9,17 @@ import { formatNameForTestId } from '@lib/util/formatNameForTestId'
 import { StoreCollection, StoreProductCategory } from '@medusajs/types'
 import { Box } from '@modules/common/components/box'
 import { NavigationItem } from '@modules/common/components/navigation-item'
-import { CollectionsData } from 'types/strapi'
 
-import CollectionsMenu from './collections-menu'
 import DropdownMenu from './dropdown-menu'
 
 export default function Navigation({
   countryCode,
   productCategories,
   collections,
-  strapiCollections,
 }: {
   countryCode: string
   productCategories: StoreProductCategory[]
   collections: StoreCollection[]
-  strapiCollections: CollectionsData
 }) {
   const pathname = usePathname()
   const [openDropdown, setOpenDropdown] = useState<{
@@ -56,14 +52,6 @@ export default function Navigation({
                 open ? { name: item.name, handle: item.handle } : null
               )
             }}
-            customContent={
-              item.name === 'Collections' ? (
-                <CollectionsMenu
-                  cmsCollections={strapiCollections}
-                  medusaCollections={collections}
-                />
-              ) : undefined
-            }
           >
             <div
               className="flex h-full items-center"

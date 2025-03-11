@@ -43,7 +43,7 @@ const Shipping: React.FC<ShippingProps> = ({
   const shippingOptionsByProfile = useMemo(() => {
     if (!availableShippingMethods) return {}
     
-    return availableShippingMethods.reduce((acc, method) => {
+    const grouped = availableShippingMethods.reduce((acc, method) => {
       const profileId = method.shipping_profile_id
       if (!acc[profileId]) {
         acc[profileId] = []
@@ -51,7 +51,38 @@ const Shipping: React.FC<ShippingProps> = ({
       acc[profileId].push(method)
       return acc
     }, {} as Record<string, HttpTypes.StoreCartShippingOption[]>)
+
+    console.log('Available shipping options by profile:', grouped)
+    return grouped
   }, [availableShippingMethods])
+
+  // Get required shipping profiles from cart items
+  const requiredShippingProfiles = useMemo(() => {
+    if (!cart?.items) return new Set<string>()
+    
+    const profiles = new Set<string>()
+    cart.items.forEach((item: HttpTypes.StoreCartLineItem) => {
+      // Try to get shipping profile ID from metadata first
+      const profileId = item.variant?.product?.metadata?.shipping_profile_id
+      
+      if (profileId) {
+        profiles.add(profileId as string)
+      }
+    })
+
+    // Also add profile IDs from existing shipping methods
+    cart.shipping_methods?.forEach(method => {
+      const option = availableShippingMethods?.find(
+        opt => opt.id === method.shipping_option_id
+      )
+      if (option?.shipping_profile_id) {
+        profiles.add(option.shipping_profile_id)
+      }
+    })
+    
+    console.log('Required shipping profiles:', Array.from(profiles))
+    return profiles
+  }, [cart?.items, cart.shipping_methods, availableShippingMethods])
 
   // Check if we have multiple shipping profiles
   const hasMultipleProfiles = Object.keys(shippingOptionsByProfile).length > 1
@@ -69,6 +100,7 @@ const Shipping: React.FC<ShippingProps> = ({
         return acc
       }, {} as Record<string, string>)
       
+      console.log('Initializing selected methods:', methods)
       setSelectedMethods(methods)
     }
   }, [cart.shipping_methods, availableShippingMethods])
@@ -78,17 +110,18 @@ const Shipping: React.FC<ShippingProps> = ({
   }
 
   const handleSubmit = () => {
-    // Check if all profiles have a selected method
-    const profileIds = Object.keys(shippingOptionsByProfile)
-    const allProfilesHaveMethod = profileIds.every(profileId => 
-      selectedMethods[profileId] !== undefined
+    // Check if all required profiles have a selected method
+    const missingProfiles = Array.from(requiredShippingProfiles).filter(
+      profileId => !selectedMethods[profileId]
     )
     
-    if (!allProfilesHaveMethod && hasMultipleProfiles) {
-      setError('Please select a shipping method for each product type')
+    if (missingProfiles.length > 0) {
+      const missingTypes = missingProfiles.map(profileId => getProfileName(profileId)).join(', ')
+      setError(`Please select shipping methods for: ${missingTypes}`)
       return
     }
-    
+
+    console.log('Submitting with selected methods:', selectedMethods)
     router.push(pathname + '?step=payment', { scroll: false })
   }
 
@@ -97,6 +130,8 @@ const Shipping: React.FC<ShippingProps> = ({
     setError(null)
     
     try {
+      console.log('Setting shipping method:', { id, profileId })
+      
       // Update local state first for better UX
       setSelectedMethods(prev => ({
         ...prev,
@@ -104,8 +139,16 @@ const Shipping: React.FC<ShippingProps> = ({
       }))
       
       await setShippingMethod({ cartId: cart.id, shippingMethodId: id })
+      console.log('Successfully set shipping method')
     } catch (err) {
+      console.error('Error setting shipping method:', err)
       setError(err.message)
+      // Revert the local state update on error
+      setSelectedMethods(prev => {
+        const newState = { ...prev }
+        delete newState[profileId]
+        return newState
+      })
     } finally {
       setIsLoading(false)
     }
@@ -117,15 +160,22 @@ const Shipping: React.FC<ShippingProps> = ({
 
   // Get profile names for better UX
   const getProfileName = (profileId: string) => {
-    // This is a simplified approach - in a real app, you might want to fetch profile names from the backend
     const firstOption = shippingOptionsByProfile[profileId]?.[0]
     if (!firstOption) return 'Products'
     
     // Try to extract a meaningful name from the shipping option
     if (firstOption.name.toLowerCase().includes('digital')) return 'Digital Products'
     if (firstOption.name.toLowerCase().includes('gift card')) return 'Gift Cards'
+    if (firstOption.name.toLowerCase().includes('seed')) return 'Seeds'
+    if (firstOption.name.toLowerCase().includes('merch')) return 'Merchandise'
     return 'Physical Products'
   }
+
+  // Debug information
+  console.log('Cart Items:', cart?.items)
+  console.log('Required Profiles:', Array.from(requiredShippingProfiles))
+  console.log('Selected Methods:', selectedMethods)
+  console.log('Available Methods:', shippingOptionsByProfile)
 
   return (
     <Box className="bg-primary p-5">
@@ -169,7 +219,7 @@ const Shipping: React.FC<ShippingProps> = ({
           {hasMultipleProfiles && (
             <Text className="mb-4 text-md font-medium text-basic-primary">
               Your cart contains different types of products that require separate shipping methods. 
-              Please select a shipping method for each product type.
+              Please select a shipping method for each product type below.
             </Text>
           )}
           
@@ -247,20 +297,20 @@ const Shipping: React.FC<ShippingProps> = ({
               <Text size="lg" className="text-basic-primary">
                 Delivery method{cart.shipping_methods.length > 1 ? 's' : ''}
               </Text>
-              {cart.shipping_methods.map((method, index) => {
+              {cart.shipping_methods.map((method) => {
                 const option = availableShippingMethods?.find(
                   opt => opt.id === method.shipping_option_id
                 )
                 
-                return (
+                return option ? (
                   <Text key={method.id} className="text-secondary">
-                    {option?.name || "Selected shipping method"},{' '}
+                    {getProfileName(option.shipping_profile_id)}: {option.name},{' '}
                     {convertToLocale({
-                      amount: option?.amount || 0,
+                      amount: option.amount,
                       currency_code: cart?.currency_code,
                     })}
                   </Text>
-                )
+                ) : null
               })}
             </div>
           )}

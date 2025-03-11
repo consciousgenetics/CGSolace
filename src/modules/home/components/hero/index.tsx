@@ -45,11 +45,11 @@ const Hero = ({ data }: { data: HeroBannerData }) => {
         </div>
         <Container className="fixed z-10 h-full flex flex-col justify-center mx-auto max-w-screen-2xl inset-0">
           {CTA && (
-            <div className="fixed top-[58%] right-[20%] transform translate-y-1/2 z-[1]" style={{ 
+            <div className="fixed top-[65%] right-[15%] transform translate-y-1/2 z-[5] hero-cta-button" style={{ 
               opacity: 'var(--button-opacity, 1)',
               transition: 'opacity 0.3s ease-out'
              }}>
-              <Button asChild className="font-inter w-max bg-[#fdd729] px-24 py-10 text-4xl font-bold text-black hover:bg-[#e3c024] rounded-[30px] flex items-center shadow-lg">
+              <Button asChild className="font-inter w-max bg-[#A86721] px-24 py-10 text-4xl font-bold text-white hover:bg-[#8B551B] rounded-[30px] flex items-center shadow-lg">
                 <LocalizedClientLink href={CTA.BtnLink} className="flex items-center">
                   {CTA.BtnText}
                   <span className="text-4xl ml-4">▶</span>
@@ -64,29 +64,23 @@ const Hero = ({ data }: { data: HeroBannerData }) => {
           document.addEventListener('scroll', function() {
             const footer = document.querySelector('footer');
             const reviewSection = document.querySelector('[data-testid="reviews-section"]');
-            const button = document.querySelector('.fixed.top-\\[58\\%\\]');
+            const button = document.querySelector('.hero-cta-button');
             
             if (footer && reviewSection && button) {
               const footerRect = footer.getBoundingClientRect();
               const reviewRect = reviewSection.getBoundingClientRect();
-              const windowHeight = window.innerHeight;
               
               // Check if either footer or review section is in view
               const shouldHideButton = 
-                footerRect.top <= windowHeight || 
-                (reviewRect.top <= windowHeight && reviewRect.bottom >= 0);
+                footerRect.top <= window.innerHeight || 
+                reviewRect.top <= window.innerHeight;
               
-              // Add a small buffer for smoother transition
-              const opacity = shouldHideButton ? '0' : '1';
-              button.style.pointerEvents = shouldHideButton ? 'none' : 'auto';
-              document.documentElement.style.setProperty('--button-opacity', opacity);
+              document.documentElement.style.setProperty(
+                '--button-opacity', 
+                shouldHideButton ? '0' : '1'
+              );
             }
           });
-
-          // Trigger the scroll handler immediately after page load
-          setTimeout(() => {
-            window.dispatchEvent(new Event('scroll'));
-          }, 100);
         `
       }} />
     </>

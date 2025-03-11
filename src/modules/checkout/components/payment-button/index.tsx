@@ -22,20 +22,17 @@ const PaymentButton: React.FC<PaymentButtonProps> = ({
   cart,
   'data-testid': dataTestId,
 }) => {
+  // Only require essential fields for checkout
   const notReady =
     !cart ||
-    !cart.shipping_address ||
-    !cart.billing_address ||
-    !cart.email ||
-    (cart.shipping_methods?.length ?? 0) < 1
+    !cart.shipping_address ||  // Need shipping address
+    !cart.email ||            // Need email for order confirmation
+    (cart.shipping_methods?.length ?? 0) < 1  // Need shipping method
 
-  // TODO: Add this once gift cards are implemented
-  // const paidByGiftcard =
-  //   cart?.gift_cards && cart?.gift_cards?.length > 0 && cart?.total === 0
-
-  // if (paidByGiftcard) {
-  //   return <GiftCardPaymentButton />
-  // }
+  // If guest checkout, use shipping address as billing address
+  if (!cart.billing_address && cart.shipping_address) {
+    cart.billing_address = cart.shipping_address
+  }
 
   const paymentSession = cart.payment_collection?.payment_sessions?.find(
     (s) => s.status === 'pending'

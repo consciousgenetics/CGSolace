@@ -62,13 +62,15 @@ const DropdownMenu: React.FC<DropdownMenuProps> = ({
         {categories.map((subItem, index) => (
           <div key={`${subItem.handle}-${index}`} className="group/item relative">
             <NavigationItem
-              href={subItem.handle}
+              asChild
               className="group relative flex items-center justify-between w-full px-4 py-2 text-[13px] font-medium text-black hover:bg-amber-500/50 transition-all duration-300"
               data-testid={formatNameForTestId(
                 `${subItem.name}-category-title`
               )}
             >
-              <span className="relative z-10 group-hover:text-black transition-colors duration-300">{subItem.name}</span>
+              <LocalizedClientLink href={subItem.handle}>
+                <span className="relative z-10 group-hover:text-black transition-colors duration-300">{subItem.name}</span>
+              </LocalizedClientLink>
             </NavigationItem>
           </div>
         ))}

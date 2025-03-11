@@ -186,11 +186,6 @@ export const createNavigation = (
     };
   });
 
-  // Sort collections for stability
-  const stableCollections = collections 
-    ? [...collections].sort((a, b) => a.handle.localeCompare(b.handle))
-    : null;
-
   return [
     {
       name: 'Seeds',
@@ -199,7 +194,7 @@ export const createNavigation = (
         {
           name: 'Regular Seeds',
           type: 'category',
-          handle: '/categories/regular-seeds',
+          handle: '/categories/seeds',
           category_children: [],
         },
         {
@@ -235,28 +230,11 @@ export const createNavigation = (
       ],
     },
     {
-      name: 'Collections',
-      handle: '/collections',
-      category_children: !stableCollections
-        ? null
-        : stableCollections
-            .filter(collection => !excludedCategories.some(excluded => 
-              collection.title.toLowerCase() === excluded.toLowerCase()
-            ))
-            .map((collection) => ({
-              name: collection.title,
-              type: 'collection',
-              handle: `/collections/${collection.handle}`,
-              handle_id: collection.handle,
-              category_children: null,
-            })),
-    },
-    {
       name: 'About Us',
       handle: '/about-us',
       category_children: null,
-    },
-  ];
+    }
+  ]
 }
 
 export const createFooterNavigation = (

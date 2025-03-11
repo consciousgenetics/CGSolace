@@ -430,12 +430,50 @@ export async function setShippingMethod({
 }) {
   const authHeaders = await getAuthHeaders()
 
-  return sdk.store.cart
-    .addShippingMethod(cartId, { option_id: shippingMethodId }, {}, authHeaders)
-    .then(() => {
-      revalidateTag('cart')
-    })
-    .catch(medusaError)
+  try {
+    // First get the cart to check existing shipping methods
+    const cartResponse = await sdk.store.cart.retrieve(cartId, {}, authHeaders)
+    const cart = cartResponse.cart
+
+    // Get all shipping methods for this cart
+    const shippingOptions = await sdk.store.fulfillment.listCartOptions(
+      { cart_id: cartId },
+      {},
+      authHeaders
+    )
+
+    // Group shipping options by profile
+    const optionsByProfile = shippingOptions.shipping_options.reduce((acc, option) => {
+      if (!acc[option.shipping_profile_id]) {
+        acc[option.shipping_profile_id] = []
+      }
+      acc[option.shipping_profile_id].push(option)
+      return acc
+    }, {} as Record<string, any[]>)
+
+    // Get the profile ID of the selected shipping method
+    const selectedOption = shippingOptions.shipping_options.find(
+      option => option.id === shippingMethodId
+    )
+
+    if (!selectedOption) {
+      throw new Error('Selected shipping method not found')
+    }
+
+    // Add the shipping method
+    await sdk.store.cart.addShippingMethod(
+      cartId,
+      { option_id: shippingMethodId },
+      {},
+      authHeaders
+    )
+
+    revalidateTag('cart')
+    return true
+  } catch (error) {
+    console.error('Error setting shipping method:', error)
+    throw error
+  }
 }
 
 export async function initiatePaymentSession(
@@ -445,7 +483,8 @@ export async function initiatePaymentSession(
     context?: Record<string, unknown>
   }
 ) {
-  const authHeaders = await getAuthHeaders()
+  // Make authentication optional by using empty object if no auth headers
+  const authHeaders = await getAuthHeaders().catch(() => ({}))
 
   return sdk.store.payment
     .initiatePaymentSession(cart, data, {}, authHeaders)
@@ -587,14 +626,42 @@ export async function placeOrder() {
 
   try {
     // First, check if the cart has shipping methods
-    const cart = await sdk.store.cart.retrieve(cartId, {}, authHeaders)
+    const cartResponse = await sdk.store.cart.retrieve(cartId, {}, authHeaders)
+    const cart = cartResponse.cart
     
-    if (!cart.cart.shipping_methods || cart.cart.shipping_methods.length === 0) {
+    if (!cart.shipping_methods || cart.shipping_methods.length === 0) {
       throw new Error('No shipping methods selected. Please select a shipping method before placing your order.')
     }
 
+    // Get all required shipping profiles from cart items
+    const requiredProfiles = new Set(
+      cart.items
+        .filter(item => item.variant?.product?.shipping_profile_id)
+        .map(item => item.variant.product.shipping_profile_id)
+    )
+
+    // Check if all required profiles have a shipping method
+    const selectedProfiles = new Set(
+      cart.shipping_methods.map(method => {
+        const item = cart.items.find(item => 
+          item.variant?.product?.shipping_profile_id && 
+          item.shipping_methods?.some(sm => sm.shipping_option_id === method.shipping_option_id)
+        )
+        return item?.variant?.product?.shipping_profile_id
+      }).filter(Boolean)
+    )
+
+    // Compare required vs selected profiles
+    if (requiredProfiles.size !== selectedProfiles.size) {
+      throw new Error('Some items in your cart require different shipping methods. Please go back to the delivery step and select all required shipping methods.')
+    }
+
     // Log shipping methods for debugging
-    console.log('Placing order with shipping methods:', cart.cart.shipping_methods)
+    console.log('Placing order with shipping methods:', {
+      required: Array.from(requiredProfiles),
+      selected: Array.from(selectedProfiles),
+      methods: cart.shipping_methods
+    })
 
     const cartRes = await sdk.store.cart
       .complete(cartId, {}, authHeaders)

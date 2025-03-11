@@ -10,13 +10,13 @@ export default function ProductPrice({
   product: HttpTypes.StoreProduct
   variant?: HttpTypes.StoreProductVariant
 }) {
-  const { cheapestPrice } = getProductPrice({
+  const { cheapestPrice, variantPrice } = getProductPrice({
     product,
     variantId: variant?.id,
   })
 
-  // Always use the cheapest price
-  const selectedPrice = cheapestPrice
+  // Use variant price if available, otherwise use cheapest price
+  const selectedPrice = variant ? variantPrice : cheapestPrice
 
   if (!selectedPrice) {
     return <div className="block h-9 w-32 animate-pulse bg-gray-100" />
