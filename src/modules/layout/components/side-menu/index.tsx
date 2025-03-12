@@ -71,7 +71,41 @@ const SideMenu = ({
     }
   }
 
+  // Check if current category is related to seeds
+  const isSeedCategory = currentCategory && 
+    (currentCategory.name.toUpperCase().includes('SEED') || 
+     currentCategory.name.toUpperCase() === 'FEMINIZED SEEDS' || 
+     currentCategory.name.toUpperCase() === 'REGULAR SEEDS')
+
+  // Render seed categories in a 2x2 grid
+  const renderSeedCategories = (categories: any[]) => {
+    return (
+      <div className="grid grid-cols-2 gap-3">
+        {categories.map((item, index) => (
+          <Button
+            key={index}
+            variant="ghost"
+            className="justify-between p-3 h-full"
+            onClick={() => handleOpenDialogChange(false)}
+            asChild
+          >
+            <LocalizedClientLink href={item.handle}>
+              <div className="flex flex-col items-center text-center">
+                <span className="text-md font-medium">{item.name}</span>
+              </div>
+            </LocalizedClientLink>
+          </Button>
+        ))}
+      </div>
+    )
+  }
+
   const renderCategories = (categories: any[]) => {
+    // If inside a seed category, use grid layout
+    if (isSeedCategory && categories.length > 0) {
+      return renderSeedCategories(categories)
+    }
+
     return categories.map((item, index) => {
       const hasChildren =
         item.category_children && item.category_children.length > 0
@@ -83,6 +117,9 @@ const SideMenu = ({
       const strapiCollection = strapiCollections.data.find(
         (cmsCollection) => cmsCollection.Handle === item.handle_id
       )
+
+      // For top-level seed categories, use standard list but with seed category styling
+      const isSeedItem = item.name.toUpperCase().includes('SEED')
 
       return item.type === 'collection' && strapiCollection ? (
         <LocalizedClientLink
@@ -108,7 +145,7 @@ const SideMenu = ({
         <Fragment key={index}>
           <Button
             variant="ghost"
-            className="w-full justify-between"
+            className={`w-full justify-between ${isSeedItem ? 'font-semibold' : ''}`}
             onClick={
               hasChildren
                 ? () =>
