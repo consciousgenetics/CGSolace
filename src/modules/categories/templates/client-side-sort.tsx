@@ -1,12 +1,9 @@
 'use client'
 
 import { Suspense, useEffect, useState } from 'react'
-import { useSearchParams } from 'next/navigation'
 import { SearchedProduct } from 'types/global'
 
-import { storeSortOptions } from '@lib/constants'
 import { Box } from '@modules/common/components/box'
-import RefinementList from '@modules/common/components/sort'
 import { Text } from '@modules/common/components/text'
 import { search } from '@modules/search/actions'
 import SkeletonProductGrid from '@modules/skeletons/templates/skeleton-product-grid'
@@ -33,45 +30,21 @@ export default function ClientSideSort({
   region,
   filters 
 }: ClientSideSortProps) {
-  const searchParams = useSearchParams()
   const [products, setProducts] = useState(initialProducts.results)
   const [count, setCount] = useState(initialProducts.count)
   const [loading, setLoading] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
   
-  // Get sortBy from URL params or default to 'relevance'
-  const sortBy = searchParams.get('order') || 'relevance'
+  // Always use default 'relevance' sort order
+  const sortBy = 'relevance'
 
   useEffect(() => {
-    // Don't refetch if using default sort (already provided in initialProducts)
-    if (sortBy === 'relevance' && initialProducts.results.length > 0) {
-      // Update state with initialProducts if needed
-      if (products !== initialProducts.results) {
-        setProducts(initialProducts.results);
-        setCount(initialProducts.count);
-      }
-      return;
+    // Update state with initialProducts if needed
+    if (products !== initialProducts.results) {
+      setProducts(initialProducts.results);
+      setCount(initialProducts.count);
     }
-
-    // Use Promise approach instead of async/await for client component compatibility
-    setLoading(true)
-    
-    search({
-      currency_code: region.currency_code,
-      category_id: currentCategory.id,
-      order: sortBy
-    })
-    .then(results => {
-      setProducts(results.results)
-      setCount(results.count)
-    })
-    .catch(err => {
-      console.error("Error sorting products:", err)
-    })
-    .finally(() => {
-      setLoading(false)
-    })
-  }, [sortBy, currentCategory.id, region.currency_code, initialProducts])
+  }, [initialProducts, products])
 
   return (
     <>
@@ -86,10 +59,7 @@ export default function ClientSideSort({
           <ProductFiltersDrawer>
             <ProductFilters filters={filters} />
           </ProductFiltersDrawer>
-          <RefinementList
-            options={storeSortOptions}
-            sortBy={sortBy}
-          />
+          {/* Sort feature removed */}
         </Box>
         <ActiveProductFilters
           filters={filters}

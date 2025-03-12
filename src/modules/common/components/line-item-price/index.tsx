@@ -32,7 +32,7 @@ const LineItemPrice = ({
   const prices = getPricesForVariant(item.variant) as PriceValues | null;
   
   // Use optional chaining and nullish coalescing for safer access
-  const currency_code = prices?.currency_code ?? 'USD';
+  const currency_code = prices?.currency_code ?? 'GBP';
   const calculated_price_number = prices?.calculated_price_number ?? 0;
   const original_price_number = prices?.original_price_number ?? calculated_price_number;
 

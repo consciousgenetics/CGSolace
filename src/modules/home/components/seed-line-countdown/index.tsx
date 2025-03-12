@@ -22,9 +22,9 @@ const SeedLineCountdown = () => {
         <div className="absolute inset-0 bg-black/30"></div>
       </div>
 
-      <div className="relative z-10 h-full flex flex-col md:flex-row items-center justify-between gap-6 md:gap-0">
-        {/* Left countdown */}
-        <div className="flex items-center gap-4 flex-wrap justify-center md:justify-start">
+      <div className="relative z-10 h-full flex flex-col items-center gap-8">
+        {/* Countdown section */}
+        <div className="flex flex-col items-center gap-4">
           <span className="text-white font-bold text-xl">SEED DROP</span>
           <div className="flex gap-2">
             <div className="bg-black/80 text-white px-3 py-2 rounded backdrop-blur-sm">
@@ -46,8 +46,8 @@ const SeedLineCountdown = () => {
           </div>
         </div>
 
-        {/* Right sign up button */}
-        <LocalizedClientLink href="/account?mode=register" className="md:ml-auto pl-[calc(33.3%-50px)] md:pl-0">
+        {/* Sign up button */}
+        <LocalizedClientLink href="/account?mode=register" className="w-full flex justify-center">
           <button className="bg-black/80 text-white px-8 py-3 rounded-lg font-bold hover:bg-black transition-colors text-lg backdrop-blur-sm">
             SIGN UP
           </button>
