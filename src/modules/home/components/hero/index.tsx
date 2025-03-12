@@ -15,8 +15,8 @@ const Hero = ({ data }: { data: HeroBannerData }) => {
   // Fallback content when backend is not available
   const fallbackImage = "/hero-banner.jpg" // Make sure this image exists in your public folder
   const fallbackCTA = {
-    BtnText: "SHOP NOW",
-    BtnLink: "/products"
+    BtnText: "SUBSCRIBE",
+    BtnLink: "/subscribe"
   }
 
   // Use fallback if data is not available
@@ -65,10 +65,10 @@ const Hero = ({ data }: { data: HeroBannerData }) => {
       <div className="fixed inset-0 z-10">
         <Container className="h-full max-w-screen-2xl mx-auto relative">
           {/* Button Container - Always visible regardless of scroll */}
-          <div className="absolute left-1/2 transform -translate-x-1/2 bottom-[15%] sm:left-auto sm:transform-none sm:bottom-[20%] sm:right-[15%] hero-cta-button">
-            <Button asChild className="font-inter w-max bg-[#A86721] px-6 py-3 sm:px-10 sm:py-5 md:px-16 md:py-6 lg:px-20 lg:py-8 text-base sm:text-xl md:text-2xl lg:text-3xl font-bold text-white hover:bg-[#8B551B] rounded-[20px] sm:rounded-[25px] md:rounded-[30px] flex items-center shadow-lg">
-              <LocalizedClientLink href={data?.data?.HeroBanner?.CTA?.BtnLink || fallbackCTA.BtnLink} className="flex items-center">
-                {data?.data?.HeroBanner?.CTA?.BtnText || fallbackCTA.BtnText}
+          <div className="absolute left-1/2 transform -translate-x-1/2 bottom-[40%] sm:left-auto sm:transform-none sm:bottom-[50%] sm:right-[15%] hero-cta-button">
+            <Button asChild className="font-inter w-max bg-[#A86721] px-8 py-4 sm:px-12 sm:py-6 md:px-20 md:py-8 lg:px-24 lg:py-10 text-lg sm:text-2xl md:text-3xl lg:text-4xl font-bold text-white hover:bg-[#8B551B] rounded-[20px] sm:rounded-[25px] md:rounded-[30px] flex items-center shadow-lg">
+              <LocalizedClientLink href="/subscribe" className="flex items-center">
+                SUBSCRIBE
                 <span className="text-sm sm:text-lg md:text-xl lg:text-2xl ml-2 sm:ml-3 md:ml-4">▶</span>
               </LocalizedClientLink>
             </Button>
