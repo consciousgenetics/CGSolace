@@ -26,22 +26,25 @@ export default function NavContent(props: any) {
         />
       </Box>
       
-      {/* Logo positioned to the left with reduced margin */}
-      <Box className="flex items-center mr-1">
-        <LocalizedClientLink href="/">
-          <ConsciousGeneticsLogo className="h-16 xsmall:h-20 medium:h-24" />
-        </LocalizedClientLink>
-      </Box>
-      
-      {!isSearchOpen && (
-        <Box className="pl-0">
+      {/* Flex container for logo and navigation to keep them close together */}
+      <Box className="flex items-center flex-1">
+        {/* Logo with small right margin */}
+        <Box className="flex items-center mr-6">
+          <LocalizedClientLink href="/">
+            <ConsciousGeneticsLogo className="h-16 xsmall:h-20 medium:h-24" />
+          </LocalizedClientLink>
+        </Box>
+        
+        {/* Navigation buttons next to logo */}
+        {!isSearchOpen && (
           <Navigation
             countryCode={props.countryCode}
             productCategories={props.productCategories}
             collections={props.collections}
           />
-        </Box>
-      )}
+        )}
+      </Box>
+      
       {isSearchOpen && (
         <SearchDropdown
           setIsOpen={setIsSearchOpen}
