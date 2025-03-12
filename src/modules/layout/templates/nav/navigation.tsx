@@ -34,7 +34,7 @@ export default function Navigation({
   )
 
   return (
-    <Box className="hidden gap-6 self-stretch large:flex">
+    <Box className="hidden gap-3 self-stretch large:flex">
       {navigation.map((item: any, index: number) => {
         const handle = item.name.toLowerCase().replace(' ', '-')
         const isCategories =
@@ -59,7 +59,7 @@ export default function Navigation({
             >
               <NavigationItem
                 href={`/${countryCode}${item.handle}`}
-                className={cn('relative !py-2 px-3 text-[15px] font-medium tracking-wide transition-colors hover:text-action-primary', {
+                className={cn('relative !py-2 px-2 text-[15px] font-medium tracking-wide transition-colors hover:text-action-primary', {
                   'text-action-primary': active || isCategories,
                 })}
               >

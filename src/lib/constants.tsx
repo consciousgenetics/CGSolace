@@ -190,7 +190,7 @@ export const createNavigation = (
 
   return [
     {
-      name: 'Feminized Seeds',
+      name: 'FEMINIZED SEEDS',
       handle: '/categories/feminized-seeds',
       category_children: [
         {
@@ -214,7 +214,7 @@ export const createNavigation = (
       ],
     },
     {
-      name: 'Regular Seeds',
+      name: 'REGULAR SEEDS',
       handle: '/categories/regular-seeds',
       category_children: [
         {
@@ -226,7 +226,7 @@ export const createNavigation = (
       ],
     },
     {
-      name: 'Merch',
+      name: 'MERCH',
       handle: '/shop',
       category_children: [
         {
@@ -240,17 +240,16 @@ export const createNavigation = (
           type: 'category',
           handle: '/categories/womens-merch',
           category_children: [],
-        },
-        {
-          name: 'Accessories',
-          type: 'category',
-          handle: '/categories/accessories',
-          category_children: [],
         }
       ],
     },
     {
-      name: 'About Us',
+      name: 'ACCESSORIES',
+      handle: '/categories/accessories',
+      category_children: null,
+    },
+    {
+      name: 'ABOUT US',
       handle: '/about-us',
       category_children: null,
     }

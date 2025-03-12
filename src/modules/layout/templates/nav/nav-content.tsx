@@ -25,13 +25,22 @@ export default function NavContent(props: any) {
           strapiCollections={props.strapiCollections}
         />
       </Box>
+      
+      {/* Logo positioned to the left with reduced margin */}
+      <Box className="flex items-center mr-1">
+        <LocalizedClientLink href="/">
+          <ConsciousGeneticsLogo className="h-16 xsmall:h-20 medium:h-24" />
+        </LocalizedClientLink>
+      </Box>
+      
       {!isSearchOpen && (
-        <Navigation
-          countryCode={props.countryCode}
-          productCategories={props.productCategories}
-          collections={props.collections}
-          strapiCollections={props.strapiCollections}
-        />
+        <Box className="pl-0">
+          <Navigation
+            countryCode={props.countryCode}
+            productCategories={props.productCategories}
+            collections={props.collections}
+          />
+        </Box>
       )}
       {isSearchOpen && (
         <SearchDropdown
@@ -47,17 +56,7 @@ export default function NavContent(props: any) {
         isOpen={isSearchOpen}
         handleOpenDialogChange={setIsSearchOpen}
       />
-      <Box
-        className={cn('relative block', {
-          'medium:absolute medium:left-1/2 medium:top-1/2 medium:-translate-x-1/2 medium:-translate-y-1/2':
-            !isSearchOpen,
-          'right-0 z-40': isSearchOpen,
-        })}
-      >
-        <LocalizedClientLink href="/">
-          <ConsciousGeneticsLogo className="h-16 xsmall:h-20 medium:h-28" />
-        </LocalizedClientLink>
-      </Box>
+      
       {!isSearchOpen && (
         <Button
           variant="icon"
