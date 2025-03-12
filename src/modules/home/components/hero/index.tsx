@@ -43,7 +43,7 @@ const Hero = ({ data }: { data: HeroBannerData }) => {
           
           /* Add space after the fixed hero banner */
           body {
-            padding-top: 100vh;
+            padding-top: 80vh;
           }
 
           @keyframes glow {
@@ -54,7 +54,7 @@ const Hero = ({ data }: { data: HeroBannerData }) => {
           
           .coming-soon-text {
             animation: glow 3s infinite;
-            letter-spacing: 4px;
+            letter-spacing: 6px;
           }
         `}</style>
         
@@ -76,18 +76,18 @@ const Hero = ({ data }: { data: HeroBannerData }) => {
       <div className="fixed inset-0 z-10">
         <Container className="h-full max-w-screen-2xl mx-auto relative">
           {/* Coming Soon text - positioned higher */}
-          <div className="absolute left-1/2 transform -translate-x-1/2 bottom-[65%] sm:left-auto sm:transform-none sm:bottom-[75%] sm:right-[15%] flex flex-col items-center sm:items-end">
-            <div className="bg-black/40 backdrop-blur-sm px-6 py-3 sm:px-8 sm:py-4 rounded-full">
-              <h2 className="text-white text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold coming-soon-text">COMING SOON</h2>
+          <div className="absolute left-1/2 transform -translate-x-1/2 bottom-[55%] sm:left-auto sm:transform-none sm:bottom-[65%] sm:right-[15%] flex flex-col items-center sm:items-end">
+            <div className="bg-black/40 backdrop-blur-sm px-8 py-4 sm:px-10 sm:py-5 md:px-12 md:py-6 rounded-full shadow-lg">
+              <h2 className="text-white text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold coming-soon-text">COMING SOON</h2>
             </div>
           </div>
           
-          {/* Button Container */}
+          {/* Button Container - moved higher */}
           <div className="absolute left-1/2 transform -translate-x-1/2 bottom-[40%] sm:left-auto sm:transform-none sm:bottom-[50%] sm:right-[15%] hero-cta-button">
-            <Button asChild className="font-inter w-max bg-[#A86721] px-8 py-4 sm:px-12 sm:py-6 md:px-20 md:py-8 lg:px-24 lg:py-10 text-lg sm:text-2xl md:text-3xl lg:text-4xl font-bold text-white hover:bg-[#8B551B] rounded-[20px] sm:rounded-[25px] md:rounded-[30px] flex items-center shadow-lg">
+            <Button asChild className="font-inter w-max bg-[#A86721] px-10 py-5 sm:px-14 sm:py-7 md:px-24 md:py-10 lg:px-28 lg:py-12 text-xl sm:text-2xl md:text-4xl lg:text-5xl font-bold text-white hover:bg-[#8B551B] rounded-[25px] sm:rounded-[30px] md:rounded-[35px] flex items-center shadow-xl">
               <LocalizedClientLink href="/subscribe" className="flex items-center">
                 SUBSCRIBE
-                <span className="text-sm sm:text-lg md:text-xl lg:text-2xl ml-2 sm:ml-3 md:ml-4">▶</span>
+                <span className="text-base sm:text-xl md:text-2xl lg:text-3xl ml-3 sm:ml-4 md:ml-5">▶</span>
               </LocalizedClientLink>
             </Button>
           </div>
