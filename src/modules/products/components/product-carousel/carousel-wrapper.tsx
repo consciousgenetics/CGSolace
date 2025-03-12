@@ -99,20 +99,20 @@ export default function CarouselWrapper({
               <button 
                 onClick={scrollPrev}
                 disabled={!canScrollPrev}
-                className={`absolute left-1 small:left-2 top-1/2 -translate-y-1/2 z-10 bg-white bg-opacity-90 rounded-full p-1 small:p-2 shadow-md ${!canScrollPrev ? 'opacity-30 cursor-not-allowed' : 'hover:bg-opacity-100'}`}
+                className={`absolute left-1 small:left-2 top-1/2 -translate-y-1/2 z-10 backdrop-blur-md bg-white/80 rounded-full p-2 small:p-3 shadow-lg transition-all duration-300 ease-out transform hover:scale-110 ${!canScrollPrev ? 'opacity-30 cursor-not-allowed' : 'hover:bg-white hover:shadow-xl active:scale-95'}`}
                 aria-label="Previous products"
               >
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="small:w-6 small:h-6">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="small:w-5 small:h-5 text-gray-800">
                   <path d="M15 18l-6-6 6-6" />
                 </svg>
               </button>
               <button 
                 onClick={scrollNext}
                 disabled={!canScrollNext}
-                className={`absolute right-1 small:right-2 top-1/2 -translate-y-1/2 z-10 bg-white bg-opacity-90 rounded-full p-1 small:p-2 shadow-md ${!canScrollNext ? 'opacity-30 cursor-not-allowed' : 'hover:bg-opacity-100'}`}
+                className={`absolute right-1 small:right-2 top-1/2 -translate-y-1/2 z-10 backdrop-blur-md bg-white/80 rounded-full p-2 small:p-3 shadow-lg transition-all duration-300 ease-out transform hover:scale-110 ${!canScrollNext ? 'opacity-30 cursor-not-allowed' : 'hover:bg-white hover:shadow-xl active:scale-95'}`}
                 aria-label="Next products"
               >
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="small:w-6 small:h-6">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="small:w-5 small:h-5 text-gray-800">
                   <path d="M9 18l6-6-6-6" />
                 </svg>
               </button>
