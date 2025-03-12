@@ -32,9 +32,12 @@ const Hero = ({ data }: { data: HeroBannerData }) => {
         <style jsx global>{`
           @media (max-width: 767px) {
             .hero-image-container {
-              transform: translateX(-45%) scale(0.5);
-              width: 300%;
+              transform: translateX(0) scale(1);
+              width: 100%;
               transform-origin: center center;
+            }
+            .hero-image {
+              object-position: center center;
             }
           }
           
@@ -49,7 +52,7 @@ const Hero = ({ data }: { data: HeroBannerData }) => {
           <Image
             src={imageUrl}
             alt="Banner image"
-            className="h-full w-full object-cover"
+            className="hero-image h-full w-full object-cover"
             fill
             priority
             quality={100}
@@ -60,9 +63,9 @@ const Hero = ({ data }: { data: HeroBannerData }) => {
 
       {/* Content Container */}
       <div className="fixed inset-0 z-10">
-        <Container className="h-full max-w-screen-2xl mx-auto">
+        <Container className="h-full max-w-screen-2xl mx-auto relative">
           {/* Button Container - Always visible regardless of scroll */}
-          <div className="absolute bottom-[15%] sm:bottom-[20%] right-[5%] sm:right-[15%] hero-cta-button">
+          <div className="absolute left-1/2 transform -translate-x-1/2 bottom-[15%] sm:left-auto sm:transform-none sm:bottom-[20%] sm:right-[15%] hero-cta-button">
             <Button asChild className="font-inter w-max bg-[#A86721] px-6 py-3 sm:px-10 sm:py-5 md:px-16 md:py-6 lg:px-20 lg:py-8 text-base sm:text-xl md:text-2xl lg:text-3xl font-bold text-white hover:bg-[#8B551B] rounded-[20px] sm:rounded-[25px] md:rounded-[30px] flex items-center shadow-lg">
               <LocalizedClientLink href={data?.data?.HeroBanner?.CTA?.BtnLink || fallbackCTA.BtnLink} className="flex items-center">
                 {data?.data?.HeroBanner?.CTA?.BtnText || fallbackCTA.BtnText}
