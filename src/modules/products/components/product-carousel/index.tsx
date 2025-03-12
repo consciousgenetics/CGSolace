@@ -116,7 +116,7 @@ export function ProductCarousel({
   const [seedType, setSeedType] = useState<'feminized' | 'regular'>('feminized')
   const [isTransitioning, setIsTransitioning] = useState(false)
   const [slideDirection, setSlideDirection] = useState<'left' | 'right'>('left')
-  // Add state to track whether all products are shown or just the first 4
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false)
   const [showAllProducts, setShowAllProducts] = useState(false)
   
   // Handle clothing type change with animation
@@ -130,6 +130,7 @@ export function ProductCarousel({
     setSlideDirection(newIndex < currentIndex ? 'right' : 'left');
     
     setIsTransitioning(true);
+    setIsDropdownOpen(false);
     
     // First fade out
     setTimeout(() => {
@@ -368,46 +369,73 @@ export function ProductCarousel({
                   </button>
                 </div>
               ) : !hideToggleButtons && testId === 'clothing-section' ? (
-                <div className="flex items-center justify-center gap-2 mb-3 bg-amber-50 p-1 rounded-full shadow-inner">
-                  <button
-                    onClick={() => handleClothingTypeChange('mens')}
-                    className={`relative px-6 py-2 rounded-full text-base font-bold transition-all duration-500 ${
-                      clothingType === 'mens'
-                        ? 'text-black shadow-lg scale-105 z-10'
-                        : 'text-black hover:text-black bg-amber-100 hover:bg-amber-200'
-                    }`}
-                  >
-                    <span className={`relative z-10`}>Men's Merch</span>
-                    {clothingType === 'mens' && (
-                      <div className="absolute inset-0 bg-gradient-to-r from-yellow-300 to-amber-400 rounded-full shadow-lg transition-all duration-500 animate-glow"></div>
-                    )}
-                  </button>
-                  <button
-                    onClick={() => handleClothingTypeChange('womens')}
-                    className={`relative px-6 py-2 rounded-full text-base font-bold transition-all duration-500 ${
-                      clothingType === 'womens'
-                        ? 'text-black shadow-lg scale-105 z-10'
-                        : 'text-black hover:text-black bg-amber-100 hover:bg-amber-200'
-                    }`}
-                  >
-                    <span className={`relative z-10`}>Women's Merch</span>
-                    {clothingType === 'womens' && (
-                      <div className="absolute inset-0 bg-gradient-to-r from-yellow-300 to-amber-400 rounded-full shadow-lg transition-all duration-500 animate-glow"></div>
-                    )}
-                  </button>
-                  <button
-                    onClick={() => handleClothingTypeChange('accessories')}
-                    className={`relative px-6 py-2 rounded-full text-base font-bold transition-all duration-500 ${
-                      clothingType === 'accessories'
-                        ? 'text-black shadow-lg scale-105 z-10'
-                        : 'text-black hover:text-black bg-amber-100 hover:bg-amber-200'
-                    }`}
-                  >
-                    <span className={`relative z-10`}>Accessories</span>
-                    {clothingType === 'accessories' && (
-                      <div className="absolute inset-0 bg-gradient-to-r from-yellow-300 to-amber-400 rounded-full shadow-lg transition-all duration-500 animate-glow"></div>
-                    )}
-                  </button>
+                <div className="flex flex-wrap items-center justify-center mb-6 relative">
+                  <div className="absolute inset-0 bg-gradient-to-r from-amber-100/30 via-yellow-200/20 to-amber-100/30 blur-2xl opacity-40"></div>
+                  <div className="relative">
+                    <button
+                      onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                      className="flex items-center gap-2 px-8 py-3 rounded-xl text-sm font-bold bg-black/5 backdrop-blur-xl border border-white/20 shadow-[0_8px_32px_rgba(0,0,0,0.08)] transition-all duration-300 hover:shadow-lg"
+                    >
+                      <span className="text-gray-700">
+                        {clothingType === 'mens' ? "Men's Collection" :
+                         clothingType === 'womens' ? "Women's Collection" :
+                         'Accessories Collection'}
+                      </span>
+                      <svg 
+                        xmlns="http://www.w3.org/2000/svg" 
+                        width="16" 
+                        height="16" 
+                        viewBox="0 0 24 24" 
+                        fill="none" 
+                        stroke="currentColor" 
+                        strokeWidth="2" 
+                        strokeLinecap="round" 
+                        strokeLinejoin="round" 
+                        className={`transition-transform duration-300 ${isDropdownOpen ? 'rotate-180' : ''}`}
+                      >
+                        <path d="m6 9 6 6 6-6"/>
+                      </svg>
+                    </button>
+                    
+                    <div className={`absolute left-0 right-0 mt-2 z-50 transition-all duration-300 ${
+                      isDropdownOpen 
+                        ? 'opacity-100 visible translate-y-0' 
+                        : 'opacity-0 invisible translate-y-2'
+                    }`}>
+                      <div className="bg-white/90 backdrop-blur-xl rounded-xl shadow-[0_8px_32px_rgba(0,0,0,0.12)] border border-white/20 overflow-hidden">
+                        <button
+                          onClick={() => handleClothingTypeChange('mens')}
+                          className={`w-full px-8 py-3 text-left text-sm font-bold transition-all duration-200 ${
+                            clothingType === 'mens'
+                              ? 'text-amber-500 bg-black/5'
+                              : 'text-gray-600 hover:text-amber-500 hover:bg-black/5'
+                          }`}
+                        >
+                          Men's Collection
+                        </button>
+                        <button
+                          onClick={() => handleClothingTypeChange('womens')}
+                          className={`w-full px-8 py-3 text-left text-sm font-bold transition-all duration-200 ${
+                            clothingType === 'womens'
+                              ? 'text-amber-500 bg-black/5'
+                              : 'text-gray-600 hover:text-amber-500 hover:bg-black/5'
+                          }`}
+                        >
+                          Women's Collection
+                        </button>
+                        <button
+                          onClick={() => handleClothingTypeChange('accessories')}
+                          className={`w-full px-8 py-3 text-left text-sm font-bold transition-all duration-200 ${
+                            clothingType === 'accessories'
+                              ? 'text-amber-500 bg-black/5'
+                              : 'text-gray-600 hover:text-amber-500 hover:bg-black/5'
+                          }`}
+                        >
+                          Accessories Collection
+                        </button>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               ) : null}
               <div 
