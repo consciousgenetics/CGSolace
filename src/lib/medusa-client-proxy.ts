@@ -3,6 +3,8 @@
  * instead of directly accessing the Medusa backend, avoiding CORS issues
  */
 
+import Medusa from '@medusajs/medusa-js'
+
 /**
  * Creates a fetch function that routes requests through our Next.js API proxy
  * to avoid CORS issues when accessing the Medusa backend from the browser
@@ -63,4 +65,41 @@ export const applyProxyFetch = () => {
   
   // If not in a browser, return a no-op function
   return () => {};
-}; 
+};
+
+/**
+ * createMedusaClient returns a Medusa client with a modified fetch function that proxies requests
+ * through the Next.js API to avoid CORS issues. This approach is needed for client-side usage.
+ */
+
+export function createClient() {
+  if (typeof window === 'undefined') {
+    // For server-side, we can use the Medusa client directly
+    return new Medusa({
+      baseUrl: process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || '',
+      maxRetries: 3,
+      publishableApiKey: process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY,
+    })
+  }
+
+  if (!process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL) {
+    throw new Error('NEXT_PUBLIC_MEDUSA_BACKEND_URL is not defined')
+  }
+
+  // For client-side, we need to proxy the requests through the Next.js API
+  return new Medusa({
+    baseUrl: '/api/medusa-proxy', // Proxy through our Next.js API route
+    maxRetries: 3,
+    publishableApiKey: process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY,
+    customHeaders: {
+      'x-publishable-api-key': process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY || '',
+    }
+  })
+}
+
+export function notifyOnNetworkStatusChange() {
+  if (typeof window === 'undefined') {
+    // If not in a browser, return a no-op function
+    return () => {};
+  };
+} 

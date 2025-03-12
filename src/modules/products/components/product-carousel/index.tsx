@@ -99,6 +99,7 @@ interface ProductCarouselProps {
   subtitle?: string
   viewAll?: ViewAllProps
   testId?: string
+  hideToggleButtons?: boolean
 }
 
 export function ProductCarousel({
@@ -108,12 +109,15 @@ export function ProductCarousel({
   subtitle,
   viewAll,
   testId,
+  hideToggleButtons = false,
 }: ProductCarouselProps) {
   // Add state for clothing type
   const [clothingType, setClothingType] = useState<'mens' | 'womens' | 'accessories'>('mens')
   const [seedType, setSeedType] = useState<'feminized' | 'regular'>('feminized')
   const [isTransitioning, setIsTransitioning] = useState(false)
   const [slideDirection, setSlideDirection] = useState<'left' | 'right'>('left')
+  // Add state to track whether all products are shown or just the first 4
+  const [showAllProducts, setShowAllProducts] = useState(false)
   
   // Handle clothing type change with animation
   const handleClothingTypeChange = (type: 'mens' | 'womens' | 'accessories') => {
@@ -250,6 +254,11 @@ export function ProductCarousel({
       return true;
     });
 
+  // Limit displayed products to the first 4 unless showAllProducts is true
+  const displayedProducts = showAllProducts 
+    ? processedProducts 
+    : processedProducts.slice(0, 4);
+
   // Log the filtered products for debugging
   console.log(`Filtered ${testId === 'seeds-section' ? seedType : clothingType} products:`, 
     processedProducts.map(p => ({ title: p.title, handle: p.handle }))
@@ -329,17 +338,17 @@ export function ProductCarousel({
         <Container className="overflow-hidden !p-0 w-full max-w-[95%] 2xl:max-w-[90%] relative z-10" data-testid={testId}>
           <Box className="flex flex-col gap-4 small:gap-6 w-full">
             <div className="flex flex-col items-center mx-auto max-w-[800px] pt-2">
-              {testId === 'seeds-section' ? (
+              {!hideToggleButtons && testId === 'seeds-section' ? (
                 <div className="flex items-center justify-center gap-2 mb-3 bg-amber-50 p-1 rounded-full shadow-inner">
                   <button
                     onClick={() => handleSeedTypeChange('feminized')}
                     className={`relative px-6 py-2 rounded-full text-base font-bold transition-all duration-500 ${
                       seedType === 'feminized'
                         ? 'text-black shadow-lg scale-105 z-10'
-                        : 'text-amber-700 hover:text-amber-800 bg-amber-100 hover:bg-amber-200'
+                        : 'text-black hover:text-black bg-amber-100 hover:bg-amber-200'
                     }`}
                   >
-                    <span className={`relative z-10 ${seedType === 'feminized' ? 'text-black' : ''}`}>Feminized</span>
+                    <span className={`relative z-10`}>Feminized</span>
                     {seedType === 'feminized' && (
                       <div className="absolute inset-0 bg-gradient-to-r from-yellow-300 to-amber-400 rounded-full shadow-lg transition-all duration-500 animate-glow"></div>
                     )}
@@ -349,26 +358,26 @@ export function ProductCarousel({
                     className={`relative px-6 py-2 rounded-full text-base font-bold transition-all duration-500 ${
                       seedType === 'regular'
                         ? 'text-black shadow-lg scale-105 z-10'
-                        : 'text-amber-700 hover:text-amber-800 bg-amber-100 hover:bg-amber-200'
+                        : 'text-black hover:text-black bg-amber-100 hover:bg-amber-200'
                     }`}
                   >
-                    <span className={`relative z-10 ${seedType === 'regular' ? 'text-black' : ''}`}>Regular</span>
+                    <span className={`relative z-10`}>Regular</span>
                     {seedType === 'regular' && (
                       <div className="absolute inset-0 bg-gradient-to-r from-yellow-300 to-amber-400 rounded-full shadow-lg transition-all duration-500 animate-glow"></div>
                     )}
                   </button>
                 </div>
-              ) : (
+              ) : !hideToggleButtons && testId === 'clothing-section' ? (
                 <div className="flex items-center justify-center gap-2 mb-3 bg-amber-50 p-1 rounded-full shadow-inner">
                   <button
                     onClick={() => handleClothingTypeChange('mens')}
                     className={`relative px-6 py-2 rounded-full text-base font-bold transition-all duration-500 ${
                       clothingType === 'mens'
                         ? 'text-black shadow-lg scale-105 z-10'
-                        : 'text-amber-700 hover:text-amber-800 bg-amber-100 hover:bg-amber-200'
+                        : 'text-black hover:text-black bg-amber-100 hover:bg-amber-200'
                     }`}
                   >
-                    <span className={`relative z-10 ${clothingType === 'mens' ? 'text-black' : ''}`}>Men's Merch</span>
+                    <span className={`relative z-10`}>Men's Merch</span>
                     {clothingType === 'mens' && (
                       <div className="absolute inset-0 bg-gradient-to-r from-yellow-300 to-amber-400 rounded-full shadow-lg transition-all duration-500 animate-glow"></div>
                     )}
@@ -378,10 +387,10 @@ export function ProductCarousel({
                     className={`relative px-6 py-2 rounded-full text-base font-bold transition-all duration-500 ${
                       clothingType === 'womens'
                         ? 'text-black shadow-lg scale-105 z-10'
-                        : 'text-amber-700 hover:text-amber-800 bg-amber-100 hover:bg-amber-200'
+                        : 'text-black hover:text-black bg-amber-100 hover:bg-amber-200'
                     }`}
                   >
-                    <span className={`relative z-10 ${clothingType === 'womens' ? 'text-black' : ''}`}>Women's Merch</span>
+                    <span className={`relative z-10`}>Women's Merch</span>
                     {clothingType === 'womens' && (
                       <div className="absolute inset-0 bg-gradient-to-r from-yellow-300 to-amber-400 rounded-full shadow-lg transition-all duration-500 animate-glow"></div>
                     )}
@@ -391,16 +400,16 @@ export function ProductCarousel({
                     className={`relative px-6 py-2 rounded-full text-base font-bold transition-all duration-500 ${
                       clothingType === 'accessories'
                         ? 'text-black shadow-lg scale-105 z-10'
-                        : 'text-amber-700 hover:text-amber-800 bg-amber-100 hover:bg-amber-200'
+                        : 'text-black hover:text-black bg-amber-100 hover:bg-amber-200'
                     }`}
                   >
-                    <span className={`relative z-10 ${clothingType === 'accessories' ? 'text-black' : ''}`}>Accessories</span>
+                    <span className={`relative z-10`}>Accessories</span>
                     {clothingType === 'accessories' && (
                       <div className="absolute inset-0 bg-gradient-to-r from-yellow-300 to-amber-400 rounded-full shadow-lg transition-all duration-500 animate-glow"></div>
                     )}
                   </button>
                 </div>
-              )}
+              ) : null}
               <div 
                 className={`blur-transition ${
                   isTransitioning 
@@ -426,19 +435,29 @@ export function ProductCarousel({
                 willChange: 'transform, opacity, filter'
               }}
             >
-              <CarouselWrapper productsCount={processedProducts.length}>
-                {processedProducts.map((item, index) => {
+              <CarouselWrapper productsCount={displayedProducts.length}>
+                {displayedProducts.map((item, index) => {
                   // Get the cheapest price using the utility function
                   const { cheapestPrice } = getProductPrice({
                     product: item,
                   })
 
-                  const calculatedPrice = cheapestPrice?.calculated_price || 'N/A'
-                  const originalPrice = cheapestPrice?.original_price || calculatedPrice
+                  // Better handling of potentially invalid price values
+                  const calculated = cheapestPrice?.calculated_price_number
+                  const hasValidCalculatedPrice = calculated !== undefined && calculated !== null && !isNaN(calculated) && calculated > 0
+                  const calculatedPrice = hasValidCalculatedPrice
+                    ? cheapestPrice?.calculated_price
+                    : 'Price unavailable'
+                  
+                  const original = cheapestPrice?.original_price_number
+                  const hasValidOriginalPrice = original !== undefined && original !== null && !isNaN(original) && original > 0
+                  const originalPrice = hasValidOriginalPrice
+                    ? cheapestPrice?.original_price
+                    : calculatedPrice
 
               return (
                 <Box
-                      className="flex-[0_0_85%] xsmall:flex-[0_0_65%] small:flex-[0_0_50%] medium:flex-[0_0_33.333%] large:flex-[0_0_25%] pl-2 transition-all duration-500"
+                      className="w-full small:flex-[0_0_50%] medium:flex-[0_0_33.333%] large:flex-[0_0_25%] pl-2 transition-all duration-500"
                       key={`${item.id}-${seedType}`}
                 >
                   <ProductTile
@@ -458,20 +477,32 @@ export function ProductCarousel({
             })}
           </CarouselWrapper>
             </div>
-          {viewAll && (
-              <Button asChild className={`mx-auto -mt-16 blur-transition ${
+            
+            {/* View All button to show more products */}
+            {!showAllProducts && processedProducts.length > 4 && (
+              <Button
+                onClick={() => setShowAllProducts(true)}
+                className="mx-auto mt-6 blur-transition !px-10 small:!px-12 !py-3 small:!py-4 text-lg small:text-xl font-bold bg-amber-400 hover:bg-amber-500 text-black transition-colors rounded-full uppercase tracking-wider"
+              >
+                VIEW ALL
+              </Button>
+            )}
+            
+            {/* External Shop All button (only show when on the expanded view or if there are <= 4 products) */}
+            {viewAll && (showAllProducts || processedProducts.length <= 4) && (
+              <Button asChild className={`mx-auto mt-6 blur-transition ${
                 isTransitioning 
                   ? 'transitioning'
                   : 'entering'
               }`}>
-              <LocalizedClientLink
-                href={viewAll.link}
+                <LocalizedClientLink
+                  href={viewAll.link}
                   className="w-max !px-10 small:!px-12 !py-3 small:!py-4 text-lg small:text-xl font-bold bg-amber-400 hover:bg-amber-500 text-black transition-colors rounded-full uppercase tracking-wider"
-              >
-                SHOP ALL
-              </LocalizedClientLink>
-            </Button>
-          )}
+                >
+                  SHOP ALL
+                </LocalizedClientLink>
+              </Button>
+            )}
         </Box>
       </Container>
     </div>

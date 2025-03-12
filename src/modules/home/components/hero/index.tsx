@@ -25,9 +25,9 @@ const Hero = ({ data }: { data: HeroBannerData }) => {
     : fallbackImage
 
   return (
-    <div className="relative h-screen w-full">
+    <div className="fixed top-0 left-0 h-screen w-full z-0">
       {/* Background Image */}
-      <div className="absolute inset-0 overflow-hidden">
+      <div className="fixed inset-0 overflow-hidden z-0">
         {/* Mobile-specific styling */}
         <style jsx global>{`
           @media (max-width: 767px) {
@@ -37,10 +37,15 @@ const Hero = ({ data }: { data: HeroBannerData }) => {
               transform-origin: center center;
             }
           }
+          
+          /* Add space after the fixed hero banner */
+          body {
+            padding-top: 100vh;
+          }
         `}</style>
         
         {/* Container for the image with transformable width */}
-        <div className="hero-image-container relative h-full w-full transition-all">
+        <div className="hero-image-container fixed h-full w-full transition-all">
           <Image
             src={imageUrl}
             alt="Banner image"
@@ -54,11 +59,10 @@ const Hero = ({ data }: { data: HeroBannerData }) => {
       </div>
 
       {/* Content Container */}
-      <div className="relative h-full w-full">
+      <div className="fixed inset-0 z-10">
         <Container className="h-full max-w-screen-2xl mx-auto">
-          {/* Button Container - Always show button with fallback */}
-          <div className="absolute bottom-[15%] sm:bottom-[20%] right-[5%] sm:right-[15%] hero-cta-button"
-               style={{ opacity: 'var(--button-opacity, 1)', transition: 'opacity 0.3s ease-out' }}>
+          {/* Button Container - Always visible regardless of scroll */}
+          <div className="absolute bottom-[15%] sm:bottom-[20%] right-[5%] sm:right-[15%] hero-cta-button">
             <Button asChild className="font-inter w-max bg-[#A86721] px-6 py-3 sm:px-10 sm:py-5 md:px-16 md:py-6 lg:px-20 lg:py-8 text-base sm:text-xl md:text-2xl lg:text-3xl font-bold text-white hover:bg-[#8B551B] rounded-[20px] sm:rounded-[25px] md:rounded-[30px] flex items-center shadow-lg">
               <LocalizedClientLink href={data?.data?.HeroBanner?.CTA?.BtnLink || fallbackCTA.BtnLink} className="flex items-center">
                 {data?.data?.HeroBanner?.CTA?.BtnText || fallbackCTA.BtnText}
@@ -68,30 +72,6 @@ const Hero = ({ data }: { data: HeroBannerData }) => {
           </div>
         </Container>
       </div>
-
-      <script dangerouslySetInnerHTML={{
-        __html: `
-          document.addEventListener('scroll', function() {
-            const footer = document.querySelector('footer');
-            const reviewSection = document.querySelector('[data-testid="reviews-section"]');
-            const button = document.querySelector('.hero-cta-button');
-            
-            if (footer && reviewSection && button) {
-              const footerRect = footer.getBoundingClientRect();
-              const reviewRect = reviewSection.getBoundingClientRect();
-              
-              const shouldHideButton = 
-                footerRect.top <= window.innerHeight || 
-                reviewRect.top <= window.innerHeight;
-              
-              document.documentElement.style.setProperty(
-                '--button-opacity', 
-                shouldHideButton ? '0' : '1'
-              );
-            }
-          });
-        `
-      }} />
     </div>
   )
 }

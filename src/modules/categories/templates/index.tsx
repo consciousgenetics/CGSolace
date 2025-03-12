@@ -140,80 +140,161 @@ export default async function CategoryTemplate({
       }
     }
 
-    // Get recommended products safely
+    // Get related products for the current category
     let recommendedProducts = []
     try {
-      const productsData = await getProductsList({
+      // First try to get products from the same category
+      const relatedProductsData = await getProductsList({
         pageParam: 0,
-        queryParams: { limit: 9 },
-        countryCode: countryCode, // Use the resolved countryCode
+        queryParams: { 
+          limit: 9,
+          category_id: [currentCategory.id],
+          order: "created_at"
+        },
+        countryCode: countryCode
       })
       
-      if (productsData && productsData.response) {
-        recommendedProducts = productsData.response.products || []
+      if (relatedProductsData && relatedProductsData.response) {
+        // Get products from this category, excluding any that might already be in the initial results
+        const initialProductIds = new Set(initialProducts.results.map(p => p.id))
+        recommendedProducts = relatedProductsData.response.products?.filter(p => !initialProductIds.has(p.id)) || []
+        
+        // If we don't have enough related products, get some general recommendations
+        if (recommendedProducts.length < 4) {
+          const generalProductsData = await getProductsList({
+            pageParam: 0,
+            queryParams: { limit: 9 },
+            countryCode: countryCode
+          })
+          
+          if (generalProductsData && generalProductsData.response) {
+            const generalProducts = generalProductsData.response.products || []
+            // Add general products that aren't already in our recommended list or initial results
+            const recommendedIds = new Set(recommendedProducts.map(p => p.id))
+            const additionalProducts = generalProducts.filter(p => 
+              !initialProductIds.has(p.id) && !recommendedIds.has(p.id)
+            )
+            
+            // Add enough additional products to get to at least 4 total
+            recommendedProducts = [
+              ...recommendedProducts,
+              ...additionalProducts.slice(0, Math.max(0, 4 - recommendedProducts.length))
+            ]
+          }
+        }
+        
+        // Make sure each product has valid variants and prices to prevent NaN
+        recommendedProducts = recommendedProducts.map(product => {
+          // Ensure product has variants
+          if (!product.variants || product.variants.length === 0) {
+            console.warn(`Product ${product.id} has no variants, adding dummy variant`)
+            return {
+              ...product,
+              variants: [{
+                id: 'dummy-variant',
+                title: 'Default',
+                prices: [{
+                  currency_code: region.currency_code,
+                  amount: 0
+                }],
+                calculated_price: {
+                  calculated_amount: 0,
+                  original_amount: 0,
+                  currency_code: region.currency_code
+                }
+              }]
+            }
+          }
+          
+          // Ensure variants have prices
+          const variantsWithPrices = product.variants.map(variant => {
+            // Use type assertion for variant to handle prices property
+            const variantAny = variant as any;
+            if (!variantAny.prices || variantAny.prices.length === 0) {
+              console.warn(`Variant ${variant.id} has no prices, adding dummy price`)
+              return {
+                ...variant,
+                prices: [{
+                  currency_code: region.currency_code,
+                  amount: 0
+                }]
+              }
+            }
+            return variant
+          })
+          
+          return {
+            ...product,
+            variants: variantsWithPrices
+          }
+        })
       }
     } catch (err) {
-      console.error("Error fetching recommended products:", err)
+      console.error("Error fetching related products:", err)
       // Continue with empty recommended products
     }
 
     return (
       <>
-        <Container className="flex flex-col gap-8 !pb-8 !pt-4">
-          {/* Pink Waferz special description section */}
-          {category.includes('pink-waferz') && (
-            <div className="my-8 max-w-5xl">
-              <div className="border-l-4 border-pink-500 pl-6">
-                <h1 className="text-4xl font-bold tracking-tight mb-2">PINK WAFERZ LINE</h1>
-                <h2 className="text-2xl font-medium text-gray-600 mb-6">Biscotti × Pink Champagne BX1</h2>
-              </div>
-              
-              <div className="mt-8 grid grid-cols-1 gap-8">
-                <div className="prose prose-lg max-w-none">
-                  <h3 className="text-xl font-semibold mb-4 uppercase tracking-wide">Line Description</h3>
-                  
-                  <div className="space-y-6 text-gray-700">
-                    <p className="leading-relaxed">
-                      For this line, we chose to reverse another popular and well-favored strain of ours, the Pink Wafers. 
-                      This strain is known for its high yields, dense colorful buds, and gassy, creamy, and musky aromas. 
-                      The flower from this strain even made its way to being stocked at Cookies Thailand.
-                    </p>
+        {/* Apply white background to entire page */}
+        <div className="bg-white min-h-screen w-full">
+          <Container className="flex flex-col gap-8 !pb-8 !pt-4">
+            {/* Pink Waferz special description section */}
+            {category.includes('pink-waferz') && (
+              <div className="my-8 max-w-5xl">
+                <div className="border-l-4 border-pink-500 pl-6">
+                  <h1 className="text-4xl font-bold tracking-tight mb-2">PINK WAFERZ LINE</h1>
+                  <h2 className="text-2xl font-medium text-gray-600 mb-6">Biscotti × Pink Champagne BX1</h2>
+                </div>
+                
+                <div className="mt-8 grid grid-cols-1 gap-8">
+                  <div className="prose prose-lg max-w-none">
+                    <h3 className="text-xl font-semibold mb-4 uppercase tracking-wide">Line Description</h3>
                     
-                    <p className="leading-relaxed">
-                      We selected a roughly 70% Biscotti-dominant and 30% Pink Champagne phenotype, 'Pheno #5,' as the donor plant. 
-                      Pheno #5 was chosen for multiple reasons, including its vigorous plant structure, trichome coverage, high yields, and dense bud formation. 
-                      It also had great bag appeal, with purple hues inherited from the Purps in the Pink Champagne BX1 mother.
-                    </p>
-                    
-                    <p className="leading-relaxed">
-                      By crossing these strains with our Pink Waferz #5, we envisioned creating a line of strains that pack heavy terps 
-                      while also improving yields, plant structure, and bud formation.
-                    </p>
+                    <div className="space-y-6 text-gray-700">
+                      <p className="leading-relaxed">
+                        For this line, we chose to reverse another popular and well-favored strain of ours, the Pink Wafers. 
+                        This strain is known for its high yields, dense colorful buds, and gassy, creamy, and musky aromas. 
+                        The flower from this strain even made its way to being stocked at Cookies Thailand.
+                      </p>
+                      
+                      <p className="leading-relaxed">
+                        We selected a roughly 70% Biscotti-dominant and 30% Pink Champagne phenotype, 'Pheno #5,' as the donor plant. 
+                        Pheno #5 was chosen for multiple reasons, including its vigorous plant structure, trichome coverage, high yields, and dense bud formation. 
+                        It also had great bag appeal, with purple hues inherited from the Purps in the Pink Champagne BX1 mother.
+                      </p>
+                      
+                      <p className="leading-relaxed">
+                        By crossing these strains with our Pink Waferz #5, we envisioned creating a line of strains that pack heavy terps 
+                        while also improving yields, plant structure, and bud formation.
+                      </p>
+                    </div>
                   </div>
                 </div>
+                
+                <div className="mt-10 border-b border-gray-200"></div>
               </div>
-              
-              <div className="mt-10 border-b border-gray-200"></div>
-            </div>
-          )}
-          
-          <ClientSideSort 
-            initialProducts={initialProducts}
-            countryCode={countryCode}
-            currentCategory={currentCategory}
-            region={region}
-            filters={filters}
-          />
-        </Container>
-        {recommendedProducts && recommendedProducts.length > 0 && (
-          <Suspense fallback={<SkeletonProductsCarousel />}>
-            <ProductCarousel
-              products={recommendedProducts}
-              regionId={region.id}
-              title="Recommended products"
+            )}
+            
+            <ClientSideSort 
+              initialProducts={initialProducts}
+              countryCode={countryCode}
+              currentCategory={currentCategory}
+              region={region}
+              filters={filters}
             />
-          </Suspense>
-        )}
+          </Container>
+          {recommendedProducts && recommendedProducts.length > 0 && (
+            <Suspense fallback={<SkeletonProductsCarousel />}>
+              <ProductCarousel
+                products={recommendedProducts}
+                regionId={region.id}
+                title="Related Products"
+                hideToggleButtons={true}
+              />
+            </Suspense>
+          )}
+        </div>
       </>
     )
   } catch (error) {

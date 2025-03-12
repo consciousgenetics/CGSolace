@@ -1,5 +1,26 @@
 import { NextRequest, NextResponse } from 'next/server'
 
+// Default timeout for fetch requests (ms)
+const FETCH_TIMEOUT = 5000;
+
+/**
+ * Fetch with timeout to prevent hanging requests
+ */
+async function fetchWithTimeout(url: string, options: RequestInit, timeout = FETCH_TIMEOUT): Promise<Response> {
+  const controller = new AbortController();
+  const id = setTimeout(() => controller.abort(), timeout);
+  
+  try {
+    const response = await fetch(url, {
+      ...options,
+      signal: controller.signal
+    });
+    return response;
+  } finally {
+    clearTimeout(id);
+  }
+}
+
 /**
  * This route acts as a proxy for the Medusa backend to avoid CORS issues
  * It forwards requests from the client to the Medusa server and sends the response back
@@ -17,25 +38,29 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'NEXT_PUBLIC_MEDUSA_BACKEND_URL is not set' }, { status: 500 })
   }
 
-  // Forward the headers from the original request
+  // Prepare headers - minimize operations
   const headers = new Headers(request.headers)
-  
-  // Remove host and origin headers to avoid conflicts
   headers.delete('host')
   headers.delete('origin')
   
+  // Ensure the publishable API key is included
+  const apiKey = process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY
+  if (apiKey && !headers.has('x-publishable-api-key')) {
+    headers.set('x-publishable-api-key', apiKey)
+  }
+  
   try {
-    // Forward the request to the Medusa server
-    const response = await fetch(`${medusaUrl}${path}`, {
+    // Forward the request to the Medusa server with timeout
+    const response = await fetchWithTimeout(`${medusaUrl}${path}`, {
       method: 'GET',
       headers: headers,
-    })
+    }, FETCH_TIMEOUT);
 
     // Get the response body
     const body = await response.text()
     
     // Create a new response with the same status, headers, and body
-    const proxyResponse = new NextResponse(body, {
+    return new NextResponse(body, {
       status: response.status,
       statusText: response.statusText,
       headers: {
@@ -45,10 +70,12 @@ export async function GET(request: NextRequest) {
         'Access-Control-Allow-Headers': 'Content-Type, Authorization',
       },
     })
-    
-    return proxyResponse
   } catch (error) {
-    console.error('Error proxying request to Medusa:', error)
+    // Check if it's a timeout error
+    if (error instanceof DOMException && error.name === 'AbortError') {
+      return NextResponse.json({ error: 'Request to Medusa timed out' }, { status: 504 })
+    }
+    
     return NextResponse.json({ error: 'Failed to proxy request to Medusa' }, { status: 500 })
   }
 }
@@ -83,29 +110,33 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'NEXT_PUBLIC_MEDUSA_BACKEND_URL is not set' }, { status: 500 })
   }
 
-  // Forward the headers from the original request
+  // Prepare headers - minimize operations
   const headers = new Headers(request.headers)
-  
-  // Remove host and origin headers to avoid conflicts
   headers.delete('host')
   headers.delete('origin')
+  
+  // Ensure the publishable API key is included
+  const apiKey = process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY
+  if (apiKey && !headers.has('x-publishable-api-key')) {
+    headers.set('x-publishable-api-key', apiKey)
+  }
   
   try {
     // Get the request body
     const body = await request.text()
     
-    // Forward the request to the Medusa server
-    const response = await fetch(`${medusaUrl}${path}`, {
+    // Forward the request to the Medusa server with timeout
+    const response = await fetchWithTimeout(`${medusaUrl}${path}`, {
       method: 'POST',
       headers: headers,
       body: body
-    })
+    }, FETCH_TIMEOUT);
 
     // Get the response body
     const responseBody = await response.text()
     
     // Create a new response with the same status, headers, and body
-    const proxyResponse = new NextResponse(responseBody, {
+    return new NextResponse(responseBody, {
       status: response.status,
       statusText: response.statusText,
       headers: {
@@ -115,10 +146,12 @@ export async function POST(request: NextRequest) {
         'Access-Control-Allow-Headers': 'Content-Type, Authorization',
       },
     })
-    
-    return proxyResponse
   } catch (error) {
-    console.error('Error proxying request to Medusa:', error)
+    // Check if it's a timeout error
+    if (error instanceof DOMException && error.name === 'AbortError') {
+      return NextResponse.json({ error: 'Request to Medusa timed out' }, { status: 504 })
+    }
+    
     return NextResponse.json({ error: 'Failed to proxy request to Medusa' }, { status: 500 })
   }
 } 

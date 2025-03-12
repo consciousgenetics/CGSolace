@@ -80,7 +80,7 @@ export default async function CategoryPageLayout(
     const currentCategory = product_categories[product_categories.length - 1]
 
     return (
-      <>
+      <div className="bg-white min-h-screen">
         <Container className="flex flex-col gap-8 !py-8">
           <Box className="flex flex-col gap-4">
             <StoreBreadcrumbs breadcrumb={currentCategory.name} />
@@ -93,7 +93,7 @@ export default async function CategoryPageLayout(
           </Box>
         </Container>
         {children}
-      </>
+      </div>
     )
   } catch (error) {
     console.error("Error rendering category page:", error)

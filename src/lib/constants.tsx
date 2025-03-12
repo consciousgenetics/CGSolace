@@ -145,7 +145,9 @@ export const createNavigation = (
     'Sweatshirts', 
     'Pants', 
     'Merch',
-    'Clothing'
+    'Clothing',
+    'Feminized Seeds',  // Exclude from categories since it's now a main menu item
+    'Regular Seeds',     // Exclude from categories since it's now a main menu item
   ];
   
   // Create stable categories - use a seed value for deterministic ordering
@@ -188,27 +190,9 @@ export const createNavigation = (
 
   return [
     {
-      name: 'Seeds',
-      handle: '/shop',
+      name: 'Feminized Seeds',
+      handle: '/categories/feminized-seeds',
       category_children: [
-        {
-          name: "Feminized Seeds",
-          type: 'category',
-          handle: '/categories/feminized-seeds',
-          category_children: [],
-        },
-        {
-          name: "Regular Seeds",
-          type: 'category',
-          handle: '/categories/regular-seeds',
-          category_children: [],
-        },
-        {
-          name: "Chronic's Kush",
-          type: 'category',
-          handle: '/categories/chronics-kush',
-          category_children: [],
-        },
         {
           name: 'Zapplez',
           type: 'category',
@@ -227,6 +211,18 @@ export const createNavigation = (
           handle: '/categories/red-kachina',
           category_children: [],
         }
+      ],
+    },
+    {
+      name: 'Regular Seeds',
+      handle: '/categories/regular-seeds',
+      category_children: [
+        {
+          name: "Chronic's Kush",
+          type: 'category',
+          handle: '/categories/chronics-kush',
+          category_children: [],
+        },
       ],
     },
     {
@@ -267,20 +263,8 @@ export const createFooterNavigation = (
   return {
     navigation: [
       {
-        header: 'Seeds',
+        header: 'Feminized Seeds',
         links: [
-          {
-            title: 'Feminized Seeds',
-            href: '/categories/feminized-seeds',
-          },
-          {
-            title: 'Regular Seeds',
-            href: '/categories/regular-seeds',
-          },
-          {
-            title: 'Chronic\'s Kush',
-            href: '/categories/chronics-kush',
-          },
           {
             title: 'Zapplez',
             href: '/categories/zapplez',
@@ -292,6 +276,15 @@ export const createFooterNavigation = (
           {
             title: 'Red Kachina',
             href: '/categories/red-kachina',
+          },
+        ],
+      },
+      {
+        header: 'Regular Seeds',
+        links: [
+          {
+            title: 'Chronic\'s Kush',
+            href: '/categories/chronics-kush',
           },
         ],
       },
