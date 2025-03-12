@@ -43,24 +43,30 @@ const SideMenu = ({
   collections: StoreCollection[]
   strapiCollections: CollectionsData
 }) => {
+  // No longer need categoryStack, but keeping it for now for backward compatibility
   const [categoryStack, setCategoryStack] = useState<CategoryItem[]>([])
-  const currentCategory = categoryStack[categoryStack.length - 1] || null
   const [isOpen, setIsOpen] = useState(false)
+  // Track expanded categories for accordion-style dropdowns
+  const [expandedCategories, setExpandedCategories] = useState<string[]>([])
 
   const navigation = useMemo(
     () => createNavigation(productCategories, collections),
     [productCategories, collections]
   )
 
-  const handleCategoryClick = (category: CategoryItem) => {
-    setCategoryStack([
-      ...categoryStack,
-      { name: category.name, handle: category.handle },
-    ])
-  }
-
-  const handleBack = () => {
-    setCategoryStack(categoryStack.slice(0, -1))
+  // Handle category click - just expand/collapse, no navigation
+  const handleCategoryClick = (category: CategoryItem, hasChildren: boolean) => {
+    if (hasChildren) {
+      // If category has children, toggle its expanded state
+      setExpandedCategories(prev => {
+        // If already expanded, collapse it
+        if (prev.includes(category.name)) {
+          return prev.filter(name => name !== category.name);
+        }
+        // Otherwise expand it
+        return [...prev, category.name];
+      });
+    }
   }
 
   const handleOpenDialogChange = (open: boolean) => {
@@ -68,144 +74,102 @@ const SideMenu = ({
 
     if (!open) {
       setCategoryStack([])
+      setExpandedCategories([]) // Reset expanded categories when closing the menu
     }
   }
 
-  // Check if current category is related to seeds
-  const isSeedCategory = currentCategory && 
-    (currentCategory.name.toUpperCase().includes('SEED') || 
-     currentCategory.name.toUpperCase() === 'FEMINIZED SEEDS' || 
-     currentCategory.name.toUpperCase() === 'REGULAR SEEDS')
-
-  // Render seed categories in a 2x2 grid
-  const renderSeedCategories = (categories: any[]) => {
-    return (
-      <div className="grid grid-cols-2 gap-3">
-        {categories.map((item, index) => (
-          <Button
-            key={index}
-            variant="ghost"
-            className="justify-between p-3 h-full"
-            onClick={() => handleOpenDialogChange(false)}
-            asChild
-          >
-            <LocalizedClientLink href={item.handle}>
-              <div className="flex flex-col items-center text-center">
-                <span className="text-md font-medium">{item.name}</span>
-              </div>
-            </LocalizedClientLink>
-          </Button>
-        ))}
-      </div>
-    )
-  }
-
-  const renderCategories = (categories: any[]) => {
-    // If inside a seed category, use grid layout
-    if (isSeedCategory && categories.length > 0) {
-      return renderSeedCategories(categories)
-    }
-
-    return categories.map((item, index) => {
-      const hasChildren =
-        item.category_children && item.category_children.length > 0
-
-      const lastCategoryIndex = categories.findLastIndex(
-        (cat) => cat.type === 'parent_category'
-      )
-
-      const strapiCollection = strapiCollections.data.find(
+  // We'll render a recursive menu structure
+  const renderMenuItems = (items: any[], level = 0) => {
+    return items.map((item, index) => {
+      const hasChildren = item.category_children && item.category_children.length > 0;
+      const isExpanded = expandedCategories.includes(item.name);
+      const isCollection = item.type === 'collection';
+      const isSeedItem = item.name.toUpperCase().includes('SEED');
+      
+      const strapiCollection = isCollection ? strapiCollections.data.find(
         (cmsCollection) => cmsCollection.Handle === item.handle_id
-      )
+      ) : null;
 
-      // For top-level seed categories, use standard list but with seed category styling
-      const isSeedItem = item.name.toUpperCase().includes('SEED')
-
-      return item.type === 'collection' && strapiCollection ? (
-        <LocalizedClientLink
-          key={index}
-          href={item.handle}
-          className="relative mb-2"
-          onClick={() => handleOpenDialogChange(false)}
-        >
-          <Image
-            src={strapiCollection.Image.url}
-            alt={strapiCollection.Title}
-            width={600}
-            height={160}
-            className="h-[160px] w-full object-cover"
-          />
-          <Box className="absolute bottom-6 left-6">
-            <Heading as="h3" className="text-2xl text-static">
-              {strapiCollection.Title}
-            </Heading>
-          </Box>
-        </LocalizedClientLink>
-      ) : (
-        <Fragment key={index}>
-          <Button
-            variant="ghost"
-            className={`w-full justify-between ${isSeedItem ? 'font-semibold' : ''}`}
-            onClick={
-              hasChildren
-                ? () =>
-                    handleCategoryClick({
-                      name: item.name,
-                      handle: item.handle,
-                    })
-                : () => handleOpenDialogChange(false)
-            }
-            asChild={!hasChildren}
+      // For collections with images
+      if (isCollection && strapiCollection) {
+        return (
+          <LocalizedClientLink
+            key={`${level}-${index}`}
+            href={item.handle}
+            className="relative mb-2 block"
+            onClick={() => handleOpenDialogChange(false)}
           >
+            <Image
+              src={strapiCollection.Image.url}
+              alt={strapiCollection.Title}
+              width={600}
+              height={160}
+              className="h-[160px] w-full object-cover"
+            />
+            <Box className="absolute bottom-6 left-6">
+              <Heading as="h3" className="text-2xl text-static">
+                {strapiCollection.Title}
+              </Heading>
+            </Box>
+          </LocalizedClientLink>
+        );
+      }
+
+      // Render category or subcategory
+      return (
+        <div key={`${level}-${index}`} className={`w-full`}>
+          {/* Category header */}
+          <div className={`${level > 0 ? "pl-4" : ""}`}>
             {hasChildren ? (
-              <>
-                <span className="flex items-center gap-4">
+              <Button
+                variant="ghost"
+                className={`w-full justify-between py-3 ${isSeedItem ? 'font-semibold' : ''} ${isExpanded ? 'bg-gray-50' : ''}`}
+                onClick={() => handleCategoryClick(
+                  { name: item.name, handle: item.handle },
+                  hasChildren
+                )}
+              >
+                <span className="flex items-center gap-4 text-left">
                   {item.icon && item.icon}
                   {item.name}
                 </span>
-                <ChevronRightIcon className="h-5 w-5" />
-              </>
+                <ChevronRightIcon 
+                  className={`h-5 w-5 transition-transform duration-200 ${isExpanded ? 'rotate-90' : ''}`} 
+                />
+              </Button>
             ) : (
-              <LocalizedClientLink href={item.handle}>
-                <span className="flex items-center gap-4">
-                  {item.icon && item.icon}
-                  {item.name}
-                </span>
-              </LocalizedClientLink>
+              <Button
+                variant="ghost"
+                className={`w-full justify-between py-3 ${isSeedItem ? 'font-semibold' : ''}`}
+                onClick={() => handleOpenDialogChange(false)}
+                asChild
+              >
+                <LocalizedClientLink href={item.handle}>
+                  <span className="flex items-center gap-4 text-left">
+                    {item.icon && item.icon}
+                    {item.name}
+                  </span>
+                </LocalizedClientLink>
+              </Button>
             )}
-          </Button>
-          {index === lastCategoryIndex && (
+          </div>
+
+          {/* Render children if expanded */}
+          {hasChildren && isExpanded && (
+            <div className="border-l-2 border-gray-200 ml-4 mt-1 mb-1">
+              {item.category_children && renderMenuItems(item.category_children, level + 1)}
+            </div>
+          )}
+          
+          {/* Add divider between parent categories */}
+          {level === 0 && items.findIndex(cat => cat.type === 'parent_category') > -1 && 
+           index === items.findLastIndex(cat => cat.type === 'parent_category') && (
             <Divider className="my-4 -ml-4 w-[calc(100%+2rem)]" />
           )}
-        </Fragment>
-      )
-    })
-  }
-
-  const getActiveCategories = () => {
-    let currentCategories = [
-      ...(navigation[0]?.category_children || []),
-      ...navigation.slice(1),
-    ]
-
-    for (const category of categoryStack) {
-      const found = currentCategories.find(
-        (item) => item.name === category.name
-      )
-      if (found?.category_children) {
-        currentCategories = found.category_children.map((category) => ({
-          ...category,
-          icon: null,
-        }))
-      } else {
-        break
-      }
-    }
-    return currentCategories
-  }
-
-  const shouldRenderButton =
-    !currentCategory || currentCategory.name !== 'Collections'
+        </div>
+      );
+    });
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={handleOpenDialogChange}>
@@ -221,16 +185,11 @@ const SideMenu = ({
       <DialogPortal>
         <DialogOverlay />
         <DialogContent
-          className="!max-h-full !max-w-full !rounded-none"
+          className="!max-h-full !rounded-none !max-w-full overflow-hidden"
           aria-describedby={undefined}
         >
           <DialogHeader className="flex items-center gap-4 !p-4 text-xl text-basic-primary small:text-2xl">
-            {currentCategory && (
-              <Button variant="tonal" withIcon size="sm" onClick={handleBack}>
-                <ArrowLeftIcon className="h-5 w-5" />
-              </Button>
-            )}
-            {currentCategory?.name || 'Menu'}
+            MENU
             <Button
               onClick={() => handleOpenDialogChange(false)}
               variant="icon"
@@ -244,29 +203,21 @@ const SideMenu = ({
           <VisuallyHidden.Root>
             <DialogTitle>Menu modal</DialogTitle>
           </VisuallyHidden.Root>
-          <DialogBody className="overflow-y-auto p-4 small:p-5">
+          
+          <DialogBody className="p-4 small:p-5 overflow-y-auto">
             <Box className="flex flex-col">
-              {shouldRenderButton && (
-                <Button
-                  variant="tonal"
-                  className="mb-4 w-max"
-                  size="sm"
-                  onClick={() => handleOpenDialogChange(false)}
-                  asChild={!!currentCategory}
-                >
-                  <LocalizedClientLink
-                    href={
-                      currentCategory ? `${currentCategory.handle}` : `/shop`
-                    }
-                  >
-                    Shop all{' '}
-                    {currentCategory && currentCategory.name !== 'Shop'
-                      ? currentCategory.name
-                      : ''}
-                  </LocalizedClientLink>
-                </Button>
-              )}
-              {renderCategories(getActiveCategories())}
+              <Button
+                variant="tonal"
+                className="mb-4 w-max"
+                size="sm"
+                onClick={() => handleOpenDialogChange(false)}
+                asChild
+              >
+                <LocalizedClientLink href="/shop">
+                  SHOP ALL
+                </LocalizedClientLink>
+              </Button>
+              {renderMenuItems(navigation)}
             </Box>
           </DialogBody>
         </DialogContent>
