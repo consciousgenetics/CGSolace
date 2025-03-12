@@ -24,70 +24,91 @@ export const getRegion = cache(async function (countryCode: string) {
   try {
     console.log('getRegion: Processing request for country code:', countryCode);
 
+    // If countryCode is 'dk', automatically redirect to 'uk'
+    if (countryCode.toLowerCase() === 'dk') {
+      console.log('getRegion: Redirecting dk to uk');
+      countryCode = 'uk';
+    }
+    
     // Always try to get and use the GBP region for UK requests
     const regions = await listRegions();
-    if (!regions) {
-      console.warn('getRegion: No regions found from API');
-      return null;
-    }
-
-    // Clear the map to prevent stale data
-    regionMap.clear();
-
-    // First, find the GBP region
-    const gbpRegion = regions.find(r => r.currency_code?.toLowerCase() === 'gbp');
     
-    // For UK requests, always return GBP region if available
-    if (countryCode.toLowerCase() === 'uk') {
-      if (gbpRegion) {
+    // Find any real region to use
+    let foundRegion = null;
+    
+    if (regions && regions.length > 0) {
+      // Clear the map to prevent stale data
+      regionMap.clear();
+      
+      // First priority: Find a region with GBP currency
+      const gbpRegion = regions.find(r => r.currency_code?.toLowerCase() === 'gbp');
+      
+      // For UK requests, prioritize GBP region
+      if (countryCode.toLowerCase() === 'uk' && gbpRegion) {
         console.log('getRegion: Using GBP region for UK:', {
           regionId: gbpRegion.id,
           currency: gbpRegion.currency_code
         });
         regionMap.set('uk', gbpRegion);
         return gbpRegion;
-      } else {
-        console.warn('getRegion: No GBP region found for UK');
+      }
+      
+      // Second priority: Find a region that has the UK as a country
+      const ukRegion = regions.find(r => 
+        r.countries?.some(c => 
+          c.iso_2?.toLowerCase() === 'uk' || 
+          c.iso_2?.toLowerCase() === 'gb'
+        )
+      );
+      
+      if (ukRegion) {
+        console.log('getRegion: Found region containing UK:', ukRegion.id);
+        if (countryCode.toLowerCase() === 'uk') {
+          return ukRegion;
+        }
+        foundRegion = ukRegion;
+      }
+      
+      // For all countries, populate the map
+      regions.forEach((region) => {
+        region.countries?.forEach((c) => {
+          if (c.iso_2) {
+            regionMap.set(c.iso_2.toLowerCase(), region);
+          }
+        });
+      });
+      
+      // If we have regions but no UK specified, use the first region for UK
+      if (!regionMap.has('uk') && regions.length > 0) {
+        console.log('getRegion: No UK-specific region found, using first region for UK');
+        regionMap.set('uk', regions[0]);
+      }
+      
+      // Get the region for the requested country code
+      let region = regionMap.get(countryCode.toLowerCase());
+      
+      // If we found a region, use it
+      if (region) {
+        console.log('getRegion: Found matching region for', countryCode, ':', region.id);
+        return region;
+      }
+      
+      // If no specific region found for this country code but we have a UK region
+      if (regionMap.has('uk')) {
+        console.log('getRegion: No specific region for', countryCode, ', using UK region');
+        return regionMap.get('uk');
+      }
+      
+      // Last resort: use the first region if available
+      if (regions.length > 0) {
+        console.log('getRegion: Using first available region:', regions[0].id);
+        return regions[0];
       }
     }
-
-    // For all countries, populate the map
-    regions.forEach((region) => {
-      region.countries?.forEach((c) => {
-        if (c.iso_2) {
-          regionMap.set(c.iso_2.toLowerCase(), region);
-        }
-      });
-    });
-
-    // Get the region for the requested country code
-    let region = regionMap.get(countryCode.toLowerCase());
-
-    // If no specific region found and this is a UK request, use GBP region as fallback
-    if (!region && countryCode.toLowerCase() === 'uk' && gbpRegion) {
-      console.log('getRegion: Using GBP region as fallback for UK');
-      region = gbpRegion;
-      regionMap.set('uk', gbpRegion);
-    }
-
-    // If still no region found, use the first available region
-    if (!region && regions.length > 0) {
-      region = regions[0];
-      regionMap.set(countryCode.toLowerCase(), region);
-    }
-
-    if (!region) {
-      console.warn(`getRegion: No region found for country code: ${countryCode}`);
-      return null;
-    }
-
-    console.log('getRegion: Returning region:', {
-      countryCode: countryCode.toLowerCase(),
-      regionId: region.id,
-      currency: region.currency_code
-    });
-
-    return region;
+    
+    // If we reached here, no regions were found from the API
+    console.warn('getRegion: No valid regions found from API, cannot continue');
+    return null;
   } catch (error) {
     console.error('getRegion: Error:', error);
     return null;

@@ -16,22 +16,33 @@ export const getAuthHeaders = async (): Promise<
 }
 
 export const setAuthToken = async (token: string) => {
-  const cookieStore = await cookies()
+  try {
+    'use server';
+    const cookieStore = await cookies()
 
-  cookieStore.set('_medusa_jwt', token, {
-    maxAge: 60 * 60 * 24 * 7,
-    httpOnly: true,
-    sameSite: 'lax',
-    secure: process.env.NODE_ENV === 'production',
-    path: '/',
-  })
+    cookieStore.set('_medusa_jwt', token, {
+      maxAge: 60 * 60 * 24 * 7,
+      httpOnly: true,
+      sameSite: 'lax',
+      secure: process.env.NODE_ENV === 'production',
+      path: '/',
+    })
+  } catch (error) {
+    console.error("Error setting auth token cookie:", error)
+  }
 }
 
 export const removeAuthToken = async () => {
-  const cookieStore = await cookies()
-  cookieStore.set('_medusa_jwt', '', {
-    maxAge: -1,
-  })
+  try {
+    'use server';
+    const cookieStore = await cookies()
+    cookieStore.set('_medusa_jwt', '', {
+      maxAge: -1,
+      path: '/',
+    })
+  } catch (error) {
+    console.error("Error removing auth token cookie:", error)
+  }
 }
 
 export const getCartId = async () => {
@@ -40,16 +51,30 @@ export const getCartId = async () => {
 }
 
 export const setCartId = async (cartId: string) => {
-  const cookieStore = await cookies()
-  cookieStore.set('_medusa_cart_id', cartId, {
-    maxAge: 60 * 60 * 24 * 7,
-    httpOnly: true,
-    sameSite: 'strict',
-    secure: process.env.NODE_ENV === 'production',
-  })
+  try {
+    'use server';
+    const cookieStore = await cookies()
+    cookieStore.set('_medusa_cart_id', cartId, {
+      maxAge: 60 * 60 * 24 * 7,
+      httpOnly: true,
+      sameSite: 'strict',
+      secure: process.env.NODE_ENV === 'production',
+      path: '/',
+    })
+  } catch (error) {
+    console.error("Error setting cart ID cookie:", error)
+  }
 }
 
 export const removeCartId = async () => {
-  const cookieStore = await cookies()
-  cookieStore.set('_medusa_cart_id', '', { maxAge: -1 })
+  try {
+    'use server';
+    const cookieStore = await cookies()
+    cookieStore.set('_medusa_cart_id', '', { 
+      maxAge: -1,
+      path: '/',
+    })
+  } catch (error) {
+    console.error("Error removing cart ID cookie:", error)
+  }
 }

@@ -192,27 +192,39 @@ export const createNavigation = (
       handle: '/shop',
       category_children: [
         {
+          name: "Feminized Seeds",
+          type: 'category',
+          handle: '/categories/feminized-seeds',
+          category_children: [],
+        },
+        {
+          name: "Regular Seeds",
+          type: 'category',
+          handle: '/categories/regular-seeds',
+          category_children: [],
+        },
+        {
           name: "Chronic's Kush",
           type: 'category',
-          handle: '/chronics-kush',
+          handle: '/categories/chronics-kush',
           category_children: [],
         },
         {
           name: 'Zapplez',
           type: 'category',
-          handle: '/zapplez',
+          handle: '/categories/zapplez',
           category_children: [],
         },
         {
           name: 'Pink Waferz',
           type: 'category',
-          handle: '/pink-waferz',
+          handle: '/categories/pink-waferz',
           category_children: [],
         },
         {
           name: 'Red Kachina',
           type: 'category',
-          handle: '/red-kachina',
+          handle: '/categories/red-kachina',
           category_children: [],
         }
       ],
@@ -255,15 +267,49 @@ export const createFooterNavigation = (
   return {
     navigation: [
       {
-        header: 'Categories',
+        header: 'Seeds',
         links: [
-          ...productCategories
-            .filter((category) => !category.parent_category)
-            .slice(0, 5)
-            .map((category) => ({
-              title: category.name,
-              href: `/categories/${category.handle}`,
-            })),
+          {
+            title: 'Feminized Seeds',
+            href: '/categories/feminized-seeds',
+          },
+          {
+            title: 'Regular Seeds',
+            href: '/categories/regular-seeds',
+          },
+          {
+            title: 'Chronic\'s Kush',
+            href: '/categories/chronics-kush',
+          },
+          {
+            title: 'Zapplez',
+            href: '/categories/zapplez',
+          },
+          {
+            title: 'Pink Waferz',
+            href: '/categories/pink-waferz',
+          },
+          {
+            title: 'Red Kachina',
+            href: '/categories/red-kachina',
+          },
+        ],
+      },
+      {
+        header: 'Merch',
+        links: [
+          {
+            title: 'Mens Merch',
+            href: '/categories/mens-merch',
+          },
+          {
+            title: 'Womens Merch',
+            href: '/categories/womens-merch',
+          },
+          {
+            title: 'Accessories',
+            href: '/categories/accessories',
+          },
         ],
       },
       {

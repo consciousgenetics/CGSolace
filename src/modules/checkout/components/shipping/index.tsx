@@ -62,8 +62,9 @@ const Shipping: React.FC<ShippingProps> = ({
     
     const profiles = new Set<string>()
     cart.items.forEach((item: HttpTypes.StoreCartLineItem) => {
-      // Try to get shipping profile ID from metadata first
-      const profileId = item.variant?.product?.metadata?.shipping_profile_id
+      // Try to get shipping profile ID from product using type assertion
+      const profileId = item.variant?.product ? 
+        (item.variant.product as any).shipping_profile_id : undefined
       
       if (profileId) {
         profiles.add(profileId as string)
@@ -79,6 +80,14 @@ const Shipping: React.FC<ShippingProps> = ({
         profiles.add(option.shipping_profile_id)
       }
     })
+    
+    // If there are shipping options but no profiles detected,
+    // add at least one profile from the options to ensure something is selected
+    if (profiles.size === 0 && availableShippingMethods && availableShippingMethods.length > 0) {
+      // Find a default shipping profile to use
+      const defaultProfile = availableShippingMethods[0].shipping_profile_id
+      profiles.add(defaultProfile)
+    }
     
     console.log('Required shipping profiles:', Array.from(profiles))
     return profiles

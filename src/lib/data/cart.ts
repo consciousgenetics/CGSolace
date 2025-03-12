@@ -50,6 +50,28 @@ export async function retrieveCart() {
     })
 }
 
+// Alternate function that uses the Route API to set cart ID
+const setCartIdViaAPI = async (cartId: string) => {
+  try {
+    const response = await fetch('/api/cart', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ cartId }),
+    })
+    
+    if (!response.ok) {
+      console.error('Error setting cart ID via API:', response.statusText)
+    }
+    
+    return response.ok
+  } catch (error) {
+    console.error('Failed to set cart ID via API:', error)
+    return false
+  }
+}
+
 export const getOrSetCart = async (countryCode: string = 'uk') => {
   try {
     const existingCartId = await getCartId()
@@ -90,7 +112,17 @@ export const getOrSetCart = async (countryCode: string = 'uk') => {
       return null
     }
 
-    await setCartId(cart.id)
+    try {
+      // Try the API method first
+      const success = await setCartIdViaAPI(cart.id)
+      if (!success) {
+        // Fall back to direct cookie setting if API fails
+        await setCartId(cart.id)
+      }
+    } catch (e) {
+      console.error('Error setting cart ID:', e)
+    }
+    
     return cart
   } catch (error) {
     console.error('getOrSetCart: Error:', error)

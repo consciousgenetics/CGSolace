@@ -57,19 +57,19 @@ const ReviewCard = ({ name, review, location }: ReviewCardProps) => {
 export function ReviewSection() {
   const reviews = [
     {
-      name: "JOHN DOE",
-      review: "Lorem ipsum, Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum. Lorem ipsum dolor sit amet consectetur adipisicing elit. Voluptates, deserunt.",
-      location: "LONDON UK"
+      name: "JACK WILSON",
+      review: "The plants had a 10/10 germination from seeds and were super healthy and got strong and heavy loaded. Amazin aroma for liveexctraction and also yield and aroma after curing and bagappeal was very nice. We selected a keeper of 10 for the next time and everyone wants a copy. People are going crazy on these strains.",
+      location: "UK GROWER"
     },
     {
-      name: "JOHN DOE",
-      review: "Lorem ipsum, Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum. Lorem ipsum dolor sit amet consectetur adipisicing elit. Voluptates, deserunt.",
-      location: "LONDON UK"
+      name: "MICHAEL FLETCHER",
+      review: "Zapplez was an absolute frost monster! The apple and Runtz flavors came through beautifully, and the buds were super dense and sticky. Smells like a candy shop when you open the jar. 10/10 bag appeal, and the smoke is smooth with a heavy-hitting high. Can't wait to grow this one again!",
+      location: "UK CUSTOMER"
     },
     {
-      name: "JOHN DOE",
-      review: "Lorem ipsum, Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum. Lorem ipsum dolor sit amet consectetur adipisicing elit. Voluptates, deserunt.",
-      location: "LONDON UK"
+      name: "SARAH REYNOLDS",
+      review: "Wow, this strain is something special. The smell during flower was insane—like a mix of candy, cheese, and gas. The buds turned out super colorful, and the high is next level. Really strong but not overwhelming, just pure relaxation. Everyone who's tried it is asking for more!",
+      location: "UK CUSTOMER"
     }
   ]
 

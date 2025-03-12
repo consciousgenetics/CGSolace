@@ -1,3 +1,5 @@
+'use client'
+
 import Image from 'next/image'
 
 import { Box } from '@modules/common/components/box'
@@ -25,28 +27,42 @@ const Hero = ({ data }: { data: HeroBannerData }) => {
   return (
     <div className="relative h-screen w-full">
       {/* Background Image */}
-      <div className="absolute inset-0">
-        <Image
-          src={imageUrl}
-          alt="Banner image"
-          className="h-full w-full object-cover object-center"
-          fill
-          priority
-          quality={100}
-          sizes="100vw"
-        />
+      <div className="absolute inset-0 overflow-hidden">
+        {/* Mobile-specific styling */}
+        <style jsx global>{`
+          @media (max-width: 767px) {
+            .hero-image-container {
+              transform: translateX(-45%) scale(0.5);
+              width: 300%;
+              transform-origin: center center;
+            }
+          }
+        `}</style>
+        
+        {/* Container for the image with transformable width */}
+        <div className="hero-image-container relative h-full w-full transition-all">
+          <Image
+            src={imageUrl}
+            alt="Banner image"
+            className="h-full w-full object-cover"
+            fill
+            priority
+            quality={100}
+            sizes="100vw"
+          />
+        </div>
       </div>
 
       {/* Content Container */}
       <div className="relative h-full w-full">
         <Container className="h-full max-w-screen-2xl mx-auto">
           {/* Button Container - Always show button with fallback */}
-          <div className="absolute bottom-[20%] right-[15%] hero-cta-button"
+          <div className="absolute bottom-[15%] sm:bottom-[20%] right-[5%] sm:right-[15%] hero-cta-button"
                style={{ opacity: 'var(--button-opacity, 1)', transition: 'opacity 0.3s ease-out' }}>
-            <Button asChild className="font-inter w-max bg-[#A86721] px-24 py-10 text-4xl font-bold text-white hover:bg-[#8B551B] rounded-[30px] flex items-center shadow-lg">
+            <Button asChild className="font-inter w-max bg-[#A86721] px-6 py-3 sm:px-10 sm:py-5 md:px-16 md:py-6 lg:px-20 lg:py-8 text-base sm:text-xl md:text-2xl lg:text-3xl font-bold text-white hover:bg-[#8B551B] rounded-[20px] sm:rounded-[25px] md:rounded-[30px] flex items-center shadow-lg">
               <LocalizedClientLink href={data?.data?.HeroBanner?.CTA?.BtnLink || fallbackCTA.BtnLink} className="flex items-center">
                 {data?.data?.HeroBanner?.CTA?.BtnText || fallbackCTA.BtnText}
-                <span className="text-4xl ml-4">▶</span>
+                <span className="text-sm sm:text-lg md:text-xl lg:text-2xl ml-2 sm:ml-3 md:ml-4">▶</span>
               </LocalizedClientLink>
             </Button>
           </div>

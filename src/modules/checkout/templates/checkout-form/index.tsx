@@ -18,11 +18,28 @@ export default async function CheckoutForm({
     return null
   }
 
+  // Get shipping methods for the cart
   const shippingMethods = await listCartShippingMethods(cart.id)
-  const paymentMethods = await listCartPaymentMethods(cart.region?.id ?? '')
+  
+  // Get payment methods with fallback to empty region ID if needed
+  const regionId = cart.region?.id || ''
+  console.log('CheckoutForm: Getting payment methods for region ID:', regionId);
+  
+  let paymentMethods = await listCartPaymentMethods(regionId)
+  
+  // If no payment methods found, try without a region ID as a fallback
+  if (!paymentMethods || paymentMethods.length === 0) {
+    console.log('CheckoutForm: No payment methods found with region ID, trying fallback');
+    paymentMethods = await listCartPaymentMethods('')
+  }
 
-  if (!shippingMethods || !paymentMethods) {
+  if (!shippingMethods) {
+    console.error('CheckoutForm: No shipping methods available');
     return null
+  }
+  
+  if (!paymentMethods || paymentMethods.length === 0) {
+    console.error('CheckoutForm: No payment methods available');
   }
 
   return (
@@ -37,7 +54,7 @@ export default async function CheckoutForm({
       )}
       <Addresses cart={cart} customer={customer} />
       <Shipping cart={cart} availableShippingMethods={shippingMethods} />
-      <Payment cart={cart} availablePaymentMethods={paymentMethods} />
+      <Payment cart={cart} availablePaymentMethods={paymentMethods || []} />
     </Box>
   )
 }

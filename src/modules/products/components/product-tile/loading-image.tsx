@@ -77,7 +77,7 @@ export const LoadingImage = ({
     // Remove any query parameters
     const cleanUrl = decodedUrl.split('?')[0]
 
-    // Remove country code prefix if present (e.g., /uk/, /dk/, etc.)
+    // Remove country code prefix if present (e.g., /uk/, /us/, etc.)
     const withoutCountryCode = cleanUrl.replace(/^\/[a-z]{2}\//, '/')
     
     // For remote URLs (starting with http/https), use them directly

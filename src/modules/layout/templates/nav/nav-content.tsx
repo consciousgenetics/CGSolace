@@ -62,7 +62,7 @@ export default function NavContent(props: any) {
         <Button
           variant="icon"
           withIcon
-          className="ml-auto h-auto !p-1.5 xsmall:!p-2 medium:!p-3.5"
+          className="hidden sm:flex ml-auto h-auto !p-1.5 xsmall:!p-2 medium:!p-3.5"
           onClick={() => setIsSearchOpen(true)}
           data-testid="search-button"
         >

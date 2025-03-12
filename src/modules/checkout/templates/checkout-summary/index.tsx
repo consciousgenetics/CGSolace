@@ -7,7 +7,7 @@ import { Box } from '@modules/common/components/box'
 import CartTotals from '@modules/common/components/cart-totals'
 import LocalizedClientLink from '@modules/common/components/localized-client-link'
 import { Text } from '@modules/common/components/text'
-import { useMemo } from 'react'
+import { useEffect, useMemo } from 'react'
 
 const CheckoutSummary = ({
   cart,
@@ -20,12 +20,24 @@ const CheckoutSummary = ({
   const allShippingProfilesSatisfied = useMemo(() => {
     if (!cart || !cart.items || cart.items.length === 0) return false
     
+    // Check if we have any shipping methods at all
+    if (!cart.shipping_methods || cart.shipping_methods.length === 0) {
+      console.log('No shipping methods selected yet');
+      return false;
+    }
+    
     // Get unique shipping profile IDs from cart items
     const requiredProfileIds = new Set(
       cart.items
         .filter(item => item.variant?.product?.shipping_profile_id)
         .map(item => item.variant.product.shipping_profile_id)
     )
+    
+    // If no shipping profiles are required, consider it satisfied
+    if (requiredProfileIds.size === 0) {
+      console.log('No shipping profiles required, considering all satisfied');
+      return true;
+    }
     
     // Get shipping profile IDs that have methods selected
     const selectedProfileIds = new Set(
@@ -41,8 +53,20 @@ const CheckoutSummary = ({
         .filter(Boolean)
     )
     
+    // For debug purposes
+    console.log('Shipping profile check:', {
+      required: Array.from(requiredProfileIds),
+      selected: Array.from(selectedProfileIds),
+      satisfied: requiredProfileIds.size <= selectedProfileIds.size
+    });
+    
+    // If at least one shipping method is selected, consider it good enough
+    if (requiredProfileIds.size > 0 && selectedProfileIds.size > 0) {
+      return true;
+    }
+    
     // Check if all required profiles have methods selected
-    return requiredProfileIds.size === selectedProfileIds.size
+    return requiredProfileIds.size <= selectedProfileIds.size
   }, [cart])
 
   // Determine if payment button should be shown
@@ -58,6 +82,16 @@ const CheckoutSummary = ({
     
     return false
   }, [searchParams, cart, allShippingProfilesSatisfied])
+  
+  // Debug info
+  useEffect(() => {
+    console.log('CheckoutSummary debug:', {
+      step: searchParams?.step,
+      hasPaymentSessions: cart?.payment_collection?.payment_sessions?.some(s => s.status === 'pending'),
+      allShippingProfilesSatisfied,
+      showPaymentButton
+    });
+  }, [searchParams, cart, allShippingProfilesSatisfied, showPaymentButton]);
 
   return (
     <Box className="relative">

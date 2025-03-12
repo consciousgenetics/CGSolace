@@ -252,60 +252,62 @@ export default async function Home(props: {
             )}
             {/* Seed Line Section */}
             <div className="w-full bg-black text-white py-0 my-0">
-              <div className="max-w-7xl mx-auto px-4 py-8 sm:py-16">
+              <div className="max-w-[1400px] mx-auto px-4 py-8 sm:py-16">
                 <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-center mb-4">SEED LINE</h2>
                 <p className="text-center text-base sm:text-lg md:text-xl mb-8 sm:mb-12 px-4">Every genetic that we drop is a stable, trichome covered, terpene loaded gem!</p>
                 
-                {/* Grid container with responsive layout */}
-                <div className="flex flex-col lg:flex-row gap-6 lg:gap-4 items-center justify-center">
-                  {/* Zappet Card */}
-                  <div className="bg-black rounded-2xl border-2 w-full lg:w-1/4 aspect-square max-w-[280px]" style={{ borderColor: '#fdd729' }}>
-                    <div className="w-full h-full relative overflow-hidden rounded-2xl">
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <img 
-                          src="/Zapplez.png" 
-                          alt="Zappet" 
-                          className="w-full h-full object-contain p-4"
-                        />
+                {/* Card container with different layouts for mobile and desktop */}
+                <div className="w-full flex justify-center">
+                  <div className="flex flex-row gap-6 pb-4 overflow-x-auto md:overflow-visible scrollbar-hide md:flex-wrap md:justify-center">
+                    {/* Zappet Card */}
+                    <div className="bg-black rounded-2xl border-2 min-w-[200px] w-[200px] h-[200px] flex-shrink-0 snap-center" style={{ borderColor: '#fdd729' }}>
+                      <div className="w-full h-full relative overflow-hidden rounded-2xl">
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <img 
+                            src="/Zapplez.png" 
+                            alt="Zappet" 
+                            className="w-full h-full object-contain p-4"
+                          />
+                        </div>
                       </div>
                     </div>
-                  </div>
-                  
-                  {/* Pink Waferz Card */}
-                  <div className="bg-black rounded-2xl border-2 w-full lg:w-1/4 aspect-square max-w-[280px]" style={{ borderColor: '#fdd729' }}>
-                    <div className="w-full h-full relative overflow-hidden rounded-2xl">
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <img 
-                          src="/Pink-waflfles.png" 
-                          alt="Pink Waferz" 
-                          className="w-full h-full object-contain p-4"
-                        />
+                    
+                    {/* Pink Waferz Card */}
+                    <div className="bg-black rounded-2xl border-2 min-w-[200px] w-[200px] h-[200px] flex-shrink-0 snap-center" style={{ borderColor: '#fdd729' }}>
+                      <div className="w-full h-full relative overflow-hidden rounded-2xl">
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <img 
+                            src="/Pink-waflfles.png" 
+                            alt="Pink Waferz" 
+                            className="w-full h-full object-contain p-4"
+                          />
+                        </div>
                       </div>
                     </div>
-                  </div>
-                  
-                  {/* Chronic's Kush Card */}
-                  <div className="bg-black rounded-2xl border-2 w-full lg:w-1/4 aspect-square max-w-[280px]" style={{ borderColor: '#fdd729' }}>
-                    <div className="w-full h-full relative overflow-hidden rounded-2xl">
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <img 
-                          src="/Chronic_kush.png" 
-                          alt="Chronic's Kush" 
-                          className="w-full h-full object-contain p-4"
-                        />
+                    
+                    {/* Chronic's Kush Card */}
+                    <div className="bg-black rounded-2xl border-2 min-w-[200px] w-[200px] h-[200px] flex-shrink-0 snap-center" style={{ borderColor: '#fdd729' }}>
+                      <div className="w-full h-full relative overflow-hidden rounded-2xl">
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <img 
+                            src="/Chronic_kush.png" 
+                            alt="Chronic's Kush" 
+                            className="w-full h-full object-contain p-4"
+                          />
+                        </div>
                       </div>
                     </div>
-                  </div>
-                  
-                  {/* Conscious Genetics Card */}
-                  <div className="bg-black rounded-2xl border-2 w-full lg:w-1/4 aspect-square max-w-[280px]" style={{ borderColor: '#fdd729' }}>
-                    <div className="w-full h-full relative overflow-hidden rounded-2xl">
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <img 
-                          src="/conscious-genetics-logo.png" 
-                          alt="Conscious Genetics" 
-                          className="w-full h-full object-contain p-4"
-                        />
+                    
+                    {/* Conscious Genetics Card */}
+                    <div className="bg-black rounded-2xl border-2 min-w-[200px] w-[200px] h-[200px] flex-shrink-0 snap-center" style={{ borderColor: '#fdd729' }}>
+                      <div className="w-full h-full relative overflow-hidden rounded-2xl">
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <img 
+                            src="/conscious-genetics-logo.png" 
+                            alt="Conscious Genetics" 
+                            className="w-full h-full object-contain p-4"
+                          />
+                        </div>
                       </div>
                     </div>
                   </div>

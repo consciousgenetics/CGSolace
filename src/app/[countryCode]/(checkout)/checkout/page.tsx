@@ -62,8 +62,8 @@ export default async function Checkout({
   const cart = await fetchCart(countryCode)
   const customer = await getCustomer()
 
-  // Get the step from searchParams
-  const step = searchParams?.step as string | undefined
+  // Get the step from searchParams using an async pattern
+  const step = searchParams?.step ? String(searchParams.step) : undefined
 
   return (
     <Container className="mx-0 grid max-w-full grid-cols-1 gap-y-4 bg-secondary large:grid-cols-[1fr_416px] large:gap-x-10 2xl:gap-x-40">
