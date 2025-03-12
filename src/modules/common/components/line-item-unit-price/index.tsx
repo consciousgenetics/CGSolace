@@ -1,6 +1,7 @@
 import { getPricesForVariant } from '@lib/util/get-product-price'
 import { HttpTypes } from '@medusajs/types'
 import { clx } from '@medusajs/ui'
+import { convertToLocale } from '@lib/util/money'
 
 type LineItemUnitPriceProps = {
   item: HttpTypes.StoreCartLineItem | HttpTypes.StoreOrderLineItem
@@ -24,6 +25,34 @@ const LineItemUnitPrice = ({
 }: LineItemUnitPriceProps) => {
   // Get prices with a type assertion to unknown first to avoid type errors
   const priceData = getPricesForVariant(item.variant) as unknown as PriceValues | null;
+  
+  // Special handling for Pink Zeez product - force GBP display
+  const isPinkZeez = item.title?.includes('Pink Zeez');
+  
+  if (isPinkZeez && priceData?.currency_code?.toUpperCase() === 'USD') {
+    console.log('Fixing Pink Zeez currency display:', {
+      product: item.title,
+      originalCurrency: priceData.currency_code,
+      forcingToGBP: true
+    });
+    
+    // Override the price data to force GBP display
+    if (priceData.calculated_price_number) {
+      priceData.calculated_price = convertToLocale({
+        amount: priceData.calculated_price_number,
+        currency_code: 'GBP'
+      });
+    }
+    
+    if (priceData.original_price_number) {
+      priceData.original_price = convertToLocale({
+        amount: priceData.original_price_number,
+        currency_code: 'GBP'
+      });
+    }
+    
+    priceData.currency_code = 'GBP';
+  }
   
   // Use safe default values
   const original_price = priceData?.original_price ?? 'N/A';

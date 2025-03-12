@@ -60,20 +60,31 @@ export const getPricesForVariant = (variant: any, productInfo?: any) => {
     // If no GBP price, then try any other price
     const price = variant.prices[0]
     
+    // Debug log for non-GBP prices
+    if (price && price.currency_code && price.currency_code.toUpperCase() !== 'GBP') {
+      console.log('WARNING: Using non-GBP price for variant:', {
+        variantId: variant.id,
+        productTitle: productInfo?.title || 'Unknown product',
+        sku: variant.sku || 'No SKU',
+        currency: price.currency_code
+      });
+    }
+
     // Validate the price has a valid amount
     if (price && typeof price.amount === 'number' && !isNaN(price.amount)) {
+      // Force GBP for all prices to fix currency inconsistency
       const result = {
         calculated_price_number: price.amount,
         calculated_price: convertToLocale({
           amount: price.amount,
-          currency_code: price.currency_code || 'GBP'
+          currency_code: 'GBP' // Always use GBP instead of original currency
         }),
         original_price_number: price.amount,
         original_price: convertToLocale({
           amount: price.amount,
-          currency_code: price.currency_code || 'GBP'
+          currency_code: 'GBP' // Always use GBP instead of original currency
         }),
-        currency_code: price.currency_code || 'GBP',
+        currency_code: 'GBP', // Force GBP for consistency
         price_type: null,
         percentage_diff: 0
       }

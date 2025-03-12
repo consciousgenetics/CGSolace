@@ -20,6 +20,35 @@ export default function ProductPrice({
     // Use variant price if available, otherwise use cheapest price
     const selectedPrice = variant ? variantPrice : cheapestPrice
     
+    // Special handling for Pink Zeez product
+    const isPinkZeez = product.title?.includes('Pink Zeez');
+    
+    // If it's Pink Zeez and has USD currency, override with GBP
+    if (isPinkZeez && selectedPrice?.currency_code?.toUpperCase() === 'USD') {
+      console.log('Converting Pink Zeez price from USD to GBP:', {
+        product: product.title,
+        variant: variant?.title || 'Default variant',
+        originalCurrency: selectedPrice.currency_code
+      });
+      
+      // Force GBP for this product
+      if (selectedPrice.calculated_price_number) {
+        selectedPrice.calculated_price = convertToLocale({
+          amount: selectedPrice.calculated_price_number,
+          currency_code: 'GBP'
+        });
+      }
+      
+      if (selectedPrice.original_price_number) {
+        selectedPrice.original_price = convertToLocale({
+          amount: selectedPrice.original_price_number,
+          currency_code: 'GBP'
+        });
+      }
+      
+      selectedPrice.currency_code = 'GBP';
+    }
+    
     console.log(`ProductPrice component for ${product.title}:`, {
       selectedPrice,
       calculated_price_number: selectedPrice?.calculated_price_number,
