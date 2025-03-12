@@ -75,11 +75,15 @@ const Hero = ({ data }: { data: HeroBannerData }) => {
       {/* Content Container */}
       <div className="fixed inset-0 z-10">
         <Container className="h-full max-w-screen-2xl mx-auto relative">
-          {/* Button Container with Coming Soon text */}
-          <div className="absolute left-1/2 transform -translate-x-1/2 bottom-[40%] sm:left-auto sm:transform-none sm:bottom-[50%] sm:right-[15%] flex flex-col items-center sm:items-end hero-cta-button">
-            <div className="mb-4 sm:mb-6 bg-black/40 backdrop-blur-sm px-6 py-3 sm:px-8 sm:py-4 rounded-full">
+          {/* Coming Soon text - positioned higher */}
+          <div className="absolute left-1/2 transform -translate-x-1/2 bottom-[65%] sm:left-auto sm:transform-none sm:bottom-[75%] sm:right-[15%] flex flex-col items-center sm:items-end">
+            <div className="bg-black/40 backdrop-blur-sm px-6 py-3 sm:px-8 sm:py-4 rounded-full">
               <h2 className="text-white text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold coming-soon-text">COMING SOON</h2>
             </div>
+          </div>
+          
+          {/* Button Container */}
+          <div className="absolute left-1/2 transform -translate-x-1/2 bottom-[40%] sm:left-auto sm:transform-none sm:bottom-[50%] sm:right-[15%] hero-cta-button">
             <Button asChild className="font-inter w-max bg-[#A86721] px-8 py-4 sm:px-12 sm:py-6 md:px-20 md:py-8 lg:px-24 lg:py-10 text-lg sm:text-2xl md:text-3xl lg:text-4xl font-bold text-white hover:bg-[#8B551B] rounded-[20px] sm:rounded-[25px] md:rounded-[30px] flex items-center shadow-lg">
               <LocalizedClientLink href="/subscribe" className="flex items-center">
                 SUBSCRIBE
