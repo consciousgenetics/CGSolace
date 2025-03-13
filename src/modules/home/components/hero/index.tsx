@@ -25,7 +25,7 @@ const Hero = ({ data }: { data: HeroBannerData }) => {
     : fallbackImage
 
   return (
-    <div className="fixed top-0 left-0 h-screen w-full z-0">
+    <div className="fixed top-[80px] left-0 h-screen w-full z-0">
       {/* Background Image */}
       <div className="fixed inset-0 overflow-hidden z-0">
         {/* Mobile-specific styling */}
@@ -35,6 +35,7 @@ const Hero = ({ data }: { data: HeroBannerData }) => {
               transform: translateX(0) scale(1);
               width: 100%;
               transform-origin: center center;
+              top: 80px;
             }
             .hero-image {
               object-position: center center;
@@ -82,7 +83,7 @@ const Hero = ({ data }: { data: HeroBannerData }) => {
           <Image
             src={imageUrl}
             alt="Banner image"
-            className="hero-image h-full w-full object-cover"
+            className="hero-image h-full w-full object-cover object-top"
             fill
             priority
             quality={100}
@@ -95,14 +96,14 @@ const Hero = ({ data }: { data: HeroBannerData }) => {
       <div className="fixed inset-0 z-5">
         <Container className="h-full max-w-screen-2xl mx-auto relative">
           {/* Coming Soon text - positioned higher */}
-          <div className="absolute left-1/2 transform -translate-x-1/2 bottom-[60%] sm:left-auto sm:transform-none sm:bottom-[65%] sm:right-[15%] flex flex-col items-center sm:items-end">
+          <div className="absolute left-1/2 transform -translate-x-1/2 bottom-[60%] sm:left-auto sm:transform-none sm:bottom-[50%] sm:right-[15%] flex flex-col items-center sm:items-end">
             <div className="px-10 py-5 sm:px-12 sm:py-6 md:px-14 md:py-7 rounded-[30px] border border-white/10 bg-black/5 backdrop-blur-[2px]">
               <h2 className="text-white text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold coming-soon-text">COMING SOON</h2>
             </div>
           </div>
           
-          {/* Button Container - moved higher */}
-          <div className="absolute left-1/2 transform -translate-x-1/2 bottom-[45%] sm:left-auto sm:transform-none sm:bottom-[50%] sm:right-[15%] hero-cta-button">
+          {/* Button Container - moved lower */}
+          <div className="absolute left-1/2 transform -translate-x-1/2 bottom-[30%] sm:left-auto sm:transform-none sm:bottom-[35%] sm:right-[15%] hero-cta-button">
             <Button asChild className="font-inter w-max bg-[#A86721] px-10 py-5 sm:px-14 sm:py-7 md:px-24 md:py-10 lg:px-28 lg:py-12 text-xl sm:text-2xl md:text-4xl lg:text-5xl font-bold text-white hover:bg-[#8B551B] rounded-[25px] sm:rounded-[30px] md:rounded-[35px] flex items-center shadow-xl">
               <LocalizedClientLink href="/subscribe" className="flex items-center">
                 SUBSCRIBE
