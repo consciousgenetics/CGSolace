@@ -107,7 +107,7 @@ const Hero = ({ data }: { data: HeroBannerData }) => {
           </div>
           
           {/* Button Container - moved lower */}
-          <div className="absolute left-1/2 transform -translate-x-1/2 bottom-[40%] sm:left-auto sm:transform-none sm:bottom-[35%] sm:right-[15%] hero-cta-button">
+          <div className="absolute left-1/2 transform -translate-x-1/2 bottom-[30%] sm:left-auto sm:transform-none sm:bottom-[35%] sm:right-[15%] hero-cta-button">
             <Button asChild className="font-inter w-max bg-[#A86721] px-10 py-5 sm:px-14 sm:py-7 md:px-24 md:py-10 lg:px-28 lg:py-12 text-xl sm:text-2xl md:text-4xl lg:text-5xl font-bold text-white hover:bg-[#8B551B] rounded-[25px] sm:rounded-[30px] md:rounded-[35px] flex items-center shadow-xl">
               <LocalizedClientLink href="/subscribe" className="flex items-center">
                 SUBSCRIBE
