@@ -127,10 +127,6 @@ const Addresses = ({
               })
             : Promise.resolve(),
         ])
-
-        // After successful submission, navigate to the delivery step
-        const countryCode = params.countryCode as string
-        router.push(`/${countryCode}/checkout?step=delivery`, { scroll: false })
       }
     } catch (error) {
       console.error('Error:', error)
