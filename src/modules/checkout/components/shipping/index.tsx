@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState, useMemo } from 'react'
-import { usePathname, useRouter, useSearchParams } from 'next/navigation'
+import { usePathname, useRouter, useSearchParams, useParams } from 'next/navigation'
 
 import { RadioGroup } from '@headlessui/react'
 import { setShippingMethod } from '@lib/data/cart'
@@ -36,6 +36,7 @@ const Shipping: React.FC<ShippingProps> = ({
   const searchParams = useSearchParams()
   const router = useRouter()
   const pathname = usePathname()
+  const params = useParams()
 
   const isOpen = searchParams.get('step') === 'delivery'
 
@@ -115,7 +116,8 @@ const Shipping: React.FC<ShippingProps> = ({
   }, [cart.shipping_methods, availableShippingMethods])
 
   const handleEdit = () => {
-    router.push(pathname + '?step=delivery', { scroll: false })
+    const countryCode = params.countryCode as string
+    router.push(`/${countryCode}/checkout?step=delivery`, { scroll: false })
   }
 
   const handleSubmit = () => {
@@ -131,7 +133,8 @@ const Shipping: React.FC<ShippingProps> = ({
     }
 
     console.log('Submitting with selected methods:', selectedMethods)
-    router.push(pathname + '?step=payment', { scroll: false })
+    const countryCode = params.countryCode as string
+    router.push(`/${countryCode}/checkout?step=payment`, { scroll: false })
   }
 
   const set = async (id: string, profileId: string) => {
