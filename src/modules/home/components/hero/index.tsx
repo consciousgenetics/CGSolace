@@ -47,14 +47,30 @@ const Hero = ({ data }: { data: HeroBannerData }) => {
           }
 
           @keyframes glow {
-            0% { text-shadow: 0 0 5px rgba(255, 255, 255, 0.5); }
-            50% { text-shadow: 0 0 20px rgba(255, 255, 255, 0.8), 0 0 30px rgba(255, 215, 0, 0.6); }
-            100% { text-shadow: 0 0 5px rgba(255, 255, 255, 0.5); }
+            0% { 
+              text-shadow: 0 0 10px rgba(255, 255, 255, 0.8),
+                         0 0 20px rgba(255, 255, 255, 0.8),
+                         0 0 30px rgba(255, 255, 255, 0.8),
+                         0 0 40px rgba(255, 215, 0, 0.5);
+            }
+            50% { 
+              text-shadow: 0 0 20px rgba(255, 255, 255, 0.9),
+                         0 0 30px rgba(255, 255, 255, 0.9),
+                         0 0 40px rgba(255, 255, 255, 0.9),
+                         0 0 50px rgba(255, 215, 0, 0.7),
+                         0 0 60px rgba(255, 215, 0, 0.5);
+            }
+            100% { 
+              text-shadow: 0 0 10px rgba(255, 255, 255, 0.8),
+                         0 0 20px rgba(255, 255, 255, 0.8),
+                         0 0 30px rgba(255, 255, 255, 0.8),
+                         0 0 40px rgba(255, 215, 0, 0.5);
+            }
           }
           
           .coming-soon-text {
-            animation: glow 3s infinite;
-            letter-spacing: 6px;
+            animation: glow 1.5s ease-in-out infinite;
+            letter-spacing: 4px;
           }
         `}</style>
         
@@ -77,7 +93,7 @@ const Hero = ({ data }: { data: HeroBannerData }) => {
         <Container className="h-full max-w-screen-2xl mx-auto relative">
           {/* Coming Soon text - positioned higher */}
           <div className="absolute left-1/2 transform -translate-x-1/2 bottom-[55%] sm:left-auto sm:transform-none sm:bottom-[65%] sm:right-[15%] flex flex-col items-center sm:items-end">
-            <div className="bg-black/40 backdrop-blur-sm px-8 py-4 sm:px-10 sm:py-5 md:px-12 md:py-6 rounded-full shadow-lg">
+            <div className="bg-black/30 backdrop-blur-md px-10 py-5 sm:px-12 sm:py-6 md:px-14 md:py-7 rounded-[30px] shadow-[0_8px_32px_rgba(0,0,0,0.15)] border border-white/10">
               <h2 className="text-white text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold coming-soon-text">COMING SOON</h2>
             </div>
           </div>
