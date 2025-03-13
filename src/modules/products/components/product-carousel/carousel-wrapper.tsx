@@ -79,7 +79,7 @@ export default function CarouselWrapper({
 
   return (
     <div className={`w-full max-w-full relative`} style={{ minHeight }}>
-      <div className="relative z-10 py-8">
+      <div className="relative z-10 p-0">
         <div className="relative w-full">
           <div className="w-full max-w-full overflow-hidden px-0 cursor-grab" ref={emblaRef}>
             {/* For mobile, use a grid layout with 2 columns, otherwise use flex */}

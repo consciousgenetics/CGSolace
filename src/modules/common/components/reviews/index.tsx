@@ -78,7 +78,7 @@ export function ReviewSection() {
       {/* Background - copied from ProductGrid */}
       <div className="absolute inset-0 w-full h-full z-10">
         <Image
-          src="/127.png"
+          src="/127-wide.png"
           alt="Background pattern"
           fill
           className="object-cover"

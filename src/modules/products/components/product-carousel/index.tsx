@@ -506,34 +506,37 @@ export function ProductCarousel({
           </CarouselWrapper>
             </div>
             
-            {/* View All button to show more products */}
-            {!showAllProducts && processedProducts.length > 4 && (
-              <Button
-                onClick={() => setShowAllProducts(true)}
-                className="mx-auto mt-6 blur-transition !px-10 small:!px-12 !py-3 small:!py-4 text-lg small:text-xl font-bold bg-amber-400 hover:bg-amber-500 text-black transition-colors rounded-full uppercase tracking-wider"
-              >
-                VIEW ALL
-              </Button>
-            )}
-            
-            {/* External Shop All button (only show when on the expanded view or if there are <= 4 products) */}
-            {viewAll && (showAllProducts || processedProducts.length <= 4) && (
-              <Button asChild className={`mx-auto mt-6 blur-transition ${
-                isTransitioning 
-                  ? 'transitioning'
-                  : 'entering'
-              }`}>
-                <LocalizedClientLink
-                  href={viewAll.link}
-                  className="w-max !px-10 small:!px-12 !py-3 small:!py-4 text-lg small:text-xl font-bold bg-amber-400 hover:bg-amber-500 text-black transition-colors rounded-full uppercase tracking-wider"
+            {/* View All and Shop All buttons container */}
+            <div className="flex flex-col items-center gap-4 -mt-24 relative z-20">
+              {/* View All button to show more products */}
+              {!showAllProducts && processedProducts.length > 4 && (
+                <Button
+                  onClick={() => setShowAllProducts(true)}
+                  className="px-4 py-3 duration-150 ease-in-out flex gap-2 items-center justify-center active:bg-fg-primary-pressed h-12 blur-transition !px-10 small:!px-12 !py-3 small:!py-4 text-lg small:text-xl font-bold bg-amber-400 hover:bg-amber-500 text-black transition-colors rounded-full uppercase tracking-wider"
                 >
-                  SHOP ALL
-                </LocalizedClientLink>
-              </Button>
-            )}
-        </Box>
-      </Container>
-    </div>
+                  VIEW ALL
+                </Button>
+              )}
+              
+              {/* External Shop All button (only show when on the expanded view or if there are <= 4 products) */}
+              {viewAll && (showAllProducts || processedProducts.length <= 4) && (
+                <Button asChild className={`blur-transition ${
+                  isTransitioning 
+                    ? 'transitioning'
+                    : 'entering'
+                }`}>
+                  <LocalizedClientLink
+                    href={viewAll.link}
+                    className="w-max !px-10 small:!px-12 !py-3 small:!py-4 text-lg small:text-xl font-bold bg-amber-400 hover:bg-amber-500 text-black transition-colors rounded-full uppercase tracking-wider"
+                  >
+                    SHOP ALL
+                  </LocalizedClientLink>
+                </Button>
+              )}
+            </div>
+          </Box>
+        </Container>
+      </div>
     </>
   )
 }
