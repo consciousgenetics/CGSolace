@@ -10,7 +10,7 @@ import React, {
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 
 import { RadioGroup } from '@headlessui/react'
-import { isStripe as isStripeFunc, paymentInfoMap } from '@lib/constants'
+import { isStripe as isStripeFunc, isManual, paymentInfoMap } from '@lib/constants'
 import { initiatePaymentSession } from '@lib/data/cart'
 import { cn } from '@lib/util/cn'
 import ErrorMessage from '@modules/checkout/components/error-message'
@@ -245,6 +245,18 @@ const Payment = ({
               data-testid="submit-payment-button"
             >
               Enter card details
+            </Button>
+          )}
+          
+          {!activeSession && isManual(selectedPaymentMethod) && (
+            <Button
+              className="mt-6"
+              onClick={() => handleSubmit(selectedPaymentMethod)}
+              isLoading={isLoading}
+              disabled={!selectedPaymentMethod && !paidByGiftcard}
+              data-testid="submit-manual-payment-button"
+            >
+              Continue with manual payment
             </Button>
           )}
         </Box>

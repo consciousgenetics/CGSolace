@@ -241,33 +241,133 @@ export default async function CategoryTemplate({
           <Container className="flex flex-col gap-8 !pb-8 !pt-4">
             {/* Pink Waferz special description section */}
             {category.includes('pink-waferz') && (
-              <div className="my-8 max-w-5xl">
-                <div className="border-l-4 border-pink-500 pl-6">
-                  <h1 className="text-4xl font-bold tracking-tight mb-2">PINK WAFERZ LINE</h1>
-                  <h2 className="text-2xl font-medium text-gray-600 mb-6">Biscotti × Pink Champagne BX1</h2>
+              <div className="my-8 max-w-5xl mx-auto">
+                <div className="flex flex-col gap-8">
+                  {/* Title section with image */}
+                  <div className="border-l-4 border-pink-500 pl-6">
+                    <div className="mb-2">
+                      <img 
+                        src="/Pink-waflfles.png" 
+                        alt="Pink Waferz" 
+                        className="w-auto h-32 object-contain"
+                      />
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <div className="w-1/2">
+                        <h2 className="text-2xl font-medium text-gray-600">Biscotti × Pink Champagne BX1</h2>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Description section */}
+                  <div className="mt-4">
+                    <div className="prose prose-lg max-w-none">
+                      <div className="space-y-6 text-gray-700">
+                        <p className="leading-relaxed">
+                          For this line, we chose to reverse another popular and well-favored strain of ours, the Pink Wafers. 
+                          This strain is known for its high yields, dense colorful buds, and gassy, creamy, and musky aromas. 
+                          The flower from this strain even made its way to being stocked at Cookies Thailand.
+                        </p>
+                        
+                        <p className="leading-relaxed">
+                          We selected a roughly 70% Biscotti-dominant and 30% Pink Champagne phenotype, 'Pheno #5,' as the donor plant. 
+                          Pheno #5 was chosen for multiple reasons, including its vigorous plant structure, trichome coverage, high yields, and dense bud formation. 
+                          It also had great bag appeal, with purple hues inherited from the Purps in the Pink Champagne BX1 mother.
+                        </p>
+                        
+                        <p className="leading-relaxed">
+                          By crossing these strains with our Pink Waferz #5, we envisioned creating a line of strains that pack heavy terps 
+                          while also improving yields, plant structure, and bud formation.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
                 </div>
                 
-                <div className="mt-8 grid grid-cols-1 gap-8">
-                  <div className="prose prose-lg max-w-none">
-                    <h3 className="text-xl font-semibold mb-4 uppercase tracking-wide">Line Description</h3>
-                    
-                    <div className="space-y-6 text-gray-700">
-                      <p className="leading-relaxed">
-                        For this line, we chose to reverse another popular and well-favored strain of ours, the Pink Wafers. 
-                        This strain is known for its high yields, dense colorful buds, and gassy, creamy, and musky aromas. 
-                        The flower from this strain even made its way to being stocked at Cookies Thailand.
-                      </p>
-                      
-                      <p className="leading-relaxed">
-                        We selected a roughly 70% Biscotti-dominant and 30% Pink Champagne phenotype, 'Pheno #5,' as the donor plant. 
-                        Pheno #5 was chosen for multiple reasons, including its vigorous plant structure, trichome coverage, high yields, and dense bud formation. 
-                        It also had great bag appeal, with purple hues inherited from the Purps in the Pink Champagne BX1 mother.
-                      </p>
-                      
-                      <p className="leading-relaxed">
-                        By crossing these strains with our Pink Waferz #5, we envisioned creating a line of strains that pack heavy terps 
-                        while also improving yields, plant structure, and bud formation.
-                      </p>
+                <div className="mt-10 border-b border-gray-200"></div>
+              </div>
+            )}
+            
+            {/* Chronic Kush special description section */}
+            {category.includes('chronics-kush') && (
+              <div className="my-8 max-w-5xl mx-auto">
+                <div className="flex flex-col gap-8">
+                  {/* Title section with image */}
+                  <div className="border-l-4 border-green-600 pl-6">
+                    <div className="mb-2">
+                      <img 
+                        src="/Chronic_kush.png" 
+                        alt="Chronic Kush" 
+                        className="w-auto h-32 object-contain"
+                      />
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <div className="w-1/2">
+                        <h2 className="text-2xl font-medium text-gray-600">OG Kush × Hell Raiser</h2>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Description section */}
+                  <div className="mt-4">
+                    <div className="prose prose-lg max-w-none">
+                      <div className="space-y-6 text-gray-700">
+                        <p className="leading-relaxed">
+                          This new regular seed line features an OG Kush x Hell Raiser male, meticulously chosen for its dominant OG Kush traits, paired with a variety of other elite strains to create a diverse and dynamic genetic pool. The og kush-dominant male imparts its signature qualities—dense structure, earthy pine flavors, and powerful, calming effects—while allowing the unique characteristics of the other parent strains to shine.
+                        </p>
+                        
+                        <p className="leading-relaxed">
+                          Whether crossed with fruity, gassy, or exotic terpene profiles, this seed line offers a range of phenotypes that retain the male's unmistakable Kush backbone. Cultivators can expect vigorous growth, resin-packed buds, and a spectrum of effects, from deeply relaxing to uplifting and cerebral. This collection is perfect for those seeking the reliable potency and structure of OG Kush with the added intrigue of diverse genetic expressions.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="mt-10 border-b border-gray-200"></div>
+              </div>
+            )}
+            
+            {/* Zapplez special description section */}
+            {category.includes('zapplez') && (
+              <div className="my-8 max-w-5xl mx-auto">
+                <div className="flex flex-col gap-8">
+                  {/* Title section with image */}
+                  <div className="border-l-4 border-lime-500 pl-6">
+                    <div className="mb-2">
+                      <img 
+                        src="/zapplez.png" 
+                        alt="Zapplez" 
+                        className="w-auto h-32 object-contain"
+                      />
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <div className="w-1/2">
+                        <h2 className="text-2xl font-medium text-gray-600">Blue Zushi × Sour Apple Runtz</h2>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Description section */}
+                  <div className="mt-4">
+                    <div className="prose prose-lg max-w-none">
+                      <div className="space-y-6 text-gray-700">
+                        <p className="leading-relaxed">
+                          For this feminized line, we decided to reverse a phenotype of our "Zapplez" (Blue Zushi x Sour Apple Runtz).
+                        </p>
+                        
+                        <p className="leading-relaxed">
+                          We selected this pheno for its sour, creamy apple terps. It's no surprise that Zapplez became our number one best-selling strain. 
+                          The frost levels on this strain are exceptional, with most phenotypes showing high levels of trichomes as early as 3 to 4 weeks into flowering. 
+                          The selected pheno, #10, was roughly 70% Sour Apple Runtz and 30% Blue Zushi. We chose this particular pheno for its shorter plant structure 
+                          and super frosty, dense Cali-style bud structure.
+                        </p>
+                        
+                        <p className="leading-relaxed">
+                          We reversed Zapplez #10 onto four super-terpy strains, aiming to infuse the traits of Zapplez #10 with the terps of the recipient strains, 
+                          creating one of our best seed lines to date.
+                        </p>
+                      </div>
                     </div>
                   </div>
                 </div>

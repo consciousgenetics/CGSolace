@@ -76,6 +76,11 @@ const nextConfig = {
     const strapiUrl = process.env.NEXT_PUBLIC_STRAPI_API_URL || 'http://localhost:1337';
     return {
       beforeFiles: [
+        // Handle static files with country code prefixes
+        {
+          source: '/:countryCode/:file(.*\\.png|.*\\.jpg|.*\\.jpeg|.*\\.gif|.*\\.svg|.*\\.ico|.*\\.webp)',
+          destination: '/:file',
+        },
         // Handle image paths with country codes
         {
           source: '/:countryCode/:path*',

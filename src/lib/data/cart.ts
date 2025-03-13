@@ -75,10 +75,11 @@ const setCartIdViaAPI = async (cartId: string) => {
 export const getOrSetCart = async (countryCode: string = 'uk') => {
   try {
     const existingCartId = await getCartId()
-    const region = await getRegion(countryCode)
+    // Always get the UK region regardless of country code
+    const region = await getRegion('uk')
 
     if (!region) {
-      console.error('getOrSetCart: Region not found for country code:', countryCode)
+      console.error('getOrSetCart: Region not found for UK')
       return null
     }
 
@@ -93,18 +94,33 @@ export const getOrSetCart = async (countryCode: string = 'uk') => {
           return cart
         }
 
-        // If cart doesn't exist or has wrong region, remove the cart ID
+        // If cart doesn't exist or has wrong region, remove the cart ID and create new one
         await removeCartId()
+        
+        // Create a new cart with the UK region
+        const newCart = await createCart({
+          region_id: region.id,
+          country_code: 'uk',
+        })
+        
+        if (newCart) {
+          try {
+            await setCartId(newCart.id)
+          } catch (e) {
+            console.error('Error setting cart ID:', e)
+          }
+          return newCart
+        }
       } catch (error) {
         console.error('getOrSetCart: Error retrieving existing cart:', error)
         await removeCartId()
       }
     }
 
-    // Create a new cart with only region_id
+    // Create a new cart with the UK region
     const cart = await createCart({
       region_id: region.id,
-      country_code: countryCode, // This won't be used in the API call but kept for logging
+      country_code: 'uk',
     })
 
     if (!cart) {
@@ -113,12 +129,7 @@ export const getOrSetCart = async (countryCode: string = 'uk') => {
     }
 
     try {
-      // Try the API method first
-      const success = await setCartIdViaAPI(cart.id)
-      if (!success) {
-        // Fall back to direct cookie setting if API fails
-        await setCartId(cart.id)
-      }
+      await setCartId(cart.id)
     } catch (e) {
       console.error('Error setting cart ID:', e)
     }

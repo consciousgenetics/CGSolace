@@ -1,12 +1,10 @@
 import CheckoutFooter from '@modules/layout/templates/checkout-footer'
 import CheckoutNav from '@modules/layout/templates/checkout-nav'
 
-export default async function CheckoutLayout({
+export default function CheckoutLayout({
   children,
-  params,
 }: {
   children: React.ReactNode
-  params: { countryCode: string }
 }) {
   return (
     <div className="relative w-full bg-primary small:min-h-screen">

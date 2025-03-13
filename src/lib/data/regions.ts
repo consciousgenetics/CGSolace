@@ -24,9 +24,9 @@ export const getRegion = cache(async function (countryCode: string) {
   try {
     console.log('getRegion: Processing request for country code:', countryCode);
 
-    // If countryCode is 'dk', automatically redirect to 'uk'
-    if (countryCode.toLowerCase() === 'dk') {
-      console.log('getRegion: Redirecting dk to uk');
+    // Convert 'gb' or 'dk' to 'uk'
+    if (countryCode.toLowerCase() === 'gb' || countryCode.toLowerCase() === 'dk') {
+      console.log('getRegion: Converting', countryCode, 'to uk');
       countryCode = 'uk';
     }
     
