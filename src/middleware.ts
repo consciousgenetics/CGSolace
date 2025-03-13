@@ -281,13 +281,6 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(redirectUrl, 307)
   }
 
-  // Handle /uk/gb/checkout case specifically
-  if (pathSegments[1] === 'uk' && pathSegments[2] === 'gb' && pathSegments[3] === 'checkout') {
-    const newPath = `/uk/checkout${pathSegments.slice(4).join('/')}`
-    const redirectUrl = `${request.nextUrl.origin}${newPath}${request.nextUrl.search}`
-    return NextResponse.redirect(redirectUrl, 307)
-  }
-
   // Return early if URL has the correct country code and cookies are set
   if (
     urlHasCountryCode &&
