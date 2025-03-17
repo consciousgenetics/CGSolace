@@ -75,17 +75,9 @@ export function ReviewSection() {
 
   return (
     <div className="w-full min-h-screen py-12 small:py-16 flex items-center relative overflow-hidden" data-testid="reviews-section">
-      {/* Background - copied from ProductGrid */}
+      {/* Background */}
       <div className="absolute inset-0 w-full h-full z-10">
-        <Image
-          src="/127-wide.png"
-          alt="Background pattern"
-          fill
-          className="object-cover"
-          sizes="100vw"
-          priority
-        />
-        <div className="absolute inset-0 bg-black/30 backdrop-blur-[2px]"></div>
+        <div className="absolute inset-0 bg-repeat" style={{ backgroundImage: 'url("/127-wide.png")', backgroundSize: '1000px', imageRendering: 'crisp-edges' }}></div>
       </div>
       
       <div className="px-4 max-w-7xl mx-auto w-full relative z-20">

@@ -14,9 +14,138 @@ import { ProductActions } from './action'
 import { LoadingImage } from './loading-image'
 import ProductPrice from './price'
 
+// Generate a deterministic rating between 4.5 and 5 stars based on product ID
+const getProductRating = (productId: string) => {
+  // Use the product ID to generate a deterministic number
+  let hash = 0;
+  for (let i = 0; i < productId.length; i++) {
+    hash = ((hash << 5) - hash) + productId.charCodeAt(i);
+    hash = hash & hash; // Convert to 32-bit integer
+  }
+  
+  // Convert hash to a number between 0 and 5 (0.1 increments)
+  const normalizedHash = Math.abs(hash % 6) / 10;
+  // Return a rating between 4.5 and 5
+  return 4.5 + normalizedHash;
+};
+
+// Star rating component
+const StarRating = ({ rating = 4.5 }: { rating?: number }) => {
+  // Ensure rating is at least 4.5
+  const actualRating = Math.max(rating, 4.5);
+  
+  // Convert rating to nearest half star
+  const fullStars = Math.floor(actualRating);
+  const hasHalfStar = actualRating % 1 >= 0.5;
+  const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
+  
+  return (
+    <div className="flex items-center justify-center mt-2 mb-2">
+      {/* Full stars */}
+      {Array.from({ length: fullStars }).map((_, i) => (
+        <svg 
+          key={`full-${i}`} 
+          className="w-6 h-6 mx-0.5"
+          fill="#FFC107"
+          viewBox="0 0 24 24"
+        >
+          <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
+        </svg>
+      ))}
+      
+      {/* Half star */}
+      {hasHalfStar && (
+        <svg 
+          className="w-6 h-6 mx-0.5"
+          viewBox="0 0 24 24"
+        >
+          <defs>
+            <linearGradient id="halfStarGradient">
+              <stop offset="50%" stopColor="#FFC107" />
+              <stop offset="50%" stopColor="#D1D5DB" />
+            </linearGradient>
+          </defs>
+          <path 
+            fill="url(#halfStarGradient)"
+            d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" 
+          />
+        </svg>
+      )}
+      
+      {/* Empty stars */}
+      {Array.from({ length: emptyStars }).map((_, i) => (
+        <svg 
+          key={`empty-${i}`} 
+          className="w-6 h-6 mx-0.5"
+          fill="#D1D5DB"
+          viewBox="0 0 24 24"
+        >
+          <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
+        </svg>
+      ))}
+    </div>
+  );
+};
+
+// Get category tag for product
+const getCategoryTag = (product) => {
+  // Check if it's a seed product
+  if (product.collection?.title?.toLowerCase().includes('seed') || 
+      product.collection?.handle?.toLowerCase().includes('seed') ||
+      product.title?.toLowerCase().includes('seed')) {
+    return "SEEDS";
+  }
+  
+  // Check for merch/clothing
+  if (product.collection?.title?.toLowerCase().includes('merch') || 
+      product.collection?.handle?.toLowerCase().includes('merch')) {
+    if (product.title?.toLowerCase().includes('women') || 
+        product.title?.toLowerCase().includes("women's")) {
+      return "WOMEN'S";
+    }
+    if (product.title?.toLowerCase().includes('men') || 
+        product.title?.toLowerCase().includes("men's")) {
+      return "MEN'S";
+    }
+    return "MERCH";
+  }
+  
+  // Check for accessories
+  if (product.collection?.title?.toLowerCase().includes('accessor') || 
+      product.collection?.handle?.toLowerCase().includes('accessor') ||
+      product.title?.toLowerCase().includes('accessor')) {
+    return "ACCESSORIES";
+  }
+  
+  // Default fallback
+  return "PRODUCT";
+};
+
+// Type definition for product collection
+interface ProductCollection {
+  title?: string;
+  handle?: string;
+}
+
+// Simple ProductInfo component if it doesn't exist elsewhere
+function ProductInfo({
+  productHandle,
+  productTitle,
+  calculatedPrice,
+  salePrice,
+}: {
+  productHandle: string
+  productTitle: string
+  calculatedPrice: string
+  salePrice: string
+}) {
+  return null; // Empty component that doesn't render anything
+}
+
 export function ProductTile({
   product,
   regionId,
+  isCarousel = false,
 }: {
   product: {
     id: string
@@ -26,12 +155,21 @@ export function ProductTile({
     thumbnail: string
     calculatedPrice: string
     salePrice: string
+    collection?: ProductCollection
+    description?: string | null
   }
   regionId: string
+  isCarousel?: boolean
 }) {
   // Enhanced debugging for thumbnail URL
   console.log('ProductTile rendering for product:', product.title)
   console.log('Original thumbnail URL:', product.thumbnail)
+  
+  // Get the category tag for this product
+  const categoryTag = getCategoryTag(product);
+  
+  // Generate a deterministic rating for this product
+  const productRating = useMemo(() => getProductRating(product.id), [product.id]);
   
   // CRITICAL FIX: Direct image override for the problem product
   // If this is the problematic product, use the known working image directly
@@ -55,37 +193,106 @@ export function ProductTile({
 
     return (
       <Box
-        className="group flex h-full flex-col"
+        className="group flex h-full flex-col pb-4"
         data-testid={formatNameForTestId(`${product.title}-product-tile`)}
       >
-        <Box className="relative aspect-square w-full max-w-full mx-auto">
-          {isNew && (
-            <Box className="absolute left-2 top-2 z-10 small:left-3 small:top-3">
-              <Badge label="New" variant="brand" className="text-xs small:text-sm py-0.5 px-1.5 small:py-1 small:px-2" />
-            </Box>
-          )}
-          <LocalizedClientLink href={`/products/${product.handle}`}>
-            <img
-              src={workingImageUrl}
-              alt={product.title}
-              className="h-full w-full object-cover border-2 border-black rounded-xl"
-              loading="eager"
-            />
-          </LocalizedClientLink>
-          <ProductActions productHandle={product.handle} regionId={regionId} />
-        </Box>
-        <Box className="mt-2 small:mt-3 text-center px-1">
-          <Text
-            title={product.title}
-            as="span"
-            className="text-lg small:text-xl font-['Anton'] text-black line-clamp-1 uppercase"
-          >
-            {product.title}
-          </Text>
-          <Box className="mt-1">
-            <ProductPrice calculatedPrice={product.calculatedPrice} salePrice={product.salePrice} />
+        <div className="relative w-full max-w-[300px] mx-auto">
+          {/* Image container - on top */}
+          <Box className="relative w-full aspect-square z-10">
+            {isNew && (
+              <Box className="absolute left-3 top-3 z-20 small:left-4 small:top-4">
+                <Badge label="New" variant="brand" className="text-sm py-1 px-2" />
+              </Box>
+            )}
+            <div className="relative w-full h-full">
+              <LoadingImage
+                src={workingImageUrl}
+                alt={product.title}
+                loading="lazy"
+                className="h-full w-full object-cover rounded-xl border-4 border-black cursor-pointer"
+              />
+              <LocalizedClientLink 
+                href={`/products/${product.handle}`}
+                className="absolute inset-0 z-30"
+              >
+                <span className="sr-only">View {product.title}</span>
+              </LocalizedClientLink>
+            </div>
+            <div className="absolute inset-0 z-20">
+              <ProductActions productHandle={product.handle} regionId={regionId} />
+            </div>
           </Box>
-        </Box>
+
+          {/* Product Card - peeking from bottom */}
+          <Box className="w-full -mt-2">
+            <Box className="text-center px-5 py-3 pb-4 bg-white rounded-3xl shadow-lg">
+              {/* Product Info */}
+              <div className="space-y-2">
+                {/* Collection Badge - Only show in carousel */}
+                {isCarousel && product.collection?.title && (
+                  <span className={`inline-block px-2 py-0.5 text-sm font-medium text-gray-600 ${
+                    product.collection.title.toLowerCase().includes('merch') 
+                      ? 'bg-[#d67bef]/20'
+                      : 'bg-amber-100'
+                  } rounded-full mb-1 mt-2`}>
+                    {product.collection.title}
+                  </span>
+                )}
+
+                {/* Product Title */}
+                <Text
+                  as="span"
+                  className="block text-2xl font-bold uppercase text-black line-clamp-1 tracking-wider"
+                >
+                  {product.title}
+                </Text>
+                
+                {/* Stars */}
+                <div className="mb-1">
+                  <StarRating rating={productRating} />
+                </div>
+                
+                {/* Description with Read More - Only show in carousel */}
+                {isCarousel && product.description && (
+                  <div className="text-center px-1">
+                    <p className="text-gray-600 text-sm">
+                      {product.description.length > 120 
+                        ? `${product.description.substring(0, 120)}...` 
+                        : product.description
+                      }
+                    </p>
+                    {product.description.length > 120 && (
+                      <LocalizedClientLink 
+                        href={`/products/${product.handle}`}
+                        className={`text-sm font-medium hover:text-[#c15ed6] transition-colors mt-0.5 inline-block ${
+                          product.collection?.title?.toLowerCase().includes('merch')
+                            ? 'text-[#d67bef]'
+                            : 'text-amber-500 hover:text-amber-600'
+                        }`}
+                      >
+                        Read More
+                      </LocalizedClientLink>
+                    )}
+                  </div>
+                )}
+                
+                {/* Buy Now and Price */}
+                <div className="flex items-center justify-center gap-2 mt-1">
+                  <span className="font-bold text-black text-base tracking-widest">BUY NOW</span>
+                  <div className="h-4 w-px bg-gray-200"></div>
+                  <span className={`font-medium text-base ${
+                    product.collection?.title?.toLowerCase().includes('merch')
+                      ? 'text-[#d67bef]'
+                      : 'text-amber-400'
+                  }`}>
+                    {product.calculatedPrice}
+                  </span>
+                </div>
+              </div>
+            </Box>
+          </Box>
+        </div>
+        
         <ProductInfo
           productHandle={product.handle}
           productTitle={product.title}
@@ -150,62 +357,112 @@ export function ProductTile({
 
   return (
     <Box
-      className="group flex h-full flex-col"
+      className="group flex h-full flex-col pb-4"
       data-testid={formatNameForTestId(`${product.title}-product-tile`)}
     >
-      <Box className="relative aspect-square w-full max-w-full mx-auto">
-        {isNew && (
-          <Box className="absolute left-2 top-2 z-10 small:left-3 small:top-3">
-            <Badge label="New" variant="brand" className="text-xs small:text-sm py-0.5 px-1.5 small:py-1 small:px-2" />
-          </Box>
-        )}
-        <LocalizedClientLink href={`/products/${product.handle}`}>
-          <LoadingImage
-            src={transformedThumbnail}
-            alt={product.title}
-            loading="lazy"
-            className="h-full w-full object-cover border-2 border-black rounded-xl"
-          />
-        </LocalizedClientLink>
-        <ProductActions productHandle={product.handle} regionId={regionId} />
-      </Box>
-      <Box className="mt-2 small:mt-3 text-center px-1">
-        <Text
-          title={product.title}
-          as="span"
-          className="text-lg small:text-xl font-['Anton'] text-black line-clamp-1 uppercase"
-        >
-          {product.title}
-        </Text>
-        <Box className="mt-1">
-          <ProductPrice calculatedPrice={product.calculatedPrice} salePrice={product.salePrice} />
+      <div className="relative w-full max-w-[300px] mx-auto">
+        {/* Image container - on top */}
+        <Box className="relative w-full aspect-square z-10">
+          {isNew && (
+            <Box className="absolute left-3 top-3 z-20 small:left-4 small:top-4">
+              <Badge label="New" variant="brand" className="text-sm py-1 px-2" />
+            </Box>
+          )}
+          <div className="relative w-full h-full">
+            <LoadingImage
+              src={transformedThumbnail}
+              alt={product.title}
+              loading="lazy"
+              className="h-full w-full object-cover rounded-xl border-4 border-black cursor-pointer"
+            />
+            <LocalizedClientLink 
+              href={`/products/${product.handle}`}
+              className="absolute inset-0 z-30"
+            >
+              <span className="sr-only">View {product.title}</span>
+            </LocalizedClientLink>
+          </div>
+          <div className="absolute inset-0 z-20">
+            <ProductActions productHandle={product.handle} regionId={regionId} />
+          </div>
         </Box>
-      </Box>
+
+        {/* Product Card - peeking from bottom */}
+        <Box className="w-full -mt-2">
+          <Box className="text-center px-5 py-3 pb-4 bg-white rounded-3xl shadow-lg">
+            {/* Product Info */}
+            <div className="space-y-2">
+              {/* Collection Badge - Only show in carousel */}
+              {isCarousel && product.collection?.title && (
+                <span className={`inline-block px-2 py-0.5 text-sm font-medium text-gray-600 ${
+                  product.collection.title.toLowerCase().includes('merch') 
+                    ? 'bg-[#d67bef]/20'
+                    : 'bg-amber-100'
+                } rounded-full mb-1 mt-2`}>
+                  {product.collection.title}
+                </span>
+              )}
+
+              {/* Product Title */}
+              <Text
+                as="span"
+                className="block text-2xl font-bold uppercase text-black line-clamp-1 tracking-wider"
+              >
+                {product.title}
+              </Text>
+              
+              {/* Stars */}
+              <div className="mb-1">
+                <StarRating rating={productRating} />
+              </div>
+              
+              {/* Description with Read More - Only show in carousel */}
+              {isCarousel && product.description && (
+                <div className="text-center px-1">
+                  <p className="text-gray-600 text-sm">
+                    {product.description.length > 120 
+                      ? `${product.description.substring(0, 120)}...` 
+                      : product.description
+                    }
+                  </p>
+                  {product.description.length > 120 && (
+                    <LocalizedClientLink 
+                      href={`/products/${product.handle}`}
+                      className={`text-sm font-medium hover:text-[#c15ed6] transition-colors mt-0.5 inline-block ${
+                        product.collection?.title?.toLowerCase().includes('merch')
+                          ? 'text-[#d67bef]'
+                          : 'text-amber-500 hover:text-amber-600'
+                      }`}
+                    >
+                      Read More
+                    </LocalizedClientLink>
+                  )}
+                </div>
+              )}
+              
+              {/* Buy Now and Price */}
+              <div className="flex items-center justify-center gap-2 mt-1">
+                <span className="font-bold text-black text-base tracking-widest">BUY NOW</span>
+                <div className="h-4 w-px bg-gray-200"></div>
+                <span className={`font-medium text-base ${
+                  product.collection?.title?.toLowerCase().includes('merch')
+                    ? 'text-[#d67bef]'
+                    : 'text-amber-400'
+                }`}>
+                  {product.calculatedPrice}
+                </span>
+              </div>
+            </div>
+          </Box>
+        </Box>
+      </div>
+      
       <ProductInfo
         productHandle={product.handle}
         productTitle={product.title}
         calculatedPrice={product.calculatedPrice}
         salePrice={product.salePrice}
       />
-    </Box>
-  )
-}
-
-function ProductInfo({
-  productHandle,
-  productTitle,
-  calculatedPrice,
-  salePrice,
-}: {
-  productHandle: string
-  productTitle: string
-  calculatedPrice: string
-  salePrice: string
-}) {
-  return (
-    <Box className="flex flex-col gap-2 small:gap-3 p-2 small:p-4">
-      <div className="flex flex-1 flex-col justify-between gap-2 small:gap-4">
-      </div>
     </Box>
   )
 }

@@ -48,7 +48,6 @@ const ImageCarousel = ({ images, openDialog }: ImageCarouselProps) => {
               key={image.id}
             >
               <Image
-                onClick={() => openDialog(index)}
                 src={image.url}
                 alt={`Product image ${index + 1}`}
                 fill
@@ -59,7 +58,6 @@ const ImageCarousel = ({ images, openDialog }: ImageCarouselProps) => {
                   console.error('Image failed to load, using fallback:', image.url);
                   const imgElement = e.currentTarget as HTMLImageElement;
                   
-                  // If it's a localhost URL, try to convert it to the backend URL
                   if (imgElement.src.includes('localhost:9000')) {
                     const backendUrl = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || 'https://cgsolacemedusav2-production.up.railway.app'
                     const path = imgElement.src.split('localhost:9000')[1]
@@ -69,12 +67,16 @@ const ImageCarousel = ({ images, openDialog }: ImageCarouselProps) => {
                     return;
                   }
                   
-                  // If it's not already using the fallback, use it
                   if (!imgElement.src.includes('special-packs.png')) {
                     imgElement.src = '/special-packs.png';
                   }
                 }}
                 unoptimized={true}
+              />
+              <div 
+                className="absolute inset-0 z-30 cursor-pointer"
+                onClick={() => openDialog(index)}
+                style={{ touchAction: 'none' }}
               />
             </div>
           ))}

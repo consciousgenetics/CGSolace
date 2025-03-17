@@ -124,41 +124,81 @@ export default function PaginatedProducts({
   return (
     <>
       <ul
-        className="grid w-full grid-cols-1 gap-x-2 gap-y-6 small:grid-cols-2 large:grid-cols-3"
+        className="grid w-full grid-cols-1 gap-x-4 gap-y-8 small:grid-cols-2 large:grid-cols-3 justify-center"
         data-testid="products-list"
       >
         {validatedProducts.map((p) => {
           // Get the cheapest price using the getProductPrice utility function
           try {
+            console.log('PaginatedProducts - Processing product:', {
+              id: p.id,
+              title: p.title,
+              variants: p.variants,
+              calculatedPrice: p.calculatedPrice
+            });
+
+            // If we already have a calculated price from the parent component, use it
+            if (p.calculatedPrice && p.calculatedPrice !== "0" && p.calculatedPrice !== "Price unavailable") {
+              console.log('Using pre-calculated price:', {
+                id: p.id,
+                calculatedPrice: p.calculatedPrice,
+                salePrice: p.salePrice
+              });
+              
+              return (
+                <li key={p.id}>
+                  <ProductTile
+                    product={{
+                      id: p.id,
+                      created_at: p.created_at,
+                      title: p.title,
+                      handle: p.handle,
+                      thumbnail: p.thumbnail,
+                      calculatedPrice: p.calculatedPrice,
+                      salePrice: p.salePrice,
+                    }}
+                    regionId={region.id}
+                  />
+                </li>
+              );
+            }
+
+            // Otherwise calculate the price
             const { cheapestPrice } = getProductPrice({
               product: p,
-            })
+            });
+
+            console.log('Calculated new price:', {
+              id: p.id,
+              cheapestPrice,
+              currency: cheapestPrice?.currency_code
+            });
 
             // Better handling of potentially invalid price values
-            const calculated = cheapestPrice?.calculated_price_number
+            const calculated = cheapestPrice?.calculated_price_number;
             
             // Be more permissive - accept any numeric value (including 0)
             const hasValidCalculatedPrice = calculated !== undefined && 
-                                           calculated !== null && 
-                                           !isNaN(calculated)
-                                           
+                                         calculated !== null && 
+                                         !isNaN(calculated);
+                                         
             // Use the EXACT same fallback text as ProductCarousel: "Price unavailable"
             const calculatedPrice = hasValidCalculatedPrice
               ? cheapestPrice?.calculated_price
-              : 'Price unavailable'
+              : 'Price unavailable';
             
-            const original = cheapestPrice?.original_price_number
+            const original = cheapestPrice?.original_price_number;
             
             // Be more permissive with original price validation too
             const hasValidOriginalPrice = original !== undefined && 
-                                         original !== null && 
-                                         !isNaN(original)
-                                         
+                                       original !== null && 
+                                       !isNaN(original);
+                                       
             // For original price, if not available, use the calculated price as fallback
             const originalPrice = hasValidOriginalPrice
               ? cheapestPrice?.original_price
-              : calculatedPrice
-              
+              : calculatedPrice;
+            
             return (
               <li key={p.id}>
                 <ProductTile

@@ -32,12 +32,12 @@ export default function RootLayout(props: { children: React.ReactNode }) {
       <body suppressHydrationWarning>
         <ThemeProvider
           attribute="class"
-          defaultTheme="system"
-          enableSystem
+          defaultTheme="light"
+          forcedTheme="light"
           disableTransitionOnChange
         >
           <CorsProxyProvider>
-            <div className="text-basic-primary">
+            <div className="text-black">
               <ProgressBar />
               <Toaster position="bottom-right" offset={65} closeButton />
               <main className="relative">{props.children}</main>

@@ -59,11 +59,11 @@ const LineItemPrice = ({
         <>
           <div>
             {style === 'default' && (
-              <span className="text-basic-primary">Original: </span>
+              <span className="text-black">Original: </span>
             )}
             <Text
               size="md"
-              className="text-secondary line-through"
+              className="text-gray-500 line-through"
               data-testid="product-original-price"
             >
               {convertToLocale({
@@ -73,13 +73,13 @@ const LineItemPrice = ({
             </Text>
           </div>
           {style === 'default' && (
-            <span className="text-ui-fg-interactive">
+            <span className="text-gray-700">
               -{getPercentageDiff(originalPrice, currentPrice || 0)}%
             </span>
           )}
         </>
       )}
-      <span className="text-lg text-basic-primary" data-testid="product-price">
+      <span className="text-lg text-black" data-testid="product-price">
         {convertToLocale({
           amount: currentPrice,
           currency_code,

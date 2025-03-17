@@ -52,31 +52,31 @@ export default function ProductTabs({ product }: ProductTabsProps) {
 
   return (
     <div className="w-full">
-      <Accordion type="single" collapsible className="flex w-full flex-col">
+      <Accordion type="single" collapsible defaultValue="item-0" className="flex w-full flex-col">
         {tabs.map((tab, id) => {
           return (
             <AccordionItem
               key={id}
               value={`item-${id}`}
-              className="border-basic-primary"
+              className="border-gray-200 border-b last:border-b-0"
               data-testid="product-tab"
             >
               <AccordionTrigger className="!rounded-none !py-2 transition-all duration-200 ease-in-out [&[data-state=closed]>#minusIconSvg]:hidden [&[data-state=open]>#plusIconSvg]:hidden">
                 <Heading
-                  className="text-lg font-medium text-basic-primary"
+                  className="text-lg font-medium text-black"
                   as="h3"
                 >
                   {tab.label}
                 </Heading>
                 <div
                   id="plusIconSvg"
-                  className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full text-action-primary hover:text-action-primary-hover active:text-action-primary-pressed"
+                  className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full text-black hover:text-gray-700 active:text-gray-900"
                 >
                   <PlusIcon />
                 </div>
                 <div
                   id="minusIconSvg"
-                  className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full text-action-primary hover:text-action-primary-hover active:text-action-primary-pressed"
+                  className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full text-black hover:text-gray-700 active:text-gray-900"
                 >
                   <MinusThinIcon />
                 </div>
@@ -97,7 +97,7 @@ const ProductDescriptionTab = ({ description }: { description: string }) => {
     <Text
       data-testid="product-description-tab"
       size="md"
-      className="whitespace-pre-line text-secondary"
+      className="whitespace-pre-line text-gray-700"
     >
       {description}
     </Text>
@@ -113,10 +113,10 @@ const ProductDimensionsTab = ({
     <Box data-testid="product-dimensions-tab">
       {Object.entries(dimensions).map(([key, value]) => (
         <div key={key}>
-          <Text as="span" className="font-medium text-basic-primary">
+          <Text as="span" className="font-medium text-black">
             {formatKey(key, 'dim_')}:
           </Text>{' '}
-          <Text as="span" className="text-secondary">
+          <Text as="span" className="text-gray-700">
             {value as string}
           </Text>
         </div>
@@ -130,10 +130,10 @@ const ProductDesignTab = ({ design }: { design: Record<string, unknown> }) => {
     <Box data-testid="product-design-tab">
       {Object.entries(design).map(([key, value]) => (
         <div key={key}>
-          <Text as="span" className="font-medium text-basic-primary">
+          <Text as="span" className="font-medium text-black">
             {formatKey(key, 'des_')}:
           </Text>{' '}
-          <Text as="span" className="text-secondary">
+          <Text as="span" className="text-gray-700">
             {value as string}
           </Text>
         </div>
@@ -144,7 +144,7 @@ const ProductDesignTab = ({ design }: { design: Record<string, unknown> }) => {
 
 const ShippingInfoTab = () => {
   return (
-    <ul className="list-disc pl-4 text-md text-secondary 2xl:pl-5">
+    <ul className="list-disc pl-4 text-md text-gray-700 2xl:pl-5">
       <li>
         Free standard shipping on all orders within the continental U.S.
         Expedited shipping options are available at an additional cost. Orders

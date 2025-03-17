@@ -13,8 +13,6 @@ import Divider from '@modules/common/components/divider'
 import LocalizedClientLink from '@modules/common/components/localized-client-link'
 import { HeadphonesIcon, LogoutIcon, UserIcon } from '@modules/common/icons'
 
-import { ThemeSwitcher } from './theme-switcher'
-
 const ProfileDropdown = ({ loggedIn }: { loggedIn: boolean }) => {
   const [cartDropdownOpen, setCartDropdownOpen] = useState(false)
 
@@ -102,7 +100,6 @@ const ProfileDropdown = ({ loggedIn }: { loggedIn: boolean }) => {
               </>
             )}
             <Box className="p-2">
-              <ThemeSwitcher />
               <AccountNavLink href="#" icon={<HeadphonesIcon />}>
                 Support center
               </AccountNavLink>

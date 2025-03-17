@@ -242,7 +242,6 @@ export default async function Home(props: {
                   products={seedProducts}
                   regionId={region.id}
                   title="Feminized Seeds"
-                  subtitle="Premium quality feminized seeds for your growing needs."
                   viewAll={{
                     link: `/${countryCode}/shop`,
                     text: 'View all',
@@ -324,7 +323,6 @@ export default async function Home(props: {
                   products={clothingProducts}
                   regionId={region.id}
                   title="Clothing & Apparel"
-                  subtitle="Browse our complete collection of merchandise including men's and women's apparel."
                   viewAll={{
                     link: `/${countryCode}/shop`,
                     text: 'Shop All',

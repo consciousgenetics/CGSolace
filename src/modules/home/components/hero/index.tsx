@@ -1,6 +1,7 @@
 'use client'
 
 import Image from 'next/image'
+import { motion } from 'framer-motion'
 
 import { Box } from '@modules/common/components/box'
 import { Button } from '@modules/common/components/button'
@@ -32,13 +33,14 @@ const Hero = ({ data }: { data: HeroBannerData }) => {
         <style jsx global>{`
           @media (max-width: 767px) {
             .hero-image-container {
-              transform: translateX(0) scale(1);
-              width: 100%;
+              transform: translateX(-11%) scale(1);
+              width: 120%;
               height: 100vh;
               transform-origin: center center;
             }
             .hero-image {
               object-position: center center;
+              object-fit: cover;
             }
             .coming-soon-container {
               background: transparent !important;
@@ -56,16 +58,16 @@ const Hero = ({ data }: { data: HeroBannerData }) => {
           
           @keyframes textPulse {
             0% {
-              text-shadow: 0 0 7px rgba(255, 255, 255, 0.3),
-                         0 0 10px rgba(255, 255, 255, 0.3);
+              text-shadow: 0 0 3px rgba(255, 255, 255, 0.2),
+                         0 0 5px rgba(255, 255, 255, 0.2);
             }
             50% {
-              text-shadow: 0 0 15px rgba(255, 255, 255, 0.8),
-                         0 0 20px rgba(255, 255, 255, 0.8);
+              text-shadow: 0 0 8px rgba(255, 255, 255, 0.4),
+                         0 0 10px rgba(255, 255, 255, 0.4);
             }
             100% {
-              text-shadow: 0 0 7px rgba(255, 255, 255, 0.3),
-                         0 0 10px rgba(255, 255, 255, 0.3);
+              text-shadow: 0 0 3px rgba(255, 255, 255, 0.2),
+                         0 0 5px rgba(255, 255, 255, 0.2);
             }
           }
           
@@ -91,37 +93,65 @@ const Hero = ({ data }: { data: HeroBannerData }) => {
 
       {/* Content Container */}
       <div className="fixed inset-0 z-5">
-        <Container className="h-full max-w-screen-2xl mx-auto relative">
+        <div className="h-full w-full relative flex flex-col items-center justify-center">
           {/* Coming Soon text - positioned higher */}
-          <div className="absolute left-1/2 transform -translate-x-1/2 bottom-[55%] sm:left-auto sm:transform-none sm:bottom-[50%] sm:right-[15%] flex flex-col items-center sm:items-end">
-            <div className="px-12 py-6 sm:px-16 sm:py-8 md:px-20 md:py-10 rounded-[30px] border border-white/10 backdrop-blur-[2px]">
+          <motion.div 
+            initial={{ opacity: 0, y: 50 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, ease: "easeOut", delay: 0.2 }}
+            className="absolute w-full flex flex-col items-center"
+            style={{ bottom: '45%' }}
+          >
+            <motion.div 
+              initial={{ scale: 0.9 }}
+              animate={{ scale: 1 }}
+              transition={{ duration: 0.5, ease: "easeOut", delay: 0.4 }}
+              className="px-12 py-6 sm:px-16 sm:py-8 md:px-20 md:py-10 rounded-[30px] border border-white/10 backdrop-blur-[2px]"
+            >
               <h2 className="text-white text-4xl sm:text-5xl md:text-7xl lg:text-8xl font-bold coming-soon-text">COMING SOON</h2>
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
           
           {/* Button Container - moved lower */}
-          <div className="absolute left-1/2 transform -translate-x-1/2 bottom-[30%] sm:left-auto sm:transform-none sm:bottom-[35%] sm:right-[15%] hero-cta-button">
-            <Button asChild className="font-inter w-max bg-[#A86721] px-10 py-5 sm:px-14 sm:py-7 md:px-24 md:py-10 lg:px-28 lg:py-12 text-xl sm:text-2xl md:text-4xl lg:text-5xl font-bold text-white hover:bg-[#8B551B] rounded-[25px] sm:rounded-[30px] md:rounded-[35px] flex items-center shadow-xl">
-              <LocalizedClientLink href="/subscribe" className="flex items-center">
-                SUBSCRIBE
-                <svg 
-                  className="ml-3 sm:ml-4 md:ml-5 w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 lg:w-10 lg:h-10" 
-                  viewBox="0 0 24 24" 
-                  fill="none" 
-                  stroke="currentColor" 
-                  strokeWidth="2" 
-                  strokeLinecap="round" 
-                  strokeLinejoin="round"
-                >
-                  <rect width="20" height="16" x="2" y="4" rx="2" />
-                  <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
-                  <path d="M12 11v6" />
-                  <path d="M9 14h6" />
-                </svg>
-              </LocalizedClientLink>
-            </Button>
-          </div>
-        </Container>
+          <motion.div 
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, ease: "easeOut", delay: 0.6 }}
+            className="absolute w-full flex justify-center"
+            style={{ bottom: '30%' }}
+          >
+            <motion.div
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              transition={{ duration: 0.2 }}
+              className="flex justify-center"
+            >
+              <Button asChild className="font-inter w-max bg-[rgb(253,176,34)] px-10 py-5 sm:px-14 sm:py-7 md:px-24 md:py-10 lg:px-28 lg:py-12 text-xl sm:text-2xl md:text-4xl lg:text-5xl font-bold text-white hover:bg-[rgb(223,156,24)] rounded-[25px] sm:rounded-[30px] md:rounded-[35px] flex items-center shadow-xl">
+                <LocalizedClientLink href="/subscribe" className="flex items-center">
+                  REGISTER NOW
+                  <motion.svg 
+                    initial={{ x: -5 }}
+                    animate={{ x: 0 }}
+                    whileHover={{ x: 5 }}
+                    transition={{ duration: 0.3 }}
+                    className="ml-3 sm:ml-4 md:ml-5 w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 lg:w-10 lg:h-10" 
+                    viewBox="0 0 24 24" 
+                    fill="none" 
+                    stroke="currentColor" 
+                    strokeWidth="2" 
+                    strokeLinecap="round" 
+                    strokeLinejoin="round"
+                  >
+                    <rect width="20" height="16" x="2" y="4" rx="2" />
+                    <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
+                    <path d="M12 11v6" />
+                    <path d="M9 14h6" />
+                  </motion.svg>
+                </LocalizedClientLink>
+              </Button>
+            </motion.div>
+          </motion.div>
+        </div>
       </div>
     </div>
   )

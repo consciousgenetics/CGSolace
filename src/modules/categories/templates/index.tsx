@@ -1,6 +1,8 @@
 import React, { Suspense } from 'react'
 import { notFound } from 'next/navigation'
 import type { SearchedProduct } from 'types/global'
+import type { StoreProductsListRes } from '@medusajs/medusa'
+import { getProductPrice } from '@lib/util/get-product-price'
 
 import { storeSortOptions } from '@lib/constants'
 import { getCategoryByHandle } from '@lib/data/categories'
@@ -95,11 +97,48 @@ export default async function CategoryTemplate({
     // Get initial products with default sorting
     let initialProducts = { results: [], count: 0 };
     try {
+      console.log('Region data:', {
+        id: region.id,
+        currency_code: region.currency_code
+      });
+      
       initialProducts = await search({
         currency_code: region.currency_code,
         category_id: currentCategory.id,
         order: 'relevance'
       });
+
+      // Transform the search results to include proper pricing
+      if (initialProducts.results.length > 0) {
+        initialProducts.results = initialProducts.results.map(p => {
+          console.log('Raw product data:', {
+            id: p.id,
+            title: p.title,
+            variants: p.variants,
+            prices: (p.variants?.[0] as any)?.prices
+          });
+          
+          const priceData = getProductPrice({ product: p });
+          console.log('Price data from getProductPrice:', {
+            id: p.id,
+            title: p.title,
+            cheapestPrice: priceData.cheapestPrice,
+            variantPrice: priceData.variantPrice,
+            currency: priceData.cheapestPrice?.currency_code
+          });
+          
+          return {
+            id: p.id,
+            title: p.title,
+            handle: p.handle,
+            thumbnail: p.thumbnail,
+            created_at: p.created_at,
+            calculatedPrice: priceData.cheapestPrice?.calculated_price || "Price unavailable",
+            salePrice: priceData.cheapestPrice?.original_price || "Price unavailable",
+            originalPrice: priceData.cheapestPrice?.original_price || "Price unavailable"
+          };
+        });
+      }
     } catch (err) {
       console.error("Error fetching category products:", err);
       // Continue with empty initial products
@@ -113,23 +152,42 @@ export default async function CategoryTemplate({
           pageParam: 1,
           queryParams: { 
             category_id: [currentCategory.id],
-            limit: 12
+            limit: 12,
+            fields: '*variants.calculated_price,+variants.inventory_quantity,*variants,*variants.prices'
           },
-          countryCode: countryCode, // Use the resolved countryCode
+          countryCode: countryCode,
         });
         
         if (productsData && productsData.response && productsData.response.products) {
           // Transform products to match SearchedProduct format
           initialProducts = {
-            results: productsData.response.products.map(p => ({
-              id: p.id,
-              title: p.title,
-              handle: p.handle,
-              thumbnail: p.thumbnail,
-              created_at: p.created_at,
-              calculatedPrice: p.variants[0]?.calculated_price?.toString() || "",
-              salePrice: p.variants[0]?.calculated_price?.toString() || "",
-            })),
+            results: productsData.response.products.map(p => {
+              console.log('Raw product data (direct fetch):', {
+                id: p.id,
+                title: p.title,
+                variants: p.variants,
+                prices: p.variants?.[0]?.prices
+              });
+              
+              const priceData = getProductPrice({ product: p });
+              console.log('Price data from getProductPrice (direct fetch):', {
+                id: p.id,
+                title: p.title,
+                cheapestPrice: priceData.cheapestPrice,
+                variantPrice: priceData.variantPrice
+              });
+              
+              return {
+                id: p.id,
+                title: p.title,
+                handle: p.handle,
+                thumbnail: p.thumbnail,
+                created_at: p.created_at,
+                calculatedPrice: priceData.cheapestPrice?.calculated_price || "Price unavailable",
+                salePrice: priceData.cheapestPrice?.original_price || "Price unavailable",
+                originalPrice: priceData.cheapestPrice?.original_price || "Price unavailable"
+              };
+            }),
             count: productsData.response.count,
           };
           console.log(`Found ${initialProducts.results.length} products using direct product API`);
@@ -384,16 +442,6 @@ export default async function CategoryTemplate({
               filters={filters}
             />
           </Container>
-          {recommendedProducts && recommendedProducts.length > 0 && (
-            <Suspense fallback={<SkeletonProductsCarousel />}>
-              <ProductCarousel
-                products={recommendedProducts}
-                regionId={region.id}
-                title="Related Products"
-                hideToggleButtons={true}
-              />
-            </Suspense>
-          )}
         </div>
       </>
     )

@@ -33,7 +33,7 @@ export const FAQAccordion = ({ data }: { data: FAQSection }) => {
             >
               <AccordionTrigger className="[&[data-state=closed]>#minusIconSvg]:hidden [&[data-state=open]>#plusIconSvg]:hidden">
                 <Heading
-                  className="text-left text-lg font-medium text-basic-primary"
+                  className="text-left text-lg font-medium text-black"
                   as="h3"
                 >
                   {item.Title}
@@ -52,7 +52,7 @@ export const FAQAccordion = ({ data }: { data: FAQSection }) => {
                 </div>
               </AccordionTrigger>
               <AccordionContent>
-                <Text size="lg" className="max-w-[664px] text-secondary">
+                <Text size="lg" className="max-w-[664px] text-gray-700">
                   {item.Text}
                 </Text>
               </AccordionContent>

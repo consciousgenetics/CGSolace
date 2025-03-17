@@ -65,7 +65,7 @@ export default function ProductPrice({
       console.log('Missing or invalid price data for product:', product.title)
       return (
         <div className="flex items-center gap-x-2">
-          <span className="text-2xl text-basic-primary">
+          <span className="text-2xl text-black">
             <span
               data-testid="product-price"
               data-value={0}
@@ -84,11 +84,12 @@ export default function ProductPrice({
     // Standard price display for valid prices
     return (
       <div className="flex items-center gap-x-2">
-        <span className="text-2xl text-basic-primary">
+        <span className="text-2xl text-black">
           {!variant && 'From '}
           <span
             data-testid="product-price"
             data-value={selectedPrice.calculated_price_number}
+            className="text-black"
           >
             {selectedPrice.calculated_price}
           </span>
@@ -97,7 +98,7 @@ export default function ProductPrice({
           <>
             <p>
               <span
-                className="text-md text-secondary line-through"
+                className="text-md text-gray-500 line-through"
                 data-testid="original-product-price"
                 data-value={selectedPrice.original_price_number}
               >
@@ -113,7 +114,7 @@ export default function ProductPrice({
     console.error('Error calculating product price:', error)
     return (
       <div className="flex items-center gap-x-2">
-        <span className="text-2xl text-basic-primary">
+        <span className="text-2xl text-black">
           <span
             data-testid="product-price"
             data-value={0}

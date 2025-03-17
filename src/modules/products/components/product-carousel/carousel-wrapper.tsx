@@ -84,10 +84,10 @@ export default function CarouselWrapper({
           <div className="w-full max-w-full overflow-hidden px-0 cursor-grab" ref={emblaRef}>
             {/* For mobile, use a grid layout with 2 columns, otherwise use flex */}
             <div className={cn(
-              "w-full pl-0",
+              "w-full pl-0 -mx-2",
               isMobile 
-                ? "grid grid-cols-2 gap-3" // 2x2 grid layout for mobile
-                : "flex gap-3 small:gap-4"  // Original flex layout for larger screens
+                ? "grid grid-cols-2 gap-0" 
+                : "flex gap-0 small:gap-0"
             )}>
               {children}
             </div>

@@ -105,20 +105,25 @@ const ImageGallery = ({ images, title }: ImageGalleryProps) => {
           .map((image, index) => (
             <div
               className={cn(
-                'relative w-full shrink-0',
+                'relative w-full shrink-0 z-0',
                 index === 0
                   ? 'col-span-2 aspect-[29/20] max-h-[540px]'
                   : 'col-span-1 aspect-[29/34] max-h-[440px]'
               )}
               key={image.id}
+              style={{ pointerEvents: 'auto' }}
             >
               <LoadingImage
                 src={image.url}
                 alt={`${title} - product image`}
                 sizes="(max-width: 768px) 100vw, (max-width: 992px) 780px"
-                className="cursor-pointer object-cover"
+                className="object-cover"
                 loading={index === 0 ? 'eager' : 'lazy'}
+              />
+              <div 
+                className="absolute inset-0 z-30 cursor-pointer"
                 onClick={() => handleImageClick(index)}
+                style={{ touchAction: 'none' }}
               />
             </div>
           ))}

@@ -3,7 +3,7 @@ import NavWrapper from '@modules/layout/templates/nav'
 import Footer from '@modules/layout/templates/footer'
 import AgeVerificationWrapper from '@modules/common/components/age-verification/wrapper'
 import { CountdownProvider } from '@lib/context/CountdownContext'
-import SubscribeSection from '@modules/common/components/subscribe-section'
+import SubscribeSectionWrapper from '@modules/common/components/subscribe-section/wrapper'
 
 export const metadata: Metadata = {
   title: 'Conscious Genetics',
@@ -25,7 +25,7 @@ export default async function CountryLayout({
         <main className="relative flex-grow">
           {children}
         </main>
-        <SubscribeSection />
+        <SubscribeSectionWrapper />
         <Footer countryCode={params.countryCode} />
       </div>
     </CountdownProvider>

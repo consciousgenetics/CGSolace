@@ -262,41 +262,19 @@ export const createFooterNavigation = (
   return {
     navigation: [
       {
-        header: 'Feminized Seeds',
+        header: 'SHOP',
         links: [
           {
-            title: 'Zapplez',
-            href: '/categories/zapplez',
-          },
-          {
-            title: 'Pink Waferz',
-            href: '/categories/pink-waferz',
-          },
-          {
-            title: 'Red Kachina',
-            href: '/categories/red-kachina',
-          },
-        ],
+            title: 'Feminized Seeds',
+            href: '/categories/feminized-seeds',
       },
       {
-        header: 'Regular Seeds',
-        links: [
-          {
-            title: 'Chronic\'s Kush',
-            href: '/categories/chronics-kush',
-          },
-        ],
-      },
-      {
-        header: 'Merch',
-        links: [
-          {
-            title: 'Mens Merch',
-            href: '/categories/mens-merch',
+            title: 'Regular Seeds',
+            href: '/categories/regular-seeds',
           },
           {
-            title: 'Womens Merch',
-            href: '/categories/womens-merch',
+            title: 'Clothing',
+            href: '/categories/clothing',
           },
           {
             title: 'Accessories',
@@ -305,53 +283,23 @@ export const createFooterNavigation = (
         ],
       },
       {
-        header: 'Orders',
+        header: 'INFO',
         links: [
           {
-            title: 'Orders and delivery',
-            href: '/terms-and-conditions',
+            title: 'Contact',
+            href: '/contact',
           },
           {
-            title: 'Returns and refunds',
-            href: '/terms-and-conditions',
-          },
-          {
-            title: 'Payment and pricing',
-            href: '/terms-and-conditions',
-          },
-        ],
-      },
-      {
-        header: 'About',
-        links: [
-          {
-            title: 'About us',
+            title: 'About',
             href: '/about-us',
           },
           {
-            title: 'Blog',
-            href: '/blog',
+            title: 'Privacy Policy',
+            href: '/privacy-policy',
           },
           {
-            title: 'Careers',
-            href: '#',
-          },
-        ],
-      },
-      {
-        header: 'Need help?',
-        links: [
-          {
-            title: 'FAQs',
-            href: '/faq',
-          },
-          {
-            title: 'Support center',
-            href: '#',
-          },
-          {
-            title: 'Contact us',
-            href: '#',
+            title: 'Terms & Conditions',
+            href: '/terms-and-conditions',
           },
         ],
       },
@@ -387,3 +335,4 @@ export const checkoutFooterNavigation = [
 export const emailRegex = new RegExp(
   "^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$"
 )
+

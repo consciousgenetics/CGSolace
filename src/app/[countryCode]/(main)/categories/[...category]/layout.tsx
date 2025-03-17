@@ -86,7 +86,7 @@ export default async function CategoryPageLayout(
             <StoreBreadcrumbs breadcrumb={currentCategory.name} />
             <Heading
               as="h1"
-              className="text-4xl text-basic-primary small:text-5xl"
+              className="text-4xl text-black dark:text-black small:text-5xl"
             >
               {currentCategory.name}
             </Heading>

@@ -8,11 +8,11 @@ const NavigationItemVariants = cva({
   base: 'hover:text-action-primary-hover transition-all duration-200 ease-in-out',
   variants: {
     variant: {
-      primary: 'text-lg text-basic-primary',
-      secondary: 'text-md text-secondary',
+      primary: 'text-lg text-black',
+      secondary: 'text-md text-gray-500',
     },
     disabled: {
-      true: 'pointer-events-none text-disabled',
+      true: 'pointer-events-none text-gray-400',
     },
   },
   defaultVariants: {

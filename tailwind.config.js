@@ -1,7 +1,6 @@
 const uiPreset = require('./preset/preset')
 
 module.exports = {
-  darkMode: 'class',
   presets: [require('@medusajs/ui-preset'), uiPreset],
   content: [
     './src/app/**/*.{js,ts,jsx,tsx}',

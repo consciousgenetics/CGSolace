@@ -56,16 +56,10 @@
     transition: background-color 5000s ease-in-out 0s;
   }
 
-  .dark input:-webkit-autofill,
-  .dark input:-webkit-autofill:hover,
-  .dark input:-webkit-autofill:focus,
-  .dark input:-webkit-autofill::first-line {
-    color: white;
-  }
-  .light input:-webkit-autofill,
-  .light input:-webkit-autofill:hover,
-  .light input:-webkit-autofill:focus,
-  .light input:-webkit-autofill::first-line {
+  input:-webkit-autofill,
+  input:-webkit-autofill:hover,
+  input:-webkit-autofill:focus,
+  input:-webkit-autofill::first-line {
     color: black;
   }
 
