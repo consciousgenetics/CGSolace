@@ -99,6 +99,7 @@ const fixProductThumbnail = (product) => {
 interface ViewAllProps {
   link: string
   text?: string
+  alternateLink?: string
 }
 
 interface ProductCarouselProps {
@@ -350,11 +351,11 @@ export function ProductCarousel({
           <Box className="flex flex-col gap-2 small:gap-3 w-full">
             <div className="flex flex-col items-center mx-auto max-w-[800px] pt-1">
               {!hideToggleButtons && testId === 'seeds-section' ? (
-                <div className="flex items-center justify-center mb-6 relative">
-                  <div className="flex bg-white rounded-lg overflow-hidden">
+                <div className="flex items-center justify-center mb-6 relative w-full px-4 small:px-0">
+                  <div className="flex bg-white rounded-lg overflow-hidden w-full small:w-auto">
                     <button
                       onClick={() => handleSeedTypeChange('feminized')}
-                      className={`relative px-16 py-2 text-2xl font-bold transition-all duration-300 ${
+                      className={`relative flex-1 small:flex-initial px-4 small:px-16 py-3 small:py-2 text-xl small:text-2xl font-bold transition-all duration-300 font-latto ${
                         seedType === 'feminized'
                           ? 'text-amber-400 bg-amber-400/5'
                           : 'text-gray-600 hover:text-amber-400'
@@ -367,7 +368,7 @@ export function ProductCarousel({
                     </button>
                     <button
                       onClick={() => handleSeedTypeChange('regular')}
-                      className={`relative px-16 py-2 text-2xl font-bold transition-all duration-300 ${
+                      className={`relative flex-1 small:flex-initial px-4 small:px-16 py-3 small:py-2 text-xl small:text-2xl font-bold transition-all duration-300 font-latto ${
                         seedType === 'regular'
                           ? 'text-amber-400 bg-amber-400/5'
                           : 'text-gray-600 hover:text-amber-400'
@@ -385,7 +386,7 @@ export function ProductCarousel({
                   <div className="flex bg-white rounded-lg overflow-hidden">
                     <button
                       onClick={() => handleClothingTypeChange('mens')}
-                      className={`relative px-16 py-2 text-2xl font-bold transition-all duration-300 ${
+                      className={`relative px-16 py-2 text-2xl font-bold transition-all duration-300 font-latto ${
                         clothingType === 'mens'
                           ? 'text-[#d67bef] bg-[#d67bef]/5'
                           : 'text-gray-600 hover:text-[#d67bef]'
@@ -398,7 +399,7 @@ export function ProductCarousel({
                     </button>
                     <button
                       onClick={() => handleClothingTypeChange('womens')}
-                      className={`relative px-16 py-2 text-2xl font-bold transition-all duration-300 ${
+                      className={`relative px-16 py-2 text-2xl font-bold transition-all duration-300 font-latto ${
                         clothingType === 'womens'
                           ? 'text-[#d67bef] bg-[#d67bef]/5'
                           : 'text-gray-600 hover:text-[#d67bef]'
@@ -419,7 +420,7 @@ export function ProductCarousel({
                     : 'entering'
                 }`}
               >
-                <p className="text-sm text-gray-600 text-center max-w-2xl mx-auto">
+                <p className="text-sm text-gray-600 text-center max-w-2xl mx-auto font-latto">
                   {displaySubtitle}
                 </p>
               </div>
@@ -535,7 +536,7 @@ export function ProductCarousel({
               {processedProducts.length > 4 && (
                 <Button
                   onClick={() => setShowAllProducts(!showAllProducts)}
-                  className={`px-4 py-3 duration-150 ease-in-out flex gap-2 items-center justify-center active:bg-fg-primary-pressed h-12 blur-transition !px-10 small:!px-12 !py-3 small:!py-4 text-lg small:text-xl font-bold ${
+                  className={`px-4 py-3 duration-150 ease-in-out flex gap-2 items-center justify-center active:bg-fg-primary-pressed h-12 blur-transition !px-10 small:!px-12 !py-3 small:!py-4 text-lg small:text-xl font-bold font-latto ${
                     testId === 'clothing-section'
                       ? 'bg-[#d67bef] hover:bg-[#c15ed6]'
                       : 'bg-amber-400 hover:bg-amber-500'
@@ -553,8 +554,10 @@ export function ProductCarousel({
                     : 'entering'
                 }`}>
                   <LocalizedClientLink
-                    href={viewAll.link}
-                    className={`w-max !px-10 small:!px-12 !py-3 small:!py-4 text-lg small:text-xl font-bold ${
+                    href={testId === 'clothing-section' 
+                      ? (clothingType === 'mens' ? '/categories/mens-merch' : '/categories/womens-merch')
+                      : viewAll.link}
+                    className={`w-max !px-10 small:!px-12 !py-3 small:!py-4 text-lg small:text-xl font-bold font-latto ${
                       testId === 'clothing-section'
                         ? 'bg-[#d67bef] hover:bg-[#c15ed6]'
                         : 'bg-amber-400 hover:bg-amber-500'

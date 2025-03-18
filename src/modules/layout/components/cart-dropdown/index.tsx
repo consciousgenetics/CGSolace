@@ -119,7 +119,7 @@ const CartDropdown = ({
             data-testid="nav-cart-dropdown"
           >
             <Box className="flex items-center border-b-[0.5px] border-basic-primary p-5">
-              <Text className="text-2xl">Shopping Cart</Text>
+              <Text className="text-2xl text-black">Shopping Cart</Text>
             </Box>
             {cartState && cartState.items?.length ? (
               <>
@@ -155,7 +155,7 @@ const CartDropdown = ({
                                 <Box className="flex items-start justify-between">
                                   <Box className="mr-4 flex w-[220px] flex-col">
                                     <Box className="flex flex-col gap-1">
-                                      <h3 className="line-clamp-2 text-md font-medium">
+                                      <h3 className="line-clamp-2 text-md font-medium text-black">
                                         <LocalizedClientLink
                                           href={`/products/${item.variant?.product?.handle}`}
                                           data-testid="product-link"
@@ -163,7 +163,7 @@ const CartDropdown = ({
                                           {item.product_title}
                                         </LocalizedClientLink>
                                       </h3>
-                                      <Box className="whitespace-nowrap">
+                                      <Box className="whitespace-nowrap text-black">
                                         <LineItemOptions
                                           variant={item.variant}
                                           data-testid="cart-item-variant"
@@ -171,7 +171,7 @@ const CartDropdown = ({
                                         />
                                       </Box>
                                       <span
-                                        className="text-md text-secondary"
+                                        className="text-md text-black"
                                         data-testid="cart-item-quantity"
                                         data-value={item.quantity}
                                       >
@@ -202,9 +202,9 @@ const CartDropdown = ({
                 )}
                 <Box className="text-small-regular flex flex-col gap-y-4 border-t-[0.5px] border-basic-primary p-5">
                   <Box className="flex items-center justify-between">
-                    <Text className="text-md text-secondary">Total </Text>
+                    <Text className="text-md text-black">Total </Text>
                     <Text
-                      className="text-lg font-semibold"
+                      className="text-lg font-semibold text-black"
                       data-testid="cart-subtotal"
                       data-value={gbpSubtotal}
                     >

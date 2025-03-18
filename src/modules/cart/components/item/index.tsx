@@ -63,7 +63,7 @@ const Item = ({ item, type = 'full' }: ItemProps) => {
         <Box className="flex h-full flex-col gap-3 small:justify-between small:gap-0">
           <Box>
             <LocalizedClientLink href={`/products/${handle}`}>
-              <Heading as="h3" className="line-clamp-2 text-md font-medium">
+              <Heading as="h3" className="line-clamp-2 text-md font-medium text-black">
                 {item.product_title}
               </Heading>
             </LocalizedClientLink>
@@ -88,7 +88,7 @@ const Item = ({ item, type = 'full' }: ItemProps) => {
               {updating && <Spinner />}
             </Box>
           ) : (
-            <Text>{item.quantity} item</Text>
+            <Text className="text-black">{item.quantity} item</Text>
           )}
         </Box>
         <Box

@@ -2,6 +2,7 @@
 
 import Image from 'next/image'
 import { motion } from 'framer-motion'
+import { useEffect, useState } from 'react'
 
 import { Box } from '@modules/common/components/box'
 import { Button } from '@modules/common/components/button'
@@ -13,17 +14,44 @@ import { HeroBannerData } from 'types/strapi'
 import { transformUrl } from '@lib/util/transform-url'
 
 const Hero = ({ data }: { data: HeroBannerData }) => {
+  const [isMobile, setIsMobile] = useState(false)
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768)
+    }
+    
+    // Initial check
+    checkMobile()
+    
+    // Add event listener for window resize
+    window.addEventListener('resize', checkMobile)
+    
+    // Cleanup
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
+
   // Fallback content when backend is not available
-  const fallbackImage = "/hero-banner.jpg" // Make sure this image exists in your public folder
+  const fallbackDesktopImage = "/hero-banner.jpg"
+  const mobileImage = "/CGKmobile-banner.png"  // Removed @ symbol from path
   const fallbackCTA = {
     BtnText: "SUBSCRIBE",
     BtnLink: "/subscribe"
   }
 
-  // Use fallback if data is not available
-  const imageUrl = data?.data?.HeroBanner?.Image?.url 
+  // Use fallback if data is not available, but only for desktop
+  const desktopImageUrl = data?.data?.HeroBanner?.Image?.url 
     ? transformUrl(data.data.HeroBanner.Image.url)
-    : fallbackImage
+    : fallbackDesktopImage
+
+  // Always use mobile image for mobile view, regardless of Strapi data
+  const imageUrl = isMobile ? mobileImage : desktopImageUrl
+
+  // Add console log to debug
+  useEffect(() => {
+    console.log('Is Mobile:', isMobile)
+    console.log('Current Image URL:', imageUrl)
+  }, [isMobile, imageUrl])
 
   return (
     <div className="fixed top-0 left-0 h-screen w-full z-0">
@@ -33,14 +61,20 @@ const Hero = ({ data }: { data: HeroBannerData }) => {
         <style jsx global>{`
           @media (max-width: 767px) {
             .hero-image-container {
-              transform: translateX(-11%) scale(1);
-              width: 120%;
+              width: 100%;
               height: 100vh;
-              transform-origin: center center;
+              transform: none;
+              position: fixed;
+              top: 0;
+              left: 0;
+              right: 0;
+              bottom: 0;
             }
             .hero-image {
-              object-position: center center;
-              object-fit: cover;
+              object-position: center center !important;
+              object-fit: cover !important;
+              width: 100% !important;
+              height: 100% !important;
             }
             .coming-soon-container {
               background: transparent !important;

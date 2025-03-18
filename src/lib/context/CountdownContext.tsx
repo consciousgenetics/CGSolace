@@ -18,7 +18,7 @@ const CountdownContext = createContext<CountdownContextType | undefined>(undefin
 
 export function CountdownProvider({ children }: { children: ReactNode }) {
   const [timeLeft, setTimeLeft] = useState<TimeLeft>({
-    days: '003',
+    days: '02',
     hours: '22',
     minutes: '29',
     seconds: '57'
@@ -57,7 +57,7 @@ export function CountdownProvider({ children }: { children: ReactNode }) {
         }
 
         return {
-          days: days.toString().padStart(3, '0'),
+          days: days.toString().padStart(2, '0'),
           hours: hrs.toString().padStart(2, '0'),
           minutes: mins.toString().padStart(2, '0'),
           seconds: secs.toString().padStart(2, '0')

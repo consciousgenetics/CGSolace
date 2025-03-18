@@ -62,43 +62,18 @@ export const paymentInfoMap: Record<
   string,
   { title: string; icon: React.JSX.Element }
 > = {
-  pp_stripe_stripe: {
-    title: 'Credit card',
-    icon: <StripeIcon />,
-  },
-  'pp_stripe-blik_stripe': {
-    title: 'BLIK',
-    icon: <BlikIcon size={26} />,
-  },
-  'pp_stripe-przelewy24_stripe': {
-    title: 'Przelewy24',
-    icon: <Przelewy24Icon size={34} />,
-  },
-  'pp_stripe-ideal_stripe': {
-    title: 'iDeal',
-    icon: <IdealIcon />,
-  },
-  'pp_stripe-bancontact_stripe': {
-    title: 'Bancontact',
-    icon: <BancontactIcon />,
-  },
-  pp_paypal_paypal: {
-    title: 'PayPal',
-    icon: <PayPalIcon />,
-  },
   pp_system_default: {
-    title: 'Manual Payment',
+    title: 'Bank Transfer / Manual Payment',
     icon: <CreditCard />,
   },
-  // Add more payment providers here
 }
 
 // This only checks if it is native stripe for card payments, it ignores the other stripe-based providers
 export const isStripe = (providerId?: string) => {
-  return providerId?.startsWith('pp_stripe_')
+  return false // Disable Stripe
 }
 export const isPaypal = (providerId?: string) => {
-  return providerId?.startsWith('pp_paypal')
+  return false // Disable PayPal
 }
 export const isManual = (providerId?: string) => {
   return providerId?.startsWith('pp_system_default')
@@ -215,7 +190,7 @@ export const createNavigation = (
     },
     {
       name: 'REGULAR SEEDS',
-      handle: '/categories/regular-seeds',
+      handle: '/categories/seeds',
       category_children: [
         {
           name: "Chronic's Kush",
@@ -270,7 +245,7 @@ export const createFooterNavigation = (
       },
       {
             title: 'Regular Seeds',
-            href: '/categories/regular-seeds',
+            href: '/categories/seeds',
           },
           {
             title: 'Clothing',

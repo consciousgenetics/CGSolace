@@ -42,24 +42,24 @@ const CartTotals: React.FC<CartTotalsProps> = ({ totals }) => {
   })
 
   return (
-    <Box className="flex flex-col gap-4 text-md text-secondary small:gap-5">
+    <Box className="flex flex-col gap-4 text-md text-black small:gap-5">
       <Box className="flex flex-col gap-2">
         <Box className="flex items-center justify-between">
-          <span className="flex items-center gap-x-1">
+          <span className="flex items-center gap-x-1 text-black">
             Subtotal (excl. shipping and taxes)
           </span>
           <span
             data-value={gbpSubtotal}
-            className="text-lg text-basic-primary"
+            className="text-lg text-black"
           >
             {convertToLocale({ amount: gbpSubtotal, currency_code: 'gbp' })}
           </span>
         </Box>
         {!!discount_total && (
           <Box className="flex items-center justify-between">
-            <span>Discount</span>
+            <span className="text-black">Discount</span>
             <span
-              className="text-secondary"
+              className="text-black"
               data-testid="cart-discount"
               data-value={discount_total}
             >
@@ -69,26 +69,26 @@ const CartTotals: React.FC<CartTotalsProps> = ({ totals }) => {
           </Box>
         )}
         <Box className="flex items-center justify-between">
-          <span>Delivery</span>
+          <span className="text-black">Delivery</span>
           <span
-            className="text-lg text-basic-primary"
+            className="text-lg text-black"
             data-value={shipping_total}
           >
             {convertToLocale({ amount: shipping_total || 0, currency_code: 'gbp' })}
           </span>
         </Box>
         <Box className="flex items-center justify-between">
-          <span className="flex items-center gap-x-1">Taxes</span>
+          <span className="flex items-center gap-x-1 text-black">Taxes</span>
           <span
             data-value={tax_total}
-            className="text-lg text-basic-primary"
+            className="text-lg text-black"
           >
             {convertToLocale({ amount: tax_total || 0, currency_code: 'gbp' })}
           </span>
         </Box>
       </Box>
       <Box className="h-px w-full border-b border-gray-200" />
-      <Box className="flex items-center justify-between text-lg text-basic-primary">
+      <Box className="flex items-center justify-between text-lg text-black">
         <span>Total</span>
         <span data-value={gbpTotal}>
           {convertToLocale({ amount: gbpTotal, currency_code: 'gbp' })}

@@ -394,7 +394,7 @@ export default async function CategoryTemplate({
                   <div className="border-l-4 border-lime-500 pl-6">
                     <div className="mb-2">
                       <img 
-                        src="/zapplez.png" 
+                        src="/Zapplez.png" 
                         alt="Zapplez" 
                         className="w-auto h-32 object-contain"
                       />
@@ -424,6 +424,50 @@ export default async function CategoryTemplate({
                         <p className="leading-relaxed">
                           We reversed Zapplez #10 onto four super-terpy strains, aiming to infuse the traits of Zapplez #10 with the terps of the recipient strains, 
                           creating one of our best seed lines to date.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="mt-10 border-b border-gray-200"></div>
+              </div>
+            )}
+            
+            {/* Red Kachina special description section */}
+            {category.includes('red-kachina') && (
+              <div className="my-8 max-w-5xl mx-auto">
+                <div className="flex flex-col gap-8">
+                  {/* Title section with image */}
+                  <div className="border-l-[3px] border-[#ff0000] pl-6">
+                    <div className="mb-2">
+                      <img 
+                        src="/redkachinaicon.png" 
+                        alt="Red Kachina" 
+                        className="w-auto h-32 object-contain"
+                      />
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <div className="w-1/2">
+                        <h2 className="text-2xl font-medium text-gray-600">Red Kachina 2.0 Feminized Line</h2>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Description section */}
+                  <div className="mt-4">
+                    <div className="prose prose-lg max-w-none">
+                      <div className="space-y-6 text-gray-700">
+                        <p className="leading-relaxed">
+                          The Red Kachina 2.0 Feminized Line stands as one of the most exceptional purple cannabis seed lines in the world, offering a perfect blend of visual beauty, potent effects, rich terpenes, and unique medicinal properties. Known for its stunning deep purple hues, vibrant red undertones, and heavy resin production, Red Kachina isn't just about bag appeal – it's a strain that delivers on every front.
+                        </p>
+                        
+                        <p className="leading-relaxed">
+                          What truly sets Red Kachina 2.0 apart is its high concentration of anthocyanins – the natural pigments responsible for its striking purple coloration. Beyond their visual appeal, anthocyanins are known for their antioxidant, anti-inflammatory, and neuroprotective properties, giving this strain an added edge in the realm of medicinal cannabis. The rich purple hues are more than just eye candy. Anthocyanins have been studied for their potential anti-inflammatory, antioxidant, and neuroprotective properties. This makes Red Kachina particularly appealing to medical cannabis users.
+                        </p>
+                        
+                        <p className="leading-relaxed">
+                          To further diversify its appeal, Red Kachina 2.0 has been crossed with four elite strains, each adding unique traits while maintaining its signature purple hues and medicinal potential. This line is all about putting terps into purps – combining eye-popping colours with explosive flavours and potent effects.
                         </p>
                       </div>
                     </div>

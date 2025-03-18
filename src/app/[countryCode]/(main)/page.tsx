@@ -14,6 +14,7 @@ import { ReviewSection } from '@modules/common/components/reviews'
 import SkeletonProductsCarousel from '@modules/skeletons/templates/skeleton-products-carousel'
 import { CollectionsData, HeroBannerData } from 'types/strapi'
 import SeedLineCountdown from '@modules/home/components/seed-line-countdown'
+import LocalizedClientLink from '@modules/common/components/localized-client-link'
 
 // Set dynamic rendering to prevent build-time errors
 export const dynamic = 'force-dynamic'
@@ -252,68 +253,169 @@ export default async function Home(props: {
             {/* Seed Line Section */}
             <div className="w-full bg-black text-white py-0 my-0">
               <div className="max-w-[1400px] mx-auto px-4 py-8 sm:py-16">
-                <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-center mb-4">SEED LINE</h2>
-                <p className="text-center text-base sm:text-lg md:text-xl mb-8 sm:mb-12 px-4">Every genetic that we drop is a stable, trichome covered, terpene loaded gem!</p>
+                <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-center mb-4 font-latto">SEED LINE</h2>
+                <p className="text-center text-base sm:text-lg md:text-xl mb-8 sm:mb-12 px-4 font-latto">Every genetic that we drop is a stable, trichome covered, terpene loaded gem!</p>
                 
                 {/* Card container with different layouts for mobile and desktop */}
                 <div className="w-full flex justify-center">
-                  <div className="flex flex-row gap-6 pb-4 overflow-x-auto md:overflow-visible scrollbar-hide md:flex-wrap md:justify-center">
-                    {/* Zappet Card */}
-                    <div className="bg-black rounded-2xl border-2 min-w-[200px] w-[200px] h-[200px] flex-shrink-0 snap-center" style={{ borderColor: '#fdd729' }}>
-                      <div className="w-full h-full relative overflow-hidden rounded-2xl">
-                        <div className="absolute inset-0 flex items-center justify-center">
-                          <img 
-                            src="/Zapplez.png" 
-                            alt="Zappet" 
-                            className="w-full h-full object-contain p-4"
-                          />
+                  <div className="grid grid-cols-4 md:grid-cols-none md:flex md:flex-row gap-4 md:gap-8 w-full md:max-w-[1400px] mx-auto px-4 md:justify-center items-start">
+                    {/* Zapplez Card */}
+                    <LocalizedClientLink href="/categories/zapplez" className="block">
+                      <div className="relative group w-full md:w-[280px] flex flex-col">
+                        <div className="bg-black rounded-xl border-[3px] aspect-square flex-shrink-0 overflow-hidden" style={{ borderColor: '#fdd729' }}>
+                          <div className="w-full h-full relative p-6">
+                            <img 
+                              src="/Zapplez.png" 
+                              alt="Zapplez" 
+                              className="w-full h-full object-contain transition-transform duration-300 group-hover:scale-110"
+                            />
+                          </div>
+                        </div>
+                        <div className="mt-2 relative">
+                          <div className="rounded-xl py-3 px-4 relative overflow-hidden">
+                            <img 
+                              src="/127.png"
+                              alt=""
+                              className="absolute inset-0 w-full h-full object-cover"
+                            />
+                            <div className="bg-white relative overflow-hidden rounded-full px-3 py-0.5 w-fit mx-auto mb-1">
+                              <span 
+                                className="inline-block text-xs font-bold uppercase relative z-10"
+                                style={{
+                                  background: `url('/127.png')`,
+                                  WebkitBackgroundClip: 'text',
+                                  backgroundClip: 'text',
+                                  color: 'transparent',
+                                  backgroundSize: 'cover'
+                                }}
+                              >
+                                SEEDS
+                              </span>
+                            </div>
+                            <h3 className="text-black text-xl font-bold text-center uppercase relative z-10">ZAPPLES</h3>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                    
+                    </LocalizedClientLink>
+
                     {/* Pink Waferz Card */}
-                    <div className="bg-black rounded-2xl border-2 min-w-[200px] w-[200px] h-[200px] flex-shrink-0 snap-center" style={{ borderColor: '#fdd729' }}>
-                      <div className="w-full h-full relative overflow-hidden rounded-2xl">
-                        <div className="absolute inset-0 flex items-center justify-center">
-                          <img 
-                            src="/Pink-waflfles.png" 
-                            alt="Pink Waferz" 
-                            className="w-full h-full object-contain p-4"
-                          />
+                    <LocalizedClientLink href="/categories/pink-waferz" className="block">
+                      <div className="relative group w-full md:w-[280px] flex flex-col">
+                        <div className="bg-black rounded-xl border-[3px] aspect-square flex-shrink-0 overflow-hidden" style={{ borderColor: '#fdd729' }}>
+                          <div className="w-full h-full relative p-6">
+                            <img 
+                              src="/Pink-waflfles.png" 
+                              alt="Pink Waferz" 
+                              className="w-full h-full object-contain transition-transform duration-300 group-hover:scale-110"
+                            />
+                          </div>
+                        </div>
+                        <div className="mt-2 relative">
+                          <div className="rounded-xl py-3 px-4 relative overflow-hidden">
+                            <img 
+                              src="/127.png"
+                              alt=""
+                              className="absolute inset-0 w-full h-full object-cover"
+                            />
+                            <div className="bg-white relative overflow-hidden rounded-full px-3 py-0.5 w-fit mx-auto mb-1">
+                              <span 
+                                className="inline-block text-xs font-bold uppercase relative z-10"
+                                style={{
+                                  background: `url('/127.png')`,
+                                  WebkitBackgroundClip: 'text',
+                                  backgroundClip: 'text',
+                                  color: 'transparent',
+                                  backgroundSize: 'cover'
+                                }}
+                              >
+                                SEEDS
+                              </span>
+                            </div>
+                            <h3 className="text-black text-xl font-bold text-center uppercase relative z-10">PINK WAFERZ</h3>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                    
+                    </LocalizedClientLink>
+
+                    {/* Red Kachina Card */}
+                    <LocalizedClientLink href="/categories/red-kachina" className="block">
+                      <div className="relative group w-full md:w-[280px] flex flex-col">
+                        <div className="bg-black rounded-xl border-[3px] aspect-square flex-shrink-0 overflow-hidden" style={{ borderColor: '#fdd729' }}>
+                          <div className="w-full h-full relative p-6">
+                            <img 
+                              src="/redkachinaicon.png" 
+                              alt="Red Kachina" 
+                              className="w-full h-full object-contain transition-transform duration-300 group-hover:scale-110"
+                            />
+                          </div>
+                        </div>
+                        <div className="mt-2 relative">
+                          <div className="rounded-xl py-3 px-4 relative overflow-hidden">
+                            <img 
+                              src="/127.png"
+                              alt=""
+                              className="absolute inset-0 w-full h-full object-cover"
+                            />
+                            <div className="bg-white relative overflow-hidden rounded-full px-3 py-0.5 w-fit mx-auto mb-1">
+                              <span 
+                                className="inline-block text-xs font-bold uppercase relative z-10"
+                                style={{
+                                  background: `url('/127.png')`,
+                                  WebkitBackgroundClip: 'text',
+                                  backgroundClip: 'text',
+                                  color: 'transparent',
+                                  backgroundSize: 'cover'
+                                }}
+                              >
+                                SEEDS
+                              </span>
+                            </div>
+                            <h3 className="text-black text-xl font-bold text-center uppercase relative z-10">RED KACHINA</h3>
+                          </div>
+                        </div>
+                      </div>
+                    </LocalizedClientLink>
+
                     {/* Chronic's Kush Card */}
-                    <div className="bg-black rounded-2xl border-2 min-w-[200px] w-[200px] h-[200px] flex-shrink-0 snap-center" style={{ borderColor: '#fdd729' }}>
-                      <div className="w-full h-full relative overflow-hidden rounded-2xl">
-                        <div className="absolute inset-0 flex items-center justify-center">
-                          <img 
-                            src="/Chronic_kush.png" 
-                            alt="Chronic's Kush" 
-                            className="w-full h-full object-contain p-4"
-                          />
+                    <LocalizedClientLink href="/categories/chronics-kush" className="block">
+                      <div className="relative group w-full md:w-[280px] flex flex-col">
+                        <div className="bg-black rounded-xl border-[3px] aspect-square flex-shrink-0 overflow-hidden" style={{ borderColor: '#fdd729' }}>
+                          <div className="w-full h-full relative p-6">
+                            <img 
+                              src="/Chronic_kush.png" 
+                              alt="Chronic's Kush" 
+                              className="w-full h-full object-contain transition-transform duration-300 group-hover:scale-110"
+                            />
+                          </div>
+                        </div>
+                        <div className="mt-2 relative">
+                          <div className="rounded-xl py-3 px-4 relative overflow-hidden">
+                            <img 
+                              src="/127.png"
+                              alt=""
+                              className="absolute inset-0 w-full h-full object-cover"
+                            />
+                            <div className="bg-white relative overflow-hidden rounded-full px-3 py-0.5 w-fit mx-auto mb-1">
+                              <span 
+                                className="inline-block text-xs font-bold uppercase relative z-10"
+                                style={{
+                                  background: `url('/127.png')`,
+                                  WebkitBackgroundClip: 'text',
+                                  backgroundClip: 'text',
+                                  color: 'transparent',
+                                  backgroundSize: 'cover'
+                                }}
+                              >
+                                SEEDS
+                              </span>
+                            </div>
+                            <h3 className="text-black text-xl font-bold text-center uppercase relative z-10">CHRONIC'S KUSH</h3>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                    
-                    {/* Conscious Genetics Card */}
-                    <div className="bg-black rounded-2xl border-2 min-w-[200px] w-[200px] h-[200px] flex-shrink-0 snap-center" style={{ borderColor: '#fdd729' }}>
-                      <div className="w-full h-full relative overflow-hidden rounded-2xl">
-                        <div className="absolute inset-0 flex items-center justify-center">
-                          <img 
-                            src="/conscious-genetics-logo.png" 
-                            alt="Conscious Genetics" 
-                            className="w-full h-full object-contain p-4"
-                          />
-                        </div>
-                      </div>
-                    </div>
+                    </LocalizedClientLink>
                   </div>
                 </div>
-                
-                {/* Countdown Timer */}
-                <SeedLineCountdown />
               </div>
             </div>
             {clothingProducts && clothingProducts.length > 0 && region && (
@@ -324,12 +426,175 @@ export default async function Home(props: {
                   regionId={region.id}
                   title="Clothing & Apparel"
                   viewAll={{
-                    link: `/${countryCode}/shop`,
+                    link: `/categories/mens-merch`,
                     text: 'Shop All',
+                    alternateLink: `/categories/womens-merch`
                   }}
                 />
               </Suspense>
             )}
+
+            {/* Grinders, Lighters & Ashtray Section */}
+            <div className="w-full bg-gray-100 text-black py-0 my-0 relative">
+              <div className="absolute inset-0 w-full h-full opacity-0">
+                <img 
+                  src="/126.png"
+                  alt=""
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <div className="max-w-[1400px] mx-auto px-4 py-8 sm:py-16 relative z-10">
+                <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-center mb-4 font-latto text-[#d67bef]">GRINDERS, LIGHTERS & ASHTRAY</h2>
+                <p className="text-center text-base sm:text-lg md:text-xl mb-8 sm:mb-12 px-4 font-latto text-gray-600">Every genetic that we drop is a stable, trichome covered, terpene loaded gem!</p>
+                
+                {/* Card container */}
+                <div className="w-full flex justify-center">
+                  <div className="grid grid-cols-3 md:grid-cols-1 gap-4 md:gap-8 w-full md:max-w-[1400px] mx-auto px-4 md:justify-center items-center">
+                    {/* Grinders Card */}
+                    <div className="bg-[#8b2a9b] rounded-3xl p-8 pb-12 flex flex-col items-center relative overflow-hidden w-[320px] md:w-[320px] h-[500px] mx-auto">
+                      <div className="absolute inset-0 opacity-20">
+                        <img 
+                          src="/126.png"
+                          alt=""
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                      <div className="relative z-10 flex flex-col items-center">
+                        <div className="w-56 h-56">
+                          <img 
+                            src="/cg-grinder.png" 
+                            alt="Grinders" 
+                            className="w-full h-full object-contain"
+                          />
+                        </div>
+                        <div className="flex flex-col items-center mt-8">
+                          <div className="bg-white/20 px-5 py-2 rounded-full mb-4">
+                            <span className="text-white text-lg font-medium">MERCH</span>
+                          </div>
+                          <h3 className="text-white text-3xl font-bold mb-5 text-center">GRINDERS</h3>
+                          <div className="flex mb-6 justify-center gap-1">
+                            {[1, 2, 3, 4, 5].map((star) => (
+                              <svg key={star} className="w-7 h-7 text-[#fdd729]" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                              </svg>
+                            ))}
+                          </div>
+                          <div className="text-center">
+                            <LocalizedClientLink
+                              href="/categories/accessories"
+                              className="text-white underline font-medium hover:text-gray-200 transition-colors text-lg"
+                            >
+                              SHOP NOW
+                            </LocalizedClientLink>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Lighters Card */}
+                    <div className="bg-[#8b2a9b] rounded-3xl p-8 pb-12 flex flex-col items-center relative overflow-hidden w-[320px] md:w-[320px] h-[500px] mx-auto">
+                      <div className="absolute inset-0 opacity-20">
+                        <img 
+                          src="/126.png"
+                          alt=""
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                      <div className="relative z-10 flex flex-col items-center">
+                        <div className="w-56 h-56">
+                          <img 
+                            src="/cg-lighter.png" 
+                            alt="Lighters" 
+                            className="w-full h-full object-contain"
+                          />
+                        </div>
+                        <div className="flex flex-col items-center mt-8">
+                          <div className="bg-white/20 px-5 py-2 rounded-full mb-4">
+                            <span className="text-white text-lg font-medium">MERCH</span>
+                          </div>
+                          <h3 className="text-white text-3xl font-bold mb-5 text-center">LIGHTERS</h3>
+                          <div className="flex mb-6 justify-center gap-1">
+                            {[1, 2, 3, 4, 5].map((star) => (
+                              <svg key={star} className="w-7 h-7 text-[#fdd729]" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                              </svg>
+                            ))}
+                          </div>
+                          <div className="text-center">
+                            <LocalizedClientLink
+                              href="/categories/accessories"
+                              className="text-white underline font-medium hover:text-gray-200 transition-colors text-lg"
+                            >
+                              SHOP NOW
+                            </LocalizedClientLink>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Ashtray Card */}
+                    <div className="bg-[#8b2a9b] rounded-3xl p-8 pb-12 flex flex-col items-center relative overflow-hidden w-[320px] md:w-[320px] h-[500px] mx-auto">
+                      <div className="absolute inset-0 opacity-20">
+                        <img 
+                          src="/126.png"
+                          alt=""
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                      <div className="relative z-10 flex flex-col items-center">
+                        <div className="w-56 h-56">
+                          <img 
+                            src="/cg-ashtray.png" 
+                            alt="Ashtray" 
+                            className="w-full h-full object-contain"
+                          />
+                        </div>
+                        <div className="flex flex-col items-center mt-8">
+                          <div className="bg-white/20 px-5 py-2 rounded-full mb-4">
+                            <span className="text-white text-lg font-medium">MERCH</span>
+                          </div>
+                          <h3 className="text-white text-3xl font-bold mb-5 text-center">ASHTRAY</h3>
+                          <div className="flex mb-6 justify-center gap-1">
+                            {[1, 2, 3, 4, 5].map((star) => (
+                              <svg key={star} className="w-7 h-7 text-[#fdd729]" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                              </svg>
+                            ))}
+                          </div>
+                          <div className="text-center">
+                            <LocalizedClientLink
+                              href="/categories/accessories"
+                              className="text-white underline font-medium hover:text-gray-200 transition-colors text-lg"
+                            >
+                              SHOP NOW
+                            </LocalizedClientLink>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Shop All Button */}
+            <div className="w-full flex justify-center py-8 bg-gray-100 relative">
+              <div className="absolute inset-0 w-full h-full opacity-0">
+                <img 
+                  src="/126.png"
+                  alt=""
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <div className="relative z-10">
+                <LocalizedClientLink
+                  href="/shop"
+                  className="bg-[#d67bef] hover:bg-[#c15ed6] text-black transition-colors rounded-full uppercase tracking-wider px-10 py-3 text-lg font-bold font-latto"
+                >
+                  SHOP ALL
+                </LocalizedClientLink>
+              </div>
+            </div>
           </div>
         </div>
         <ReviewSection />

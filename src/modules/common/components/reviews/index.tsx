@@ -40,6 +40,17 @@ const ReviewCard = ({ name, review, location }: ReviewCardProps) => {
       </div>
       
       <div className="flex-1 flex flex-col justify-center mb-4">
+        {/* Profile Picture */}
+        <div className="w-24 h-24 mx-auto mb-4 rounded-full overflow-hidden border-4 border-[#d67bef] shadow-lg transform hover:scale-105 transition-all duration-300">
+          <img 
+            src={`/reviewers/${name.toLowerCase().replace(' ', '-')}.jpg`} 
+            alt={name}
+            className="w-full h-full object-cover"
+            onError={(e) => {
+              e.currentTarget.src = '/default-avatar.png'
+            }}
+          />
+        </div>
         <Text className="text-xl small:text-2xl font-['Anton'] mb-3 small:mb-5 transform transition-all duration-300 hover:scale-105 text-black">{name}</Text>
         <Text className="text-gray-600 mb-4 small:mb-6 text-base small:text-lg leading-relaxed">{review}</Text>
       </div>
@@ -81,7 +92,7 @@ export function ReviewSection() {
       </div>
       
       <div className="px-4 max-w-7xl mx-auto w-full relative z-20">
-        <Text className="text-3xl small:text-4xl medium:text-5xl font-['Anton'] text-white text-center mb-8 small:mb-12 medium:mb-16 relative z-10 drop-shadow-[0_5px_5px_rgba(0,0,0,0.3)]">
+        <Text className="text-3xl small:text-4xl medium:text-5xl font-['Anton'] text-black text-center mb-8 small:mb-12 medium:mb-16 relative z-10 drop-shadow-[0_5px_5px_rgba(0,0,0,0.3)]">
           CUSTOMER REVIEWS
         </Text>
         

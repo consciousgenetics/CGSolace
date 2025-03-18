@@ -230,7 +230,7 @@ export function ProductTile({
               <div className="space-y-2">
                 {/* Collection Badge - Only show in carousel */}
                 {isCarousel && product.collection?.title && (
-                  <span className={`inline-block px-2 py-0.5 text-sm font-medium text-gray-600 ${
+                  <span className={`inline-block px-2 py-0.5 text-sm font-medium text-gray-600 font-latto ${
                     product.collection.title.toLowerCase().includes('merch') 
                       ? 'bg-[#d67bef]/20'
                       : 'bg-amber-100'
@@ -242,7 +242,7 @@ export function ProductTile({
                 {/* Product Title */}
                 <Text
                   as="span"
-                  className="block text-2xl font-bold uppercase text-black line-clamp-1 tracking-wider"
+                  className="block text-base small:text-xl medium:text-2xl font-bold uppercase text-black line-clamp-2 tracking-wider font-latto px-2"
                 >
                   {product.title}
                 </Text>
@@ -255,7 +255,7 @@ export function ProductTile({
                 {/* Description with Read More - Only show in carousel */}
                 {isCarousel && product.description && (
                   <div className="text-center px-1">
-                    <p className="text-gray-600 text-sm">
+                    <p className="text-gray-600 text-sm font-latto">
                       {product.description.length > 120 
                         ? `${product.description.substring(0, 120)}...` 
                         : product.description
@@ -264,7 +264,7 @@ export function ProductTile({
                     {product.description.length > 120 && (
                       <LocalizedClientLink 
                         href={`/products/${product.handle}`}
-                        className={`text-sm font-medium hover:text-[#c15ed6] transition-colors mt-0.5 inline-block ${
+                        className={`text-sm font-medium hover:text-[#c15ed6] transition-colors mt-0.5 inline-block font-latto ${
                           product.collection?.title?.toLowerCase().includes('merch')
                             ? 'text-[#d67bef]'
                             : 'text-amber-500 hover:text-amber-600'
@@ -278,9 +278,9 @@ export function ProductTile({
                 
                 {/* Buy Now and Price */}
                 <div className="flex items-center justify-center gap-2 mt-1">
-                  <span className="font-bold text-black text-base tracking-widest">BUY NOW</span>
+                  <span className="font-bold text-black text-base tracking-widest font-latto">BUY NOW</span>
                   <div className="h-4 w-px bg-gray-200"></div>
-                  <span className={`font-medium text-base ${
+                  <span className={`font-medium text-base font-latto ${
                     product.collection?.title?.toLowerCase().includes('merch')
                       ? 'text-[#d67bef]'
                       : 'text-amber-400'
@@ -394,7 +394,7 @@ export function ProductTile({
             <div className="space-y-2">
               {/* Collection Badge - Only show in carousel */}
               {isCarousel && product.collection?.title && (
-                <span className={`inline-block px-2 py-0.5 text-sm font-medium text-gray-600 ${
+                <span className={`inline-block px-2 py-0.5 text-sm font-medium text-gray-600 font-latto ${
                   product.collection.title.toLowerCase().includes('merch') 
                     ? 'bg-[#d67bef]/20'
                     : 'bg-amber-100'
@@ -406,7 +406,7 @@ export function ProductTile({
               {/* Product Title */}
               <Text
                 as="span"
-                className="block text-2xl font-bold uppercase text-black line-clamp-1 tracking-wider"
+                className="block text-base small:text-xl medium:text-2xl font-bold uppercase text-black line-clamp-2 tracking-wider font-latto px-2"
               >
                 {product.title}
               </Text>
@@ -419,7 +419,7 @@ export function ProductTile({
               {/* Description with Read More - Only show in carousel */}
               {isCarousel && product.description && (
                 <div className="text-center px-1">
-                  <p className="text-gray-600 text-sm">
+                  <p className="text-gray-600 text-sm font-latto">
                     {product.description.length > 120 
                       ? `${product.description.substring(0, 120)}...` 
                       : product.description
@@ -428,7 +428,7 @@ export function ProductTile({
                   {product.description.length > 120 && (
                     <LocalizedClientLink 
                       href={`/products/${product.handle}`}
-                      className={`text-sm font-medium hover:text-[#c15ed6] transition-colors mt-0.5 inline-block ${
+                      className={`text-sm font-medium hover:text-[#c15ed6] transition-colors mt-0.5 inline-block font-latto ${
                         product.collection?.title?.toLowerCase().includes('merch')
                           ? 'text-[#d67bef]'
                           : 'text-amber-500 hover:text-amber-600'
@@ -442,9 +442,9 @@ export function ProductTile({
               
               {/* Buy Now and Price */}
               <div className="flex items-center justify-center gap-2 mt-1">
-                <span className="font-bold text-black text-base tracking-widest">BUY NOW</span>
+                <span className="font-bold text-black text-base tracking-widest font-latto">BUY NOW</span>
                 <div className="h-4 w-px bg-gray-200"></div>
-                <span className={`font-medium text-base ${
+                <span className={`font-medium text-base font-latto ${
                   product.collection?.title?.toLowerCase().includes('merch')
                     ? 'text-[#d67bef]'
                     : 'text-amber-400'

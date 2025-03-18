@@ -72,13 +72,13 @@ export default function ContactPage() {
   return (
     <div className="flex flex-col min-h-[80vh] py-12 sm:py-16 md:py-20 relative overflow-hidden">
       {/* Background Pattern */}
-      <div className="absolute inset-0 bg-repeat opacity-70" style={{ backgroundImage: 'url("/126-wide.png")', backgroundSize: '800px' }}></div>
+      <div className="absolute inset-0 bg-repeat opacity-100" style={{ backgroundImage: 'url("/126-wide.png")', backgroundSize: '800px' }}></div>
       
       <Container>
         <div className="max-w-4xl mx-auto w-full relative">
           <div className="text-center mb-8 sm:mb-12">
             <Text className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4 sm:mb-6">Contact Us</Text>
-            <Text className="text-gray-600 text-base sm:text-lg max-w-2xl mx-auto">
+            <Text className="text-black text-base sm:text-lg max-w-2xl mx-auto">
               Have a question or feedback? We'd love to hear from you. Our team will get back to you as soon as possible.
             </Text>
           </div>
@@ -89,7 +89,7 @@ export default function ContactPage() {
                 <div>
                   <label 
                     htmlFor="name" 
-                    className="block text-sm font-medium text-gray-300 mb-1"
+                    className="block text-sm font-medium text-white mb-1"
                   >
                     Name
                   </label>
@@ -108,7 +108,7 @@ export default function ContactPage() {
                 <div>
                   <label 
                     htmlFor="email" 
-                    className="block text-sm font-medium text-gray-300 mb-1"
+                    className="block text-sm font-medium text-white mb-1"
                   >
                     Email
                   </label>
@@ -128,7 +128,7 @@ export default function ContactPage() {
               <div>
                 <label 
                   htmlFor="subject" 
-                  className="block text-sm font-medium text-gray-300 mb-1"
+                  className="block text-sm font-medium text-white mb-1"
                 >
                   Subject
                 </label>
@@ -147,7 +147,7 @@ export default function ContactPage() {
               <div>
                 <label 
                   htmlFor="message" 
-                  className="block text-sm font-medium text-gray-300 mb-1"
+                  className="block text-sm font-medium text-white mb-1"
                 >
                   Message
                 </label>
