@@ -56,7 +56,7 @@ const SeedLineCountdown = () => {
             initial={{ opacity: 0, y: -20 }}
             animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: -20 }}
             transition={{ duration: 0.6, delay: 0.2 }}
-            className="text-white font-bold text-xl"
+            className="text-white font-bold text-xl font-latto"
           >
             SEED DROP
           </motion.span>
@@ -75,8 +75,8 @@ const SeedLineCountdown = () => {
                 variants={cardVariants}
                 className="bg-black/80 text-white px-3 py-2 rounded backdrop-blur-sm"
               >
-                <span className="font-mono text-xl">{item.value}</span>
-                <span className="text-xs block">{item.label}</span>
+                <span className="font-mono text-xl font-latto">{item.value}</span>
+                <span className="text-xs block font-latto">{item.label}</span>
               </motion.div>
             ))}
           </div>
@@ -90,7 +90,7 @@ const SeedLineCountdown = () => {
           className="w-full flex justify-center"
         >
           <LocalizedClientLink href="/account?mode=register" className="w-full flex justify-center">
-            <button className="bg-black/80 text-white px-8 py-3 rounded-lg font-bold hover:bg-black transition-colors text-lg backdrop-blur-sm">
+            <button className="bg-black/80 text-white px-8 py-3 rounded-lg font-bold hover:bg-black transition-colors text-lg backdrop-blur-sm font-latto">
               SIGN UP
             </button>
           </LocalizedClientLink>

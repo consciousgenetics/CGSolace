@@ -254,7 +254,7 @@ export function ProductTile({
                 
                 {/* Description with Read More - Only show in carousel */}
                 {isCarousel && product.description && (
-                  <div className="text-center px-1">
+                  <div className="hidden small:block text-center px-1">
                     <p className="text-gray-600 text-sm font-latto">
                       {product.description.length > 120 
                         ? `${product.description.substring(0, 120)}...` 
@@ -418,7 +418,7 @@ export function ProductTile({
               
               {/* Description with Read More - Only show in carousel */}
               {isCarousel && product.description && (
-                <div className="text-center px-1">
+                <div className="hidden small:block text-center px-1">
                   <p className="text-gray-600 text-sm font-latto">
                     {product.description.length > 120 
                       ? `${product.description.substring(0, 120)}...` 

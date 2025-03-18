@@ -43,12 +43,11 @@ const ReviewCard = ({ name, review, location }: ReviewCardProps) => {
         {/* Profile Picture */}
         <div className="w-24 h-24 mx-auto mb-4 rounded-full overflow-hidden border-4 border-[#d67bef] shadow-lg transform hover:scale-105 transition-all duration-300">
           <img 
-            src={`/reviewers/${name.toLowerCase().replace(' ', '-')}.jpg`} 
+            src={name === "MICHAEL FLETCHER" ? "/Zapplez.png" : 
+                name === "JACK WILSON" ? "/Pink-waflfles.png" : 
+                "/Chronic_kush.png"} 
             alt={name}
-            className="w-full h-full object-cover"
-            onError={(e) => {
-              e.currentTarget.src = '/default-avatar.png'
-            }}
+            className="w-full h-full object-contain bg-white"
           />
         </div>
         <Text className="text-xl small:text-2xl font-['Anton'] mb-3 small:mb-5 transform transition-all duration-300 hover:scale-105 text-black">{name}</Text>

@@ -452,7 +452,7 @@ export default async function Home(props: {
                   <div className="grid grid-cols-3 md:grid-cols-1 gap-4 md:gap-8 w-full md:max-w-[1400px] mx-auto px-4 md:justify-center items-center">
                     {/* Grinders Card */}
                     <div className="bg-[#8b2a9b] rounded-3xl p-8 pb-12 flex flex-col items-center relative overflow-hidden w-[320px] md:w-[320px] h-[500px] mx-auto">
-                      <div className="absolute inset-0 opacity-20">
+                      <div className="absolute inset-0 opacity-100">
                         <img 
                           src="/126.png"
                           alt=""
@@ -469,7 +469,7 @@ export default async function Home(props: {
                         </div>
                         <div className="flex flex-col items-center mt-8">
                           <div className="bg-white/20 px-5 py-2 rounded-full mb-4">
-                            <span className="text-white text-lg font-medium">MERCH</span>
+                            <span className="text-white text-lg font-medium font-latto">MERCH</span>
                           </div>
                           <h3 className="text-white text-3xl font-bold mb-5 text-center">GRINDERS</h3>
                           <div className="flex mb-6 justify-center gap-1">
@@ -482,7 +482,7 @@ export default async function Home(props: {
                           <div className="text-center">
                             <LocalizedClientLink
                               href="/categories/accessories"
-                              className="text-white underline font-medium hover:text-gray-200 transition-colors text-lg"
+                              className="text-white underline font-medium hover:text-gray-200 transition-colors text-lg font-latto"
                             >
                               SHOP NOW
                             </LocalizedClientLink>
@@ -493,7 +493,7 @@ export default async function Home(props: {
 
                     {/* Lighters Card */}
                     <div className="bg-[#8b2a9b] rounded-3xl p-8 pb-12 flex flex-col items-center relative overflow-hidden w-[320px] md:w-[320px] h-[500px] mx-auto">
-                      <div className="absolute inset-0 opacity-20">
+                      <div className="absolute inset-0 opacity-100">
                         <img 
                           src="/126.png"
                           alt=""
@@ -510,7 +510,7 @@ export default async function Home(props: {
                         </div>
                         <div className="flex flex-col items-center mt-8">
                           <div className="bg-white/20 px-5 py-2 rounded-full mb-4">
-                            <span className="text-white text-lg font-medium">MERCH</span>
+                            <span className="text-white text-lg font-medium font-latto">MERCH</span>
                           </div>
                           <h3 className="text-white text-3xl font-bold mb-5 text-center">LIGHTERS</h3>
                           <div className="flex mb-6 justify-center gap-1">
@@ -523,7 +523,7 @@ export default async function Home(props: {
                           <div className="text-center">
                             <LocalizedClientLink
                               href="/categories/accessories"
-                              className="text-white underline font-medium hover:text-gray-200 transition-colors text-lg"
+                              className="text-white underline font-medium hover:text-gray-200 transition-colors text-lg font-latto"
                             >
                               SHOP NOW
                             </LocalizedClientLink>
@@ -534,7 +534,7 @@ export default async function Home(props: {
 
                     {/* Ashtray Card */}
                     <div className="bg-[#8b2a9b] rounded-3xl p-8 pb-12 flex flex-col items-center relative overflow-hidden w-[320px] md:w-[320px] h-[500px] mx-auto">
-                      <div className="absolute inset-0 opacity-20">
+                      <div className="absolute inset-0 opacity-100">
                         <img 
                           src="/126.png"
                           alt=""
@@ -551,7 +551,7 @@ export default async function Home(props: {
                         </div>
                         <div className="flex flex-col items-center mt-8">
                           <div className="bg-white/20 px-5 py-2 rounded-full mb-4">
-                            <span className="text-white text-lg font-medium">MERCH</span>
+                            <span className="text-white text-lg font-medium font-latto">MERCH</span>
                           </div>
                           <h3 className="text-white text-3xl font-bold mb-5 text-center">ASHTRAY</h3>
                           <div className="flex mb-6 justify-center gap-1">
@@ -564,7 +564,7 @@ export default async function Home(props: {
                           <div className="text-center">
                             <LocalizedClientLink
                               href="/categories/accessories"
-                              className="text-white underline font-medium hover:text-gray-200 transition-colors text-lg"
+                              className="text-white underline font-medium hover:text-gray-200 transition-colors text-lg font-latto"
                             >
                               SHOP NOW
                             </LocalizedClientLink>
@@ -589,7 +589,7 @@ export default async function Home(props: {
               <div className="relative z-10">
                 <LocalizedClientLink
                   href="/shop"
-                  className="bg-[#d67bef] hover:bg-[#c15ed6] text-black transition-colors rounded-full uppercase tracking-wider px-10 py-3 text-lg font-bold font-latto"
+                  className="bg-[#d67bef] hover:bg-[#c15ed6] text-black transition-colors rounded-full uppercase tracking-wider px-16 py-5 text-2xl font-bold font-latto inline-block"
                 >
                   SHOP ALL
                 </LocalizedClientLink>
