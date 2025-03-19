@@ -42,8 +42,17 @@ export function AboutTemplate() {
       </div>
 
       {/* Second Section - From Classic to Purple Strains */}
-      <div className="w-full py-16 small:py-20 text-white" style={{ backgroundColor: '#782b8d' }}>
-        <Container className="max-w-6xl mx-auto">
+      <div className="w-full py-16 small:py-20 text-white relative">
+        <div className="absolute inset-0 z-0">
+          <img 
+            src="/126-wide.png" 
+            alt="Background" 
+            className="w-full h-full object-cover"
+          />
+          {/* Add an overlay to ensure text remains readable */}
+          <div className="absolute inset-0 bg-black/30"></div>
+        </div>
+        <Container className="max-w-6xl mx-auto relative z-10">
           <h2 className="text-4xl small:text-6xl font-bold mb-10 text-center">
             From Classic to Purple Strains
           </h2>
@@ -143,7 +152,7 @@ export function AboutTemplate() {
             {/* Bottom Right Image */}
             <div className="w-full h-full">
               <img 
-                src="/CKReal.png" 
+                src="/ckaboutus.png" 
                 alt="Chronic's Kush" 
                 className="w-full h-full object-cover" 
               />
@@ -153,8 +162,15 @@ export function AboutTemplate() {
       </div>
       
       {/* Fifth Section - Old School Meets New School */}
-      <div className="w-full py-16 small:py-20 text-black" style={{ backgroundColor: '#fdd729' }}>
-        <Container className="max-w-6xl mx-auto">
+      <div className="w-full py-16 small:py-20 text-black relative">
+        <div className="absolute inset-0 z-0">
+          <img 
+            src="/127-wide.png" 
+            alt="Background" 
+            className="w-full h-full object-cover"
+          />
+        </div>
+        <Container className="max-w-6xl mx-auto relative z-10">
           <h2 className="text-4xl small:text-6xl font-bold mb-10 text-center">
             Old School Meets New School
           </h2>

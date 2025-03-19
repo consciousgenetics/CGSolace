@@ -142,7 +142,7 @@ const Hero = ({ data }: { data: HeroBannerData }) => {
               transition={{ duration: 0.5, ease: "easeOut", delay: 0.4 }}
               className="px-12 py-6 sm:px-16 sm:py-8 md:px-20 md:py-10"
             >
-              <h2 className="text-white text-4xl sm:text-5xl md:text-7xl lg:text-8xl font-bold coming-soon-text font-latto">COMING SOON</h2>
+              <h2 className="text-white text-4xl sm:text-5xl md:text-7xl lg:text-8xl font-bold coming-soon-text font-latto whitespace-nowrap">COMING SOON</h2>
             </motion.div>
           </motion.div>
           
@@ -161,7 +161,7 @@ const Hero = ({ data }: { data: HeroBannerData }) => {
               className="flex justify-center"
             >
               <Button asChild className="font-latto w-max bg-[#FDD729] px-10 py-5 sm:px-14 sm:py-7 md:px-24 md:py-10 lg:px-28 lg:py-12 text-xl sm:text-2xl md:text-4xl lg:text-5xl font-bold text-black hover:bg-[#E5C125] rounded-[25px] sm:rounded-[30px] md:rounded-[35px] flex items-center shadow-xl">
-                <LocalizedClientLink href="/subscribe" className="flex items-center">
+                <LocalizedClientLink href="/categories/red-kachina" className="flex items-center">
                   REGISTER NOW
                   <motion.svg 
                     initial={{ x: -5 }}

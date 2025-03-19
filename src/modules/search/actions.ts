@@ -23,6 +23,7 @@ type SearchParams = {
   material?: string[]
   price?: string[]
   query?: string
+  limit?: number
 }
 
 export function search({
@@ -35,6 +36,7 @@ export function search({
   material,
   price,
   query,
+  limit,
 }: SearchParams): Promise<SearchedProducts> {
   return new Promise((resolve) => {
     try {
@@ -50,8 +52,8 @@ export function search({
       const searchParams = new URLSearchParams({
         currency_code,
         order: sortBy,
-        offset: ((page - 1) * PRODUCT_LIMIT).toString(),
-        limit: PRODUCT_LIMIT.toString(),
+        offset: ((page - 1) * (limit || PRODUCT_LIMIT)).toString(),
+        limit: (limit || PRODUCT_LIMIT).toString(),
         fields: '*variants.calculated_price,+variants.inventory_quantity,*variants,*variants.prices'
       })
 

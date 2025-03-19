@@ -87,7 +87,7 @@ export const GalleryDialog = ({
                     <div
                       key={id}
                       className={clx(
-                        'h-[92px] w-20 shrink-0 cursor-pointer border',
+                        'h-[92px] w-[92px] shrink-0 cursor-pointer border',
                         {
                           'border-black': currentIndex === id,
                         }

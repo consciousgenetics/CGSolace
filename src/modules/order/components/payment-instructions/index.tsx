@@ -52,6 +52,8 @@ const PaymentInstructions = ({ order }: PaymentInstructionsProps) => {
           </Box>
           <Box className="ml-10 bg-white p-3 rounded-md">
             <ul className="space-y-2">
+              <li><span className="font-semibold">Account Number:</span> 19831543</li>
+              <li><span className="font-semibold">Sort Code:</span> 04-06-05</li>
               <li><span className="font-semibold">IBAN:</span> GB41 CLRB 0406 0519 8315 43</li>
               <li><span className="font-semibold">SWIFT:</span> CLRBGB22</li>
               <li><span className="font-semibold">Address:</span> 4th Floor, The Featherstone Building, 66 City Road, London, EC1Y 2AL</li>

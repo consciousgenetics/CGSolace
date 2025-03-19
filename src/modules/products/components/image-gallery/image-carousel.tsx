@@ -44,7 +44,7 @@ const ImageCarousel = ({ images, openDialog }: ImageCarouselProps) => {
         <div className="flex">
           {images.map((image, index) => (
             <div
-              className="relative aspect-[29/34] max-h-[400px] w-full shrink-0"
+              className="relative aspect-square max-h-[400px] w-full shrink-0"
               key={image.id}
             >
               <Image

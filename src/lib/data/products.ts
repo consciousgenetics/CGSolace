@@ -21,11 +21,21 @@ export const getProductsById = async function ({
         id: ids,
         region_id: regionId,
         fields:
-          '*variants.calculated_price,+variants.inventory_quantity,*variants,*variants.prices,*categories,+metadata',
+          '*images,*thumbnail,*variants.calculated_price,+variants.inventory_quantity,*variants,*variants.prices,*categories,+metadata',
       },
       { next: { tags: ['products'] } }
     )
-    .then(({ products }) => products)
+    .then(({ products }) => {
+      // Log the products with their images for debugging
+      console.log('Products fetched by ID:', products.map(p => ({
+        id: p.id,
+        title: p.title,
+        thumbnail: p.thumbnail,
+        imageCount: p.images?.length || 0,
+        imageUrls: p.images?.map(img => img.url)
+      })));
+      return products;
+    })
 }
 
 export const getProductByHandle = async function (
@@ -41,7 +51,7 @@ export const getProductByHandle = async function (
           handle,
           region_id: regionId,
           fields:
-            '*variants.calculated_price,+variants.inventory_quantity,*variants,*variants.prices,*categories,+metadata',
+            '*images,*thumbnail,*variants.calculated_price,+variants.inventory_quantity,*variants,*variants.prices,*categories,+metadata',
         },
         { next: { tags: ['products'] } }
       )
@@ -58,7 +68,8 @@ export const getProductByHandle = async function (
       id: product.id,
       title: product.title,
       thumbnail: product.thumbnail,
-      images: product.images?.length || 0
+      images: product.images?.length || 0,
+      imageUrls: product.images?.map(img => img.url)
     })
     
     return product
@@ -68,7 +79,7 @@ export const getProductByHandle = async function (
   }
 }
 
-export async function getProductsList({
+export const getProductsList = async function ({
   pageParam = 0,
   queryParams,
   countryCode,
@@ -92,21 +103,18 @@ export async function getProductsList({
       limit: queryParams?.limit || 12,
       offset: pageParam,
       region_id: region.id,
-      fields: '*variants.calculated_price,+variants.inventory_quantity,*variants,*variants.prices,*categories,+metadata',
+      fields: '*images,*thumbnail,*variants.calculated_price,+variants.inventory_quantity,*variants,*variants.prices,*categories,+metadata',
       ...(queryParams || {}),
     }, {
       next: { tags: ['products'] }
     })
     .then(({ products, count }) => {
-      // Log the products with their categories for debugging
-      console.log('Products fetched with categories:', products.map(p => ({
+      // Log the products with their images for debugging
+      console.log('Products fetched with images:', products.map(p => ({
         id: p.id,
         title: p.title,
-        categories: p.categories?.map(c => ({
-          id: c.id,
-          handle: c.handle,
-          name: c.name
-        }))
+        thumbnail: p.thumbnail,
+        imageCount: p.images?.length || 0
       })));
 
       return {

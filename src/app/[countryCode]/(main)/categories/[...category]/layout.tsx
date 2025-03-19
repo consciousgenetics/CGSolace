@@ -78,9 +78,32 @@ export default async function CategoryPageLayout(
     }
 
     const currentCategory = product_categories[product_categories.length - 1]
+    const isRedKachina = category.includes('red-kachina')
 
     return (
       <div className="bg-white min-h-screen">
+        {isRedKachina && (
+          <div className="w-full bg-[#FDD729] py-12">
+            <div className="max-w-2xl mx-auto px-4 text-center">
+              <h2 className="text-4xl sm:text-5xl font-bold font-anton uppercase mb-4">
+                REGISTER FOR RED KACHINA
+              </h2>
+              <p className="text-lg mb-6 font-latto">
+                Be the first to know about new collections and exclusive offers.
+              </p>
+              <div className="flex max-w-md mx-auto">
+                <input
+                  type="email"
+                  placeholder="Email"
+                  className="flex-grow px-4 py-3 border border-black/10 rounded-l focus:outline-none"
+                />
+                <button className="bg-black text-white px-6 py-3 font-bold rounded-r hover:bg-black/90 transition-colors">
+                  →
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
         <Container className="flex flex-col gap-8 !py-8">
           <Box className="flex flex-col gap-4">
             <StoreBreadcrumbs breadcrumb={currentCategory.name} />

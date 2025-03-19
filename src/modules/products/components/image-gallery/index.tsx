@@ -107,8 +107,8 @@ const ImageGallery = ({ images, title }: ImageGalleryProps) => {
               className={cn(
                 'relative w-full shrink-0 z-0',
                 index === 0
-                  ? 'col-span-2 aspect-[29/20] max-h-[540px]'
-                  : 'col-span-1 aspect-[29/34] max-h-[440px]'
+                  ? 'col-span-2 aspect-square max-h-[540px]'
+                  : 'col-span-1 aspect-square max-h-[440px]'
               )}
               key={image.id}
               style={{ pointerEvents: 'auto' }}

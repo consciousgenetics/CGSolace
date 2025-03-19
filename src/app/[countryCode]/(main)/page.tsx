@@ -448,7 +448,7 @@ export default async function Home(props: {
                               SEEDS
                             </span>
                           </div>
-                          <h3 className="text-black text-xl font-bold text-center uppercase relative z-10">ZAPPLES</h3>
+                          <h3 className="text-black text-xl font-bold text-center uppercase relative z-10">ZAPPLEZ</h3>
                         </div>
                       </div>
                     </div>
@@ -593,7 +593,7 @@ export default async function Home(props: {
             )}
 
             {/* Grinders, Lighters & Ashtray Section */}
-            <div className="w-full bg-gray-100 text-black py-0 my-0 relative">
+            <div className="w-full bg-white text-black py-0 my-0 relative">
               <div className="absolute inset-0 w-full h-full opacity-0">
                 <img 
                   src="/126.png"
@@ -639,7 +639,7 @@ export default async function Home(props: {
                           </div>
                           <div className="text-center">
                             <LocalizedClientLink
-                              href="/categories/accessories"
+                              href="/products/conscious-genetics-grinders"
                               className="text-white underline font-medium hover:text-gray-200 transition-colors text-lg font-latto"
                             >
                               SHOP NOW
@@ -680,7 +680,7 @@ export default async function Home(props: {
                           </div>
                           <div className="text-center">
                             <LocalizedClientLink
-                              href="/categories/accessories"
+                              href="/products/conscious-genetics-lighters"
                               className="text-white underline font-medium hover:text-gray-200 transition-colors text-lg font-latto"
                             >
                               SHOP NOW
@@ -721,7 +721,7 @@ export default async function Home(props: {
                           </div>
                           <div className="text-center">
                             <LocalizedClientLink
-                              href="/categories/accessories"
+                              href="/products/conscious-genetics-ashtrays"
                               className="text-white underline font-medium hover:text-gray-200 transition-colors text-lg font-latto"
                             >
                               SHOP NOW
@@ -746,8 +746,8 @@ export default async function Home(props: {
               </div>
               <div className="relative z-10">
                 <LocalizedClientLink
-                  href="/categories/clothing"
-                  className="bg-[#d67bef] hover:bg-[#c15ed6] text-black transition-colors rounded-full uppercase tracking-wider px-16 py-5 text-2xl font-bold font-latto inline-block"
+                  href="/categories/accessories"
+                  className="bg-[#d67bef] hover:bg-[#c15ed6] text-black transition-colors rounded-full uppercase tracking-wider px-8 py-3 text-xl font-bold font-latto inline-block"
                 >
                   SHOP ALL
                 </LocalizedClientLink>

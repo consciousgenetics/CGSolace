@@ -38,11 +38,11 @@ const DropdownMenu: React.FC<DropdownMenuProps> = ({
   const uniqueId = useId();
   
   const renderSubcategories = (categories: CategoryItem[]) => (
-    <div className="py-3 min-w-[240px] backdrop-blur-md">
+    <div className="py-3 min-w-[240px] backdrop-blur-md bg-transparent">
       <div className="mb-2 px-4">
         <Button
           variant="tonal"
-          className="group relative flex w-full items-center justify-between !px-4 !py-2 text-[13px] font-medium bg-amber-400 hover:bg-amber-500 text-black transition-all duration-300 rounded-lg overflow-hidden font-anton"
+          className="group relative flex w-full items-center justify-between !px-4 !py-2 text-[13px] font-medium bg-white/80 hover:bg-white text-black transition-all duration-300 rounded-lg overflow-hidden font-anton"
           onClick={() => onOpenChange(false)}
           asChild
         >
@@ -63,7 +63,7 @@ const DropdownMenu: React.FC<DropdownMenuProps> = ({
           <div key={`${subItem.handle}-${index}`} className="group/item relative">
             <NavigationItem
               asChild
-              className="group relative flex items-center justify-between w-full px-4 py-2 text-[13px] font-medium text-black hover:bg-amber-500/50 transition-all duration-300 font-anton"
+              className="group relative flex items-center justify-between w-full px-4 py-2 text-[13px] font-medium text-black hover:bg-white/80 transition-all duration-300 font-anton"
               data-testid={formatNameForTestId(
                 `${subItem.name}-category-title`
               )}
@@ -88,8 +88,9 @@ const DropdownMenu: React.FC<DropdownMenuProps> = ({
       {item.category_children && (
         <div
           key={`dropdown-${uniqueId}-${item.name}`}
+          style={{ backgroundImage: 'url("/127.png")', backgroundColor: 'transparent' }}
           className={cn(
-            'absolute left-0 top-full z-50 translate-y-1 bg-amber-400 backdrop-blur-md border border-amber-500/20 shadow-lg rounded-lg transition-all duration-300',
+            'absolute left-0 top-full z-50 translate-y-1 bg-cover bg-center backdrop-blur-md border border-amber-500/20 shadow-lg rounded-lg transition-all duration-300',
             isOpen
               ? 'pointer-events-auto opacity-100 translate-y-0.5'
               : 'pointer-events-none invisible opacity-0 translate-y-2'

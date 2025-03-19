@@ -7,9 +7,10 @@ import { Button } from '@modules/common/components/button'
 import { Container } from '@modules/common/components/container'
 import LocalizedClientLink from '@modules/common/components/localized-client-link'
 import Image from 'next/image'
-import { useState, useCallback, useEffect, useRef } from 'react'
+import { useState, useCallback, useEffect, useRef, useMemo } from 'react'
 import { Heading } from '@modules/common/components/heading'
 import { motion, useInView } from 'framer-motion'
+import { useWindowSize } from '@lib/hooks/use-window-size'
 
 import { ProductTile } from '../product-tile'
 import CarouselWrapper from './carousel-wrapper'
@@ -31,83 +32,6 @@ interface ProductCategory {
 // Extended StoreProduct type that preserves the original categories type
 interface ExtendedStoreProduct extends StoreProduct {
   collection?: StoreCollection | null
-}
-
-// Add specific product fixes
-const fixProductThumbnail = (product: StoreProduct) => {
-  // Log the product for debugging
-  console.log(`ProductCarousel: Processing product ${product.title}`, {
-    id: product.id,
-    handle: product.handle,
-    thumbnail: product.thumbnail,
-    categories: product.categories
-  })
-  
-  // Special handling for Conscious Stoner T-Shirt Female
-  if (product.handle === "conscious-stoner-t-shirt-female" || 
-      (product.title && product.title.toLowerCase().includes("conscious stoner") && 
-       product.title.toLowerCase().includes("female"))) {
-    console.log(`ProductCarousel: Applying special fix for Conscious Stoner T-Shirt Female`)
-    
-    // Use the remote URL instead of local path
-    const productPageImage = "https://cgsolacemedusav2-production.up.railway.app/uploads/female_model_t_shirt_2_6d4e8cc3b5.jpg"
-    
-    console.log(`ProductCarousel: Original thumbnail for ${product.title}:`, product.thumbnail)
-    console.log(`ProductCarousel: Using fixed URL for ${product.title}:`, productPageImage)
-    
-    return {
-      ...product,
-      thumbnail: productPageImage
-    }
-  }
-  
-  // Handle products by exact handle
-  const handleSpecificFixes = {
-    "merch-pack": "/product1.jpg",  // Use existing image instead of merch1.jpg
-    "zheez-pink-og": "/product2.jpg" // Use existing image
-  }
-  
-  // Direct handle-based match (most specific)
-  if (product.handle && handleSpecificFixes[product.handle]) {
-    console.log(`ProductCarousel: Applying handle-specific fix for "${product.handle}"`)
-    return {
-      ...product,
-      thumbnail: handleSpecificFixes[product.handle]
-    }
-  }
-  
-  // Check for problematic image URLs
-  if (product.thumbnail && product.thumbnail.includes('pink_zheez')) {
-    console.log(`ProductCarousel: Fixing problematic pink_zheez image for ${product.title}`)
-    return {
-      ...product,
-      thumbnail: "/product2.jpg"  // Use existing image
-    }
-  }
-  
-  // For merch pack
-  if (product.title?.toLowerCase().includes("merch-pack") || product.handle?.toLowerCase() === "merch-pack") {
-    console.log(`ProductCarousel: Applying special thumbnail fix for "${product.title}"`)
-    return {
-      ...product,
-      thumbnail: "/uploads/products/merch_pack.jpg"
-    }
-  }
-  
-  // Check if thumbnail is missing or invalid
-  if (!product.thumbnail || product.thumbnail === "null" || product.thumbnail === "undefined") {
-    console.log(`ProductCarousel: Missing thumbnail for ${product.title}, generating fallback`)
-    // Construct a fallback thumbnail path based on handle, with null check
-    const fallbackPath = product.handle 
-      ? `/uploads/products/${product.handle.replace(/-/g, '_')}.jpg`
-      : '/uploads/products/default.jpg'
-    return {
-      ...product,
-      thumbnail: fallbackPath
-    }
-  }
-  
-  return product
 }
 
 interface ViewAllProps {
@@ -132,12 +56,42 @@ interface ProductTileProduct {
   created_at: string
   title: string
   handle: string
-  thumbnail: string
+  thumbnail: string | null
   calculatedPrice: string
   salePrice: string
-  category?: ProductCategory
+  category?: StoreProductCategory
   description?: string | null
   variants?: any[]
+}
+
+// Process product data for display
+const processProduct = (product: StoreProduct): ProductTileProduct => {
+  console.log('Processing product:', {
+    title: product.title,
+    thumbnail: product.thumbnail,
+    handle: product.handle,
+    images: product.images?.length || 0
+  })
+
+  // Get the price data
+  const priceInfo = getProductPrice({ product })
+  const cheapestPrice = priceInfo.cheapestPrice()
+
+  // Use the first image as thumbnail if no thumbnail is set
+  const thumbnail = product.thumbnail || (product.images && product.images[0]?.url)
+
+  return {
+    id: product.id,
+    created_at: product.created_at,
+    title: product.title,
+    handle: product.handle,
+    thumbnail: thumbnail,
+    calculatedPrice: cheapestPrice.price.calculated_price,
+    salePrice: cheapestPrice.price.original_price,
+    category: product.categories?.[0],
+    description: product.description,
+    variants: product.variants
+  }
 }
 
 export function ProductCarousel({
@@ -162,6 +116,45 @@ export function ProductCarousel({
     once: true,
     margin: "-100px 0px"
   })
+
+  // Filter and process products
+  const processedProducts = useMemo(() => {
+    // First filter the products
+    const filteredProducts = products.filter(product => {
+      // Only apply filtering for clothing section
+      if (testId !== 'clothing-section') return true;
+      
+      // Check if product has categories
+      if (!product.categories?.length) return false;
+
+      // Filter based on Medusa categories
+      return product.categories.some(category => {
+        // Get the category handle
+        const categoryHandle = category.handle;
+        // For men's section, look for products in the mens category
+        if (clothingType === 'mens') {
+          return categoryHandle === 'mens';
+        }
+        // For women's section, look for products in the womens-merch category
+        return categoryHandle === 'womens-merch';
+      });
+    });
+
+    // Then process the filtered products
+    return filteredProducts.map(product => ({
+      ...product,
+      calculatedPrice: getProductPrice({ product }),
+      salePrice: ''
+    }));
+  }, [products, testId, clothingType]);
+
+  // Get displayed products based on showAllProducts state
+  const displayedProducts = useMemo(() => {
+    if (showAllProducts) {
+      return processedProducts;
+    }
+    return processedProducts.slice(0, 4);
+  }, [processedProducts, showAllProducts]);
 
   // Validation logging - Component Props
   useEffect(() => {
@@ -315,141 +308,6 @@ export function ProductCarousel({
     });
   });
 
-  // Process products with simplified filtering
-  const processedProducts = products.filter(product => {
-    // Log each product being processed
-    console.log(`Processing product "${product.title}":`, {
-      id: product.id,
-      categories: product.categories || [],
-      testId,
-      seedType,
-      clothingType
-    });
-
-    // If categories is undefined, try to use collection information
-    const productCategories = product.categories || [];
-    const productCollection = product.collection;
-    
-    console.log(`Categories and collection for "${product.title}":`, {
-      categories: productCategories,
-      collection: productCollection
-    });
-
-    if (testId === 'seeds-section') {
-      // For seeds, if no categories, check collection handle/title
-      if (productCategories.length === 0 && productCollection) {
-        const collectionHandle = productCollection.handle?.toLowerCase() || '';
-        const collectionTitle = productCollection.title?.toLowerCase() || '';
-        
-        if (seedType === 'regular') {
-          return collectionHandle.includes('regular') || 
-                 collectionTitle.includes('regular');
-        } else {
-          return collectionHandle.includes('feminized') || 
-                 collectionTitle.includes('feminized');
-        }
-      }
-
-      // If we have categories, use those
-      const categoryHandles = productCategories.map(c => c.handle?.toLowerCase());
-      const categoryNames = productCategories.map(c => c.name?.toLowerCase());
-      
-      console.log(`Seed section - checking product "${product.title}":`, {
-        categoryHandles,
-        categoryNames,
-        seedType
-      });
-
-      if (seedType === 'regular') {
-        return categoryHandles.some(handle => 
-          handle === 'seeds' || 
-          handle === '/categories/seeds' ||
-          handle?.includes('regular')
-        ) || categoryNames.some(name => 
-          name?.includes('regular') || 
-          name?.includes('seeds')
-        );
-      } else {
-        return categoryHandles.some(handle => 
-          handle === 'feminized-seeds' || 
-          handle === '/categories/feminized-seeds' ||
-          handle?.includes('feminized')
-        ) || categoryNames.some(name => 
-          name?.includes('feminized')
-        );
-      }
-    } else if (testId === 'clothing-section') {
-      // For clothing, if no categories, check collection handle/title
-      if (productCategories.length === 0 && productCollection) {
-        const collectionHandle = productCollection.handle?.toLowerCase() || '';
-        const collectionTitle = productCollection.title?.toLowerCase() || '';
-        const productTitle = product.title?.toLowerCase() || '';
-        
-        if (clothingType === 'mens') {
-          // For men's products, explicitly exclude anything with 'women', 'female', or 'pink' in the title
-          return ((collectionHandle.includes('men') || collectionTitle.includes('men')) && 
-                 !collectionHandle.includes('women') && 
-                 !collectionTitle.includes('women') &&
-                 !productTitle.includes('women') &&
-                 !productTitle.includes('female') &&
-                 !productTitle.includes('pink')) ||
-                 (product as any).clothing_type === 'mens';
-        } else {
-          // For women's products, look for 'women', 'female', or 'pink' in the title
-          return collectionHandle.includes('women') || 
-                 collectionTitle.includes('women') ||
-                 productTitle.includes('women') ||
-                 productTitle.includes('female') ||
-                 productTitle.includes('pink') ||
-                 (product as any).clothing_type === 'womens';
-        }
-      }
-
-      // If we have categories, use those
-      const isMensProduct = productCategories.some(cat => {
-        const handle = cat.handle?.toLowerCase() || '';
-        const name = cat.name?.toLowerCase() || '';
-        const productTitle = product.title?.toLowerCase() || '';
-        return ((handle.includes('men') || 
-               name.includes('men') || 
-               handle.includes('mens-merch') || 
-               name.includes("men's")) &&
-               !productTitle.includes('women') &&
-               !productTitle.includes('female') &&
-               !productTitle.includes('pink')) ||
-               (product as any).clothing_type === 'mens';
-      });
-
-      const isWomensProduct = productCategories.some(cat => {
-        const handle = cat.handle?.toLowerCase() || '';
-        const name = cat.name?.toLowerCase() || '';
-        const productTitle = product.title?.toLowerCase() || '';
-        return (handle.includes('women') || 
-               name.includes('women') || 
-               handle.includes('womens-merch') || 
-               name.includes("women's") ||
-               productTitle.includes('women') ||
-               productTitle.includes('female') ||
-               productTitle.includes('pink')) ||
-               (product as any).clothing_type === 'womens';
-      });
-      
-      console.log(`Clothing section - checking product "${product.title}":`, {
-        clothingType,
-        isMensProduct,
-        isWomensProduct,
-        categories: productCategories.map(c => ({
-          handle: c.handle,
-          name: c.name
-        }))
-      });
-      
-      return clothingType === 'mens' ? isMensProduct : isWomensProduct;
-    }
-
-    return true;
-  }).map(fixProductThumbnail);
-
   // Log filtered results
   console.log('Filtered products:', {
     testId,
@@ -460,18 +318,6 @@ export function ProductCarousel({
     filteredProducts: processedProducts.map(p => ({
       title: p.title,
       categories: p.categories?.map(c => c.handle)
-    }))
-  });
-
-  const displayedProducts = processedProducts;
-
-  // Debug: Log what will be displayed
-  console.log('Products to Display:', {
-    count: displayedProducts.length,
-    products: displayedProducts.map(p => ({
-      id: p.id,
-      title: p.title,
-      thumbnail: p.thumbnail
     }))
   });
 
@@ -717,7 +563,7 @@ export function ProductCarousel({
                   })
                 ) : (
                   // Carousel view when showing limited products
-                  <CarouselWrapper productsCount={processedProducts.length}>
+                  <CarouselWrapper productsCount={displayedProducts.length}>
                     {displayedProducts.map((item) => {
                       // Get the cheapest price using the utility function
                       const { cheapestPrice } = getProductPrice({

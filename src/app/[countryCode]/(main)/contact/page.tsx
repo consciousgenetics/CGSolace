@@ -77,8 +77,8 @@ export default function ContactPage() {
       <Container>
         <div className="max-w-4xl mx-auto w-full relative">
           <div className="text-center mb-8 sm:mb-12">
-            <Text className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4 sm:mb-6">Contact Us</Text>
-            <Text className="text-black text-base sm:text-lg max-w-2xl mx-auto">
+            <Text className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4 sm:mb-6 text-white">Contact Us</Text>
+            <Text className="text-white text-base sm:text-lg max-w-2xl mx-auto">
               Have a question or feedback? We'd love to hear from you. Our team will get back to you as soon as possible.
             </Text>
           </div>

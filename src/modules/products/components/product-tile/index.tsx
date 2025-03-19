@@ -194,210 +194,14 @@ export function ProductTile({
   const isPackProduct = product.title?.toLowerCase().includes('merch pack') || 
                        product.title?.toLowerCase().includes('5 x favourite pack')
 
-  // Enhanced debugging for thumbnail URL
-  console.log('ProductTile rendering for product:', product.title)
-  console.log('Original thumbnail URL:', product.thumbnail)
-  
   // Get the category tag for this product
   const categoryTag = getCategoryTag(product);
   
   // Generate a deterministic rating for this product
   const productRating = useMemo(() => getProductRating(product.id), [product.id]);
-  
-  // CRITICAL FIX: Direct image override for the problem product
-  // If this is the problematic product, use the known working image directly
-  if (product.handle === "conscious-stoner-t-shirt-female" || 
-     (product.title && product.title.toLowerCase().includes("conscious stoner") && 
-      product.title.toLowerCase().includes("female"))) {
-    console.log("DIRECT IMAGE OVERRIDE in ProductTile for Conscious Stoner T-Shirt Female");
-    const workingImageUrl = "https://cgsolacemedusav2-production.up.railway.app/uploads/female_model_t_shirt_2_6d4e8cc3b5.jpg";
-    
-    // Skip all transformations and use the image directly
-    console.log('Using direct image URL:', workingImageUrl);
-    
-    const isNew = useMemo(() => {
-      const createdAt = new Date(product.created_at)
-      const currentDate = new Date()
-      const differenceInDays =
-        (currentDate.getTime() - createdAt.getTime()) / (1000 * 3600 * 24)
 
-      return differenceInDays <= 7
-    }, [product.created_at])
-
-    return (
-      <Box
-        className="group flex h-full flex-col pb-4"
-        data-testid={formatNameForTestId(`${product.title}-product-tile`)}
-      >
-        <div className="relative w-full max-w-[300px] mx-auto">
-          {/* Image container - on top */}
-          <Box className="relative w-full aspect-square z-10">
-            {isNew && (
-              <Box className="absolute left-3 top-3 z-20 small:left-4 small:top-4">
-                <Badge label="New" variant="brand" className="text-sm py-1 px-2" />
-              </Box>
-            )}
-            <div className="relative w-full h-full">
-              <LoadingImage
-                src={workingImageUrl}
-                alt={product.title}
-                loading="lazy"
-                className="h-full w-full object-cover rounded-xl border-4 border-black cursor-pointer"
-              />
-              <LocalizedClientLink 
-                href={`/products/${product.handle}`}
-                className="absolute inset-0 z-30"
-              >
-                <span className="sr-only">View {product.title}</span>
-              </LocalizedClientLink>
-            </div>
-            <div className="absolute inset-0 z-20">
-              <ProductActions productHandle={product.handle} regionId={regionId} />
-            </div>
-          </Box>
-
-          {/* Product Card - peeking from bottom */}
-          <Box className="w-full -mt-2">
-            <Box className="text-center px-5 py-3 pb-4 bg-white rounded-3xl shadow-lg relative">
-              {/* Product Info */}
-              <div className="space-y-2">
-                {/* Category Badge - Only show in carousel */}
-                {isCarousel && (
-                  <span className={`inline-block px-3 py-1 text-xs font-bold rounded-full mb-2 ${
-                    product.category?.title?.toLowerCase().includes('merch') || 
-                    product.title?.toLowerCase().includes('merch') ||
-                    getCategoryTag(product).includes("MEN'S") ||
-                    getCategoryTag(product).includes("WOMEN'S")
-                      ? 'bg-[#d67bef] text-white'
-                      : 'bg-amber-400 text-black'
-                  }`}>
-                    {getCategoryTag(product)}
-                  </span>
-                )}
-
-                {/* Product Title */}
-                <Text
-                  as="span"
-                  className="block text-sm xs:text-base small:text-lg medium:text-xl font-bold uppercase text-black line-clamp-1 small:line-clamp-2 tracking-wider font-anton px-1 small:px-2 min-h-[40px] small:min-h-[56px] flex items-center justify-center"
-                >
-                  {product.title}
-                </Text>
-                
-                {/* Stars */}
-                <div className="mb-1">
-                  <StarRating rating={productRating} />
-                </div>
-                
-                {/* Description with Read More - Only show in carousel */}
-                {isCarousel && product.description && (
-                  <div className="text-center px-1">
-                    <p className="text-gray-600 text-sm font-latto">
-                      {product.description.length > 120 
-                        ? `${product.description.substring(0, 120)}...` 
-                        : product.description
-                      }
-                    </p>
-                    {product.description.length > 120 && (
-                      <LocalizedClientLink 
-                        href={`/products/${product.handle}`}
-                        className={`text-sm font-medium hover:text-[#c15ed6] transition-colors mt-0.5 inline-block font-latto ${
-                          product.category?.title?.toLowerCase().includes('merch')
-                            ? 'text-[#d67bef]'
-                            : 'text-[#FDD729]'
-                        }`}
-                      >
-                        Read More
-                      </LocalizedClientLink>
-                    )}
-                  </div>
-                )}
-                
-                {/* Variant Selection Dropdown - Only show for pack products */}
-                {isPackProduct && product.variants && product.variants.length > 0 && (
-                  <div className="mb-4">
-                    <select
-                      value={selectedVariant}
-                      onChange={handleVariantChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#d67bef]"
-                    >
-                      {product.variants.map((variant) => (
-                        <option key={variant.id} value={variant.id}>
-                          {variant.title}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                )}
-                
-                {/* Buy Now and Price */}
-                <div className="flex items-center justify-center gap-2 mt-1">
-                  <span className="font-bold text-black text-base tracking-widest font-latto">BUY NOW</span>
-                  <div className="h-4 w-px bg-gray-200"></div>
-                  <span className={`font-medium text-base font-latto ${
-                    product.category?.title?.toLowerCase().includes('merch')
-                      ? 'text-[#d67bef]'
-                      : 'text-[#FDD729]'
-                  }`}>
-                    {product.calculatedPrice}
-                  </span>
-                </div>
-              </div>
-            </Box>
-          </Box>
-        </div>
-        
-        <ProductInfo
-          productHandle={product.handle}
-          productTitle={product.title}
-          calculatedPrice={product.calculatedPrice}
-          salePrice={product.salePrice}
-        />
-      </Box>
-    )
-  }
-  
-  // Standard processing for other products
-  // More robust transformation with error handling
-  let transformedThumbnail = null
-  try {
-    // Special handling for known problematic products
-    const problematicProducts = [
-      "merch-pack",
-      // Add other products that need special handling
-    ]
-    
-    // Check if this is a known problematic product
-    if (problematicProducts.includes(product.title.toLowerCase())) {
-      console.log(`Special handling for known problematic product: ${product.title}`)
-      
-      // If the URL is completely missing or invalid, use a default placeholder
-      if (!product.thumbnail || product.thumbnail === "null" || product.thumbnail === "undefined") {
-        console.log(`Missing thumbnail for ${product.title}, using fallback path construction`)
-        // Construct a likely path based on the product handle
-        const fallbackPath = `/uploads/products/${product.handle.replace(/-/g, '_')}.jpg`
-        transformedThumbnail = transformUrl(fallbackPath)
-      } else {
-        // Normal transformation with additional fixes
-        let urlToTransform = product.thumbnail
-        
-        // Fix common issues with URLs
-        if (urlToTransform.startsWith("null/") || urlToTransform.startsWith("undefined/")) {
-          urlToTransform = urlToTransform.substring(urlToTransform.indexOf('/') + 1)
-        }
-        
-        transformedThumbnail = transformUrl(urlToTransform)
-      }
-    } else {
-      // Standard transformation for normal products
-      transformedThumbnail = product.thumbnail ? transformUrl(product.thumbnail) : null
-    }
-    
-    console.log('Transformed thumbnail URL:', transformedThumbnail)
-  } catch (error) {
-    console.error('Error transforming thumbnail URL:', error)
-    // Fallback to original URL if transformation fails
-    transformedThumbnail = product.thumbnail
-  }
+  // Simple thumbnail transformation
+  const transformedThumbnail = product.thumbnail ? transformUrl(product.thumbnail) : null;
 
   const isNew = useMemo(() => {
     const createdAt = new Date(product.created_at)
@@ -444,10 +248,10 @@ export function ProductTile({
         <Box className="w-full -mt-2">
           <Box className="text-center px-5 py-3 pb-4 bg-white rounded-3xl shadow-lg relative">
             {/* Product Info */}
-            <div className="space-y-2">
+            <div className="space-y-3">
               {/* Category Badge - Only show in carousel */}
               {isCarousel && (
-                <span className={`inline-block px-3 py-1 text-xs font-bold rounded-full mb-2 ${
+                <span className={`inline-block px-3 py-1 text-xs font-bold rounded-full mt-3 mb-3 ${
                   product.category?.title?.toLowerCase().includes('merch') || 
                   product.title?.toLowerCase().includes('merch') ||
                   getCategoryTag(product).includes("MEN'S") ||
@@ -462,7 +266,7 @@ export function ProductTile({
               {/* Product Title */}
               <Text
                 as="span"
-                className="block text-sm xs:text-base small:text-lg medium:text-xl font-bold uppercase text-black line-clamp-1 small:line-clamp-2 tracking-wider font-anton px-1 small:px-2 min-h-[40px] small:min-h-[56px] flex items-center justify-center"
+                className="block text-base xs:text-lg small:text-lg medium:text-xl font-bold uppercase text-black line-clamp-1 small:line-clamp-2 tracking-wider font-anton px-1 small:px-2 min-h-[40px] small:min-h-[56px] flex items-center justify-center"
               >
                 {product.title}
               </Text>
@@ -472,9 +276,9 @@ export function ProductTile({
                 <StarRating rating={productRating} />
               </div>
               
-              {/* Description with Read More - Only show in carousel */}
+              {/* Description with Read More - Only show in carousel and on non-mobile devices */}
               {isCarousel && product.description && (
-                <div className="text-center px-1">
+                <div className="text-center px-1 hidden medium:block">
                   <p className="text-gray-600 text-sm font-latto">
                     {product.description.length > 120 
                       ? `${product.description.substring(0, 120)}...` 
