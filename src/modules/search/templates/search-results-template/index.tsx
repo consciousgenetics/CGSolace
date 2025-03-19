@@ -132,7 +132,10 @@ export default async function SearchResultsTemplate({
       {recommendedProducts && (
         <Suspense fallback={<SkeletonProductsCarousel />}>
           <ProductCarousel
-            products={recommendedProducts}
+            products={recommendedProducts.map(product => ({
+              ...product,
+              category: product.collection
+            }))}
             regionId={region.id}
             title="Recommended products"
           />

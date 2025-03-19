@@ -52,7 +52,7 @@ export const FAQAccordion = ({ data }: { data: FAQSection }) => {
                 </div>
               </AccordionTrigger>
               <AccordionContent>
-                <Text size="lg" className="max-w-[664px] text-gray-700">
+                <Text size="lg" className="max-w-[664px] text-gray-700 font-latto">
                   {item.Text}
                 </Text>
               </AccordionContent>

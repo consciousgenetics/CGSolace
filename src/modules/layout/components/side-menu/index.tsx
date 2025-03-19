@@ -123,7 +123,7 @@ const SideMenu = ({
             {hasChildren ? (
               <Button
                 variant="ghost"
-                className={`w-full justify-between py-3 ${isSeedItem ? 'font-semibold' : ''} ${isExpanded ? 'bg-gray-50' : ''}`}
+                className={`w-full justify-between py-3 ${isSeedItem ? 'font-semibold' : ''} ${isExpanded ? 'bg-gray-50' : ''} font-anton`}
                 onClick={() => handleCategoryClick(
                   { name: item.name, handle: item.handle },
                   hasChildren
@@ -140,7 +140,7 @@ const SideMenu = ({
             ) : (
               <Button
                 variant="ghost"
-                className={`w-full justify-between py-3 ${isSeedItem ? 'font-semibold' : ''}`}
+                className={`w-full justify-between py-3 ${isSeedItem ? 'font-semibold' : ''} font-anton`}
                 onClick={() => handleOpenDialogChange(false)}
                 asChild
               >
@@ -213,7 +213,7 @@ const SideMenu = ({
                 onClick={() => handleOpenDialogChange(false)}
                 asChild
               >
-                <LocalizedClientLink href="/shop">
+                <LocalizedClientLink href="/categories/clothing">
                   SHOP ALL
                 </LocalizedClientLink>
               </Button>

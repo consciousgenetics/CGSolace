@@ -51,7 +51,7 @@ const ReviewCard = ({ name, review, location }: ReviewCardProps) => {
           />
         </div>
         <Text className="text-xl small:text-2xl font-['Anton'] mb-3 small:mb-5 transform transition-all duration-300 hover:scale-105 text-black">{name}</Text>
-        <Text className="text-gray-600 mb-4 small:mb-6 text-base small:text-lg leading-relaxed">{review}</Text>
+        <Text className="text-gray-600 mb-4 small:mb-6 text-base small:text-lg leading-relaxed font-latto">{review}</Text>
       </div>
       
       <div className="mt-auto">

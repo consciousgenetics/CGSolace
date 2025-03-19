@@ -115,12 +115,40 @@ export default async function Home(props: {
             id: collection.id
           });
           
-          return handle.includes('mens-merch') || 
-                 handle.includes('womens-merch') || 
-                 handle.includes('accessories') ||
-                 title.includes('mens merch') ||
-                 title.includes('womens merch') ||
-                 title.includes('accessories');
+          return handle.includes('merch') || 
+                 title.includes('merch') ||
+                 handle.includes('clothing') ||
+                 title.includes('clothing') ||
+                 handle.includes('apparel') ||
+                 title.includes('apparel') ||
+                 handle.includes('unisex') ||
+                 title.includes('unisex');
+        });
+
+        // Separate mens and womens clothing collections
+        const mensClothingCollections = clothingCollections.filter(collection => {
+          const title = (collection.title || '').toLowerCase();
+          const handle = (collection.handle || '').toLowerCase();
+          return ((handle.includes('mens') || handle.includes("men's") || 
+                 title.includes('mens') || title.includes("men's")) &&
+                 !handle.includes('womens') && !handle.includes("women's") &&
+                 !title.includes('womens') && !title.includes("women's")) ||
+                 handle.includes('unisex') || 
+                 title.includes('unisex');
+        });
+        
+        // Log specific mens collection details
+        console.log('Mens collections for fetching:', mensClothingCollections.map(c => ({
+          id: c.id,
+          title: c.title,
+          handle: c.handle
+        })));
+        
+        const womensClothingCollections = clothingCollections.filter(collection => {
+          const title = (collection.title || '').toLowerCase();
+          const handle = (collection.handle || '').toLowerCase();
+          return handle.includes('womens') || handle.includes("women's") || 
+                 title.includes('womens') || title.includes("women's");
         });
 
         // Log found clothing collections
@@ -130,57 +158,189 @@ export default async function Home(props: {
           handle: c.handle
         })));
 
-        // If we found seed collections, try to fetch those products specifically
-        if (seedCollections.length > 0) {
-          try {
-            // Fetch regular seed products
-            const regularSeedProductsResult = await getProductsList({
-              pageParam: 0,
-              queryParams: { 
-                limit: 9, 
-                collection_id: regularSeedCollections.map(collection => collection.id)
-              },
-              countryCode: countryCode,
-            })
-              .then(({ response }) => response)
-              .catch(() => ({ products: [] }));
+        // Fetch seed products by category
+        try {
+          // First, fetch all product categories to get the correct IDs
+          const categoriesResponse = await fetch(`${process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL}/store/product-categories`, {
+            headers: {
+              "x-publishable-api-key": process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY || "temp",
+            },
+          }).then(res => res.json());
 
-            // Fetch feminized seed products
-            const feminizedSeedProductsResult = await getProductsList({
-              pageParam: 0,
-              queryParams: { 
-                limit: 9, 
-                collection_id: feminizedSeedCollections.map(collection => collection.id)
-              },
-              countryCode: countryCode,
-            })
-              .then(({ response }) => response)
-              .catch(() => ({ products: [] }));
+          // Log categories for debugging
+          console.log('Available categories:', categoriesResponse.product_categories?.map(cat => ({
+            id: cat.id,
+            handle: cat.handle,
+            name: cat.name
+          })));
 
-            // Combine both types of products
-            seedProducts = [
-              ...regularSeedProductsResult?.products || [],
-              ...feminizedSeedProductsResult?.products || []
-            ];
-          } catch (error) {
-            console.error("Error fetching seed products:", error);
-          }
+          // Find the seed categories
+          const regularSeedsCategory = categoriesResponse.product_categories?.find(
+            cat => cat.handle === 'seeds'
+          );
+          const feminizedSeedsCategory = categoriesResponse.product_categories?.find(
+            cat => cat.handle === 'feminized-seeds'
+          );
+
+          console.log('Found seed categories:', {
+            regular: regularSeedsCategory,
+            feminized: feminizedSeedsCategory
+          });
+
+          // Fetch regular seed products
+          const regularSeedProductsResult = await getProductsList({
+            pageParam: 0,
+            queryParams: { 
+              limit: 9,
+              category_id: regularSeedsCategory ? [regularSeedsCategory.id] : [],
+              fields: '*variants.calculated_price,+variants.inventory_quantity,*variants,*variants.prices,*categories,+metadata'
+            },
+            countryCode: countryCode,
+          })
+            .then(({ response }) => response)
+            .catch(() => ({ products: [] }));
+
+          // Fetch feminized seed products
+          const feminizedSeedProductsResult = await getProductsList({
+            pageParam: 0,
+            queryParams: { 
+              limit: 9,
+              category_id: feminizedSeedsCategory ? [feminizedSeedsCategory.id] : [],
+              fields: '*variants.calculated_price,+variants.inventory_quantity,*variants,*variants.prices,*categories,+metadata'
+            },
+            countryCode: countryCode,
+          })
+            .then(({ response }) => response)
+            .catch(() => ({ products: [] }));
+
+          // Combine both types of products
+          seedProducts = [
+            ...regularSeedProductsResult?.products || [],
+            ...feminizedSeedProductsResult?.products || []
+          ];
+
+          // Log the fetched products for debugging
+          console.log('Fetched seed products:', {
+            regular: {
+              categoryId: regularSeedsCategory?.id,
+              products: regularSeedProductsResult?.products?.map(p => ({
+                id: p.id,
+                title: p.title,
+                categories: p.categories?.map(c => ({
+                  id: c.id,
+                  handle: c.handle
+                }))
+              }))
+            },
+            feminized: {
+              categoryId: feminizedSeedsCategory?.id,
+              products: feminizedSeedProductsResult?.products?.map(p => ({
+                id: p.id,
+                title: p.title,
+                categories: p.categories?.map(c => ({
+                  id: c.id,
+                  handle: c.handle
+                }))
+              }))
+            }
+          });
+        } catch (error) {
+          console.error("Error fetching seed products:", error);
         }
         
         // If we found any clothing collections, try to fetch those products
         if (clothingCollections.length > 0) {
           try {
-            const clothingProductsResult = await getProductsList({
-              pageParam: 0,
-              queryParams: { 
-                limit: 12, 
-                collection_id: clothingCollections.map(collection => collection.id)
+            // First, fetch all product categories to get the correct IDs
+            const categoriesResponse = await fetch(`${process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL}/store/product-categories`, {
+              headers: {
+                "x-publishable-api-key": process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY || "temp",
               },
-              countryCode: countryCode,
-            })
-              .then(({ response }) => response)
-              .catch(() => ({ products: [] }));
-            clothingProducts = clothingProductsResult?.products || [];
+            }).then(res => res.json());
+
+            // Log all available categories
+            console.log('Available categories for clothing:', categoriesResponse.product_categories?.map(cat => ({
+              id: cat.id,
+              handle: cat.handle,
+              name: cat.name
+            })));
+
+            // Find the mens category - try different possible handles
+            const mensCategory = categoriesResponse.product_categories?.find(
+              cat => cat.handle === 'mens' || 
+                    cat.handle === 'mens-merch' || 
+                    cat.handle === 'men'
+            );
+
+            console.log('Found mens category:', mensCategory);
+
+            // Find womens category
+            const womensCategory = categoriesResponse.product_categories?.find(
+              cat => cat.handle === 'womens-merch' || 
+                    cat.handle === 'womens' || 
+                    cat.handle === "women's"
+            );
+
+            console.log('Found womens category:', womensCategory);
+
+            // Fetch clothing products by category
+            const [mensProductsResult, womensProductsResult] = await Promise.all([
+              getProductsList({
+                pageParam: 0,
+                queryParams: { 
+                  limit: 12,
+                  category_id: mensCategory ? [mensCategory.id] : [],
+                  fields: '*variants.calculated_price,+variants.inventory_quantity,*variants,*variants.prices,*categories,+metadata'
+                },
+                countryCode: countryCode,
+              }).then(({ response }) => response).catch(() => ({ products: [] })),
+              
+              getProductsList({
+                pageParam: 0,
+                queryParams: { 
+                  limit: 12,
+                  category_id: womensCategory ? [womensCategory.id] : [],
+                  fields: '*variants.calculated_price,+variants.inventory_quantity,*variants,*variants.prices,*categories,+metadata'
+                },
+                countryCode: countryCode,
+              }).then(({ response }) => response).catch(() => ({ products: [] }))
+            ]);
+            
+            // Combine both mens and womens products, ensuring no duplicates
+            const seenIds = new Set();
+            clothingProducts = [
+              ...(mensProductsResult.products || []).map(product => ({
+                ...product,
+                clothing_type: 'mens'
+              })),
+              ...(womensProductsResult.products || []).map(product => ({
+                ...product,
+                clothing_type: 'womens'
+              }))
+            ].filter(product => {
+              if (seenIds.has(product.id)) {
+                return false;
+              }
+              seenIds.add(product.id);
+              return true;
+            });
+            
+            // Log clothing products for debugging
+            console.log('All clothing products fetched:', {
+              total: clothingProducts.length,
+              mens: mensProductsResult.products?.length || 0,
+              womens: womensProductsResult.products?.length || 0,
+              products: clothingProducts.map(p => ({
+                id: p.id,
+                title: p.title,
+                handle: p.handle,
+                categories: p.categories?.map(cat => ({
+                  id: cat.id,
+                  handle: cat.handle,
+                  name: cat.name
+                }))
+              }))
+            });
           } catch (error) {
             console.error("Error fetching clothing products:", error);
           }
@@ -239,197 +399,195 @@ export default async function Home(props: {
             {seedProducts && seedProducts.length > 0 && region && (
               <Suspense fallback={<SkeletonProductsCarousel />}>
                 <ProductCarousel
-                  testId="seeds-section"
                   products={seedProducts}
                   regionId={region.id}
                   title="Feminized Seeds"
-                  viewAll={{
-                    link: `/${countryCode}/shop`,
-                    text: 'View all',
-                  }}
+                  viewAll={{link: "/categories/seeds/feminized-seeds", text: "View all feminized"}}
+                  testId="seeds-section"
                 />
               </Suspense>
             )}
             {/* Seed Line Section */}
             <div className="w-full bg-black text-white py-0 my-0">
               <div className="max-w-[1400px] mx-auto px-4 py-8 sm:py-16">
-                <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-center mb-4 font-latto">SEED LINE</h2>
+                <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-center mb-4 font-['Anton']">SEED LINE</h2>
                 <p className="text-center text-base sm:text-lg md:text-xl mb-8 sm:mb-12 px-4 font-latto">Every genetic that we drop is a stable, trichome covered, terpene loaded gem!</p>
                 
-                {/* Card container with different layouts for mobile and desktop */}
-                <div className="w-full flex justify-center">
-                  <div className="grid grid-cols-4 md:grid-cols-none md:flex md:flex-row gap-4 md:gap-8 w-full md:max-w-[1400px] mx-auto px-4 md:justify-center items-start">
-                    {/* Zapplez Card */}
-                    <LocalizedClientLink href="/categories/zapplez" className="block">
-                      <div className="relative group w-full md:w-[280px] flex flex-col">
-                        <div className="bg-black rounded-xl border-[3px] aspect-square flex-shrink-0 overflow-hidden" style={{ borderColor: '#fdd729' }}>
-                          <div className="w-full h-full relative p-6">
-                            <img 
-                              src="/Zapplez.png" 
-                              alt="Zapplez" 
-                              className="w-full h-full object-contain transition-transform duration-300 group-hover:scale-110"
-                            />
-                          </div>
-                        </div>
-                        <div className="mt-2 relative">
-                          <div className="rounded-xl py-3 px-4 relative overflow-hidden">
-                            <img 
-                              src="/127.png"
-                              alt=""
-                              className="absolute inset-0 w-full h-full object-cover"
-                            />
-                            <div className="bg-white relative overflow-hidden rounded-full px-3 py-0.5 w-fit mx-auto mb-1">
-                              <span 
-                                className="inline-block text-xs font-bold uppercase relative z-10"
-                                style={{
-                                  background: `url('/127.png')`,
-                                  WebkitBackgroundClip: 'text',
-                                  backgroundClip: 'text',
-                                  color: 'transparent',
-                                  backgroundSize: 'cover'
-                                }}
-                              >
-                                SEEDS
-                              </span>
-                            </div>
-                            <h3 className="text-black text-xl font-bold text-center uppercase relative z-10">ZAPPLES</h3>
-                          </div>
+                {/* Card container */}
+                <div className="grid grid-cols-2 medium:grid-cols-2 large:grid-cols-4 gap-6 small:gap-8">
+                  {/* Zapplez Card */}
+                  <LocalizedClientLink href="/categories/zapplez" className="block">
+                    <div className="relative group w-full flex flex-col">
+                      <div className="bg-black rounded-xl border-[3px] aspect-square flex-shrink-0 overflow-hidden" style={{ borderColor: '#fdd729' }}>
+                        <div className="w-full h-full relative p-6">
+                          <img 
+                            src="/Zapplez.png" 
+                            alt="Zapplez" 
+                            className="w-full h-full object-contain transition-transform duration-300 group-hover:scale-110"
+                          />
                         </div>
                       </div>
-                    </LocalizedClientLink>
+                      <div className="mt-2 relative">
+                        <div className="rounded-xl py-3 px-4 relative overflow-hidden">
+                          <img 
+                            src="/127.png"
+                            alt=""
+                            className="absolute inset-0 w-full h-full object-cover"
+                          />
+                          <div className="bg-white relative overflow-hidden rounded-full px-3 py-0.5 w-fit mx-auto mb-1">
+                            <span 
+                              className="inline-block text-xs font-bold uppercase relative z-10"
+                              style={{
+                                background: `url('/127.png')`,
+                                WebkitBackgroundClip: 'text',
+                                backgroundClip: 'text',
+                                color: 'transparent',
+                                backgroundSize: 'cover'
+                              }}
+                            >
+                              SEEDS
+                            </span>
+                          </div>
+                          <h3 className="text-black text-xl font-bold text-center uppercase relative z-10">ZAPPLES</h3>
+                        </div>
+                      </div>
+                    </div>
+                  </LocalizedClientLink>
 
-                    {/* Pink Waferz Card */}
-                    <LocalizedClientLink href="/categories/pink-waferz" className="block">
-                      <div className="relative group w-full md:w-[280px] flex flex-col">
-                        <div className="bg-black rounded-xl border-[3px] aspect-square flex-shrink-0 overflow-hidden" style={{ borderColor: '#fdd729' }}>
-                          <div className="w-full h-full relative p-6">
-                            <img 
-                              src="/Pink-waflfles.png" 
-                              alt="Pink Waferz" 
-                              className="w-full h-full object-contain transition-transform duration-300 group-hover:scale-110"
-                            />
-                          </div>
-                        </div>
-                        <div className="mt-2 relative">
-                          <div className="rounded-xl py-3 px-4 relative overflow-hidden">
-                            <img 
-                              src="/127.png"
-                              alt=""
-                              className="absolute inset-0 w-full h-full object-cover"
-                            />
-                            <div className="bg-white relative overflow-hidden rounded-full px-3 py-0.5 w-fit mx-auto mb-1">
-                              <span 
-                                className="inline-block text-xs font-bold uppercase relative z-10"
-                                style={{
-                                  background: `url('/127.png')`,
-                                  WebkitBackgroundClip: 'text',
-                                  backgroundClip: 'text',
-                                  color: 'transparent',
-                                  backgroundSize: 'cover'
-                                }}
-                              >
-                                SEEDS
-                              </span>
-                            </div>
-                            <h3 className="text-black text-xl font-bold text-center uppercase relative z-10">PINK WAFERZ</h3>
-                          </div>
+                  {/* Pink Waferz Card */}
+                  <LocalizedClientLink href="/categories/pink-waferz" className="block">
+                    <div className="relative group w-full flex flex-col">
+                      <div className="bg-black rounded-xl border-[3px] aspect-square flex-shrink-0 overflow-hidden" style={{ borderColor: '#fdd729' }}>
+                        <div className="w-full h-full relative p-6">
+                          <img 
+                            src="/Pink-waflfles.png" 
+                            alt="Pink Waferz" 
+                            className="w-full h-full object-contain transition-transform duration-300 group-hover:scale-110"
+                          />
                         </div>
                       </div>
-                    </LocalizedClientLink>
+                      <div className="mt-2 relative">
+                        <div className="rounded-xl py-3 px-4 relative overflow-hidden">
+                          <img 
+                            src="/127.png"
+                            alt=""
+                            className="absolute inset-0 w-full h-full object-cover"
+                          />
+                          <div className="bg-white relative overflow-hidden rounded-full px-3 py-0.5 w-fit mx-auto mb-1">
+                            <span 
+                              className="inline-block text-xs font-bold uppercase relative z-10"
+                              style={{
+                                background: `url('/127.png')`,
+                                WebkitBackgroundClip: 'text',
+                                backgroundClip: 'text',
+                                color: 'transparent',
+                                backgroundSize: 'cover'
+                              }}
+                            >
+                              SEEDS
+                            </span>
+                          </div>
+                          <h3 className="text-black text-xl font-bold text-center uppercase relative z-10">PINK WAFERZ</h3>
+                        </div>
+                      </div>
+                    </div>
+                  </LocalizedClientLink>
 
-                    {/* Red Kachina Card */}
-                    <LocalizedClientLink href="/categories/red-kachina" className="block">
-                      <div className="relative group w-full md:w-[280px] flex flex-col">
-                        <div className="bg-black rounded-xl border-[3px] aspect-square flex-shrink-0 overflow-hidden" style={{ borderColor: '#fdd729' }}>
-                          <div className="w-full h-full relative p-6">
-                            <img 
-                              src="/redkachinaicon.png" 
-                              alt="Red Kachina" 
-                              className="w-full h-full object-contain transition-transform duration-300 group-hover:scale-110"
-                            />
-                          </div>
-                        </div>
-                        <div className="mt-2 relative">
-                          <div className="rounded-xl py-3 px-4 relative overflow-hidden">
-                            <img 
-                              src="/127.png"
-                              alt=""
-                              className="absolute inset-0 w-full h-full object-cover"
-                            />
-                            <div className="bg-white relative overflow-hidden rounded-full px-3 py-0.5 w-fit mx-auto mb-1">
-                              <span 
-                                className="inline-block text-xs font-bold uppercase relative z-10"
-                                style={{
-                                  background: `url('/127.png')`,
-                                  WebkitBackgroundClip: 'text',
-                                  backgroundClip: 'text',
-                                  color: 'transparent',
-                                  backgroundSize: 'cover'
-                                }}
-                              >
-                                SEEDS
-                              </span>
-                            </div>
-                            <h3 className="text-black text-xl font-bold text-center uppercase relative z-10">RED KACHINA</h3>
-                          </div>
+                  {/* Red Kachina Card */}
+                  <LocalizedClientLink href="/categories/red-kachina" className="block">
+                    <div className="relative group w-full flex flex-col">
+                      <div className="bg-black rounded-xl border-[3px] aspect-square flex-shrink-0 overflow-hidden" style={{ borderColor: '#fdd729' }}>
+                        <div className="w-full h-full relative p-6">
+                          <img 
+                            src="/redkachinaicon.png" 
+                            alt="Red Kachina" 
+                            className="w-full h-full object-contain transition-transform duration-300 group-hover:scale-110"
+                          />
                         </div>
                       </div>
-                    </LocalizedClientLink>
+                      <div className="mt-2 relative">
+                        <div className="rounded-xl py-3 px-4 relative overflow-hidden">
+                          <img 
+                            src="/127.png"
+                            alt=""
+                            className="absolute inset-0 w-full h-full object-cover"
+                          />
+                          <div className="bg-white relative overflow-hidden rounded-full px-3 py-0.5 w-fit mx-auto mb-1">
+                            <span 
+                              className="inline-block text-xs font-bold uppercase relative z-10"
+                              style={{
+                                background: `url('/127.png')`,
+                                WebkitBackgroundClip: 'text',
+                                backgroundClip: 'text',
+                                color: 'transparent',
+                                backgroundSize: 'cover'
+                              }}
+                            >
+                              SEEDS
+                            </span>
+                          </div>
+                          <h3 className="text-black text-xl font-bold text-center uppercase relative z-10">RED KACHINA</h3>
+                        </div>
+                      </div>
+                    </div>
+                  </LocalizedClientLink>
 
-                    {/* Chronic's Kush Card */}
-                    <LocalizedClientLink href="/categories/chronics-kush" className="block">
-                      <div className="relative group w-full md:w-[280px] flex flex-col">
-                        <div className="bg-black rounded-xl border-[3px] aspect-square flex-shrink-0 overflow-hidden" style={{ borderColor: '#fdd729' }}>
-                          <div className="w-full h-full relative p-6">
-                            <img 
-                              src="/Chronic_kush.png" 
-                              alt="Chronic's Kush" 
-                              className="w-full h-full object-contain transition-transform duration-300 group-hover:scale-110"
-                            />
-                          </div>
-                        </div>
-                        <div className="mt-2 relative">
-                          <div className="rounded-xl py-3 px-4 relative overflow-hidden">
-                            <img 
-                              src="/127.png"
-                              alt=""
-                              className="absolute inset-0 w-full h-full object-cover"
-                            />
-                            <div className="bg-white relative overflow-hidden rounded-full px-3 py-0.5 w-fit mx-auto mb-1">
-                              <span 
-                                className="inline-block text-xs font-bold uppercase relative z-10"
-                                style={{
-                                  background: `url('/127.png')`,
-                                  WebkitBackgroundClip: 'text',
-                                  backgroundClip: 'text',
-                                  color: 'transparent',
-                                  backgroundSize: 'cover'
-                                }}
-                              >
-                                SEEDS
-                              </span>
-                            </div>
-                            <h3 className="text-black text-xl font-bold text-center uppercase relative z-10">CHRONIC'S KUSH</h3>
-                          </div>
+                  {/* Chronic's Kush Card */}
+                  <LocalizedClientLink href="/categories/chronics-kush" className="block">
+                    <div className="relative group w-full flex flex-col">
+                      <div className="bg-black rounded-xl border-[3px] aspect-square flex-shrink-0 overflow-hidden" style={{ borderColor: '#fdd729' }}>
+                        <div className="w-full h-full relative p-6">
+                          <img 
+                            src="/Chronic_kush.png" 
+                            alt="Chronic's Kush" 
+                            className="w-full h-full object-contain transition-transform duration-300 group-hover:scale-110"
+                          />
                         </div>
                       </div>
-                    </LocalizedClientLink>
-                  </div>
+                      <div className="mt-2 relative">
+                        <div className="rounded-xl py-3 px-4 relative overflow-hidden">
+                          <img 
+                            src="/127.png"
+                            alt=""
+                            className="absolute inset-0 w-full h-full object-cover"
+                          />
+                          <div className="bg-white relative overflow-hidden rounded-full px-3 py-0.5 w-fit mx-auto mb-1">
+                            <span 
+                              className="inline-block text-xs font-bold uppercase relative z-10"
+                              style={{
+                                background: `url('/127.png')`,
+                                WebkitBackgroundClip: 'text',
+                                backgroundClip: 'text',
+                                color: 'transparent',
+                                backgroundSize: 'cover'
+                              }}
+                            >
+                              SEEDS
+                            </span>
+                          </div>
+                          <h3 className="text-black text-xl font-bold text-center uppercase relative z-10">CHRONIC'S KUSH</h3>
+                        </div>
+                      </div>
+                    </div>
+                  </LocalizedClientLink>
                 </div>
               </div>
             </div>
             {clothingProducts && clothingProducts.length > 0 && region && (
               <Suspense fallback={<SkeletonProductsCarousel />}>
                 <ProductCarousel
-                  testId="clothing-section"
-                  products={clothingProducts}
+                  products={clothingProducts.map(product => ({
+                    ...product,
+                    category: product.collection
+                  }))}
                   regionId={region.id}
                   title="Clothing & Apparel"
                   viewAll={{
-                    link: `/categories/mens-merch`,
+                    link: `/categories/mens`,
                     text: 'Shop All',
                     alternateLink: `/categories/womens-merch`
                   }}
+                  testId="clothing-section"
                 />
               </Suspense>
             )}
@@ -449,9 +607,9 @@ export default async function Home(props: {
                 
                 {/* Card container */}
                 <div className="w-full flex justify-center">
-                  <div className="grid grid-cols-3 md:grid-cols-1 gap-4 md:gap-8 w-full md:max-w-[1400px] mx-auto px-4 md:justify-center items-center">
+                  <div className="grid grid-cols-1 medium:grid-cols-2 large:grid-cols-3 gap-6 small:gap-8 w-full max-w-[1400px] mx-auto px-4">
                     {/* Grinders Card */}
-                    <div className="bg-[#8b2a9b] rounded-3xl p-8 pb-12 flex flex-col items-center relative overflow-hidden w-[320px] md:w-[320px] h-[500px] mx-auto">
+                    <div className="bg-[#8b2a9b] rounded-3xl p-8 pb-12 flex flex-col items-center relative overflow-hidden w-full sm:w-[320px] h-[500px] mx-auto">
                       <div className="absolute inset-0 opacity-100">
                         <img 
                           src="/126.png"
@@ -492,7 +650,7 @@ export default async function Home(props: {
                     </div>
 
                     {/* Lighters Card */}
-                    <div className="bg-[#8b2a9b] rounded-3xl p-8 pb-12 flex flex-col items-center relative overflow-hidden w-[320px] md:w-[320px] h-[500px] mx-auto">
+                    <div className="bg-[#8b2a9b] rounded-3xl p-8 pb-12 flex flex-col items-center relative overflow-hidden w-full sm:w-[320px] h-[500px] mx-auto">
                       <div className="absolute inset-0 opacity-100">
                         <img 
                           src="/126.png"
@@ -533,7 +691,7 @@ export default async function Home(props: {
                     </div>
 
                     {/* Ashtray Card */}
-                    <div className="bg-[#8b2a9b] rounded-3xl p-8 pb-12 flex flex-col items-center relative overflow-hidden w-[320px] md:w-[320px] h-[500px] mx-auto">
+                    <div className="bg-[#8b2a9b] rounded-3xl p-8 pb-12 flex flex-col items-center relative overflow-hidden w-full sm:w-[320px] h-[500px] mx-auto">
                       <div className="absolute inset-0 opacity-100">
                         <img 
                           src="/126.png"
@@ -588,7 +746,7 @@ export default async function Home(props: {
               </div>
               <div className="relative z-10">
                 <LocalizedClientLink
-                  href="/shop"
+                  href="/categories/clothing"
                   className="bg-[#d67bef] hover:bg-[#c15ed6] text-black transition-colors rounded-full uppercase tracking-wider px-16 py-5 text-2xl font-bold font-latto inline-block"
                 >
                   SHOP ALL

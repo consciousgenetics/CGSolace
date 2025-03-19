@@ -56,12 +56,13 @@ export default async function CategoryPage({ params }: {
       if (
         category.includes('feminized-seeds') || 
         category.includes('regular-seeds') ||
-        category.includes('merchandise')
+        category.includes('merchandise') ||
+        category.includes('mens')
       ) {
         return (
           <Container>
             <Suspense>
-              <h1 className="text-2xl font-bold mb-4">{category[category.length-1].replace(/-/g, ' ')}</h1>
+              <h1 className="text-2xl font-bold mb-4">{category[category.length-1].replace(/-/g, ' ').replace(/mens/, "Men's")}</h1>
               <p className="py-4 text-center text-lg">
                 Coming soon! We're working on adding products to this category.
               </p>

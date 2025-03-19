@@ -8,6 +8,7 @@ import Items from '@modules/order/components/items'
 import OrderDetails from '@modules/order/components/order-details'
 import PaymentDetails from '@modules/order/components/payment-details'
 import ShippingDetails from '@modules/order/components/shipping-details'
+import PaymentInstructions from '@modules/order/components/payment-instructions'
 
 type OrderCompletedTemplateProps = {
   order: HttpTypes.StoreOrder & { status: string }
@@ -16,6 +17,17 @@ type OrderCompletedTemplateProps = {
 export default function OrderCompletedTemplate({
   order,
 }: OrderCompletedTemplateProps) {
+  // Adapt the order to match the expected StoreCart type for CartTotals
+  const cartLikeOrder = {
+    ...order,
+    // Add cart_id to each line item to satisfy TypeScript
+    items: order.items.map(item => ({
+      ...item,
+      cart_id: order.id,
+      cart: { id: order.id } as any
+    }))
+  }
+  
   return (
     <Box className="bg-secondary">
       <Container className="mx-auto py-8">
@@ -35,9 +47,10 @@ export default function OrderCompletedTemplate({
             </Text>
           </Box>
           <OrderDetails order={order} />
+          <PaymentInstructions order={order} />
           <Items items={order.items} />
           <div className="rounded-lg bg-primary p-4">
-            <CartTotals totals={order} />
+            <CartTotals totals={cartLikeOrder as any} />
           </div>
           <ShippingDetails order={order} />
           <PaymentDetails order={order} />

@@ -1,7 +1,8 @@
 import { unstable_noStore as noStore } from 'next/cache'
+import { StoreGetProductsParams } from "@medusajs/medusa"
+import { HttpTypes } from '@medusajs/types'
 
 import { sdk } from '@lib/config'
-import { HttpTypes } from '@medusajs/types'
 import { BACKEND_URL, PUBLISHABLE_API_KEY, getBackendUrl } from '@modules/search/actions'
 import { ProductFilters } from 'types/global'
 
@@ -67,53 +68,64 @@ export const getProductByHandle = async function (
   }
 }
 
-export const getProductsList = async function ({
-  pageParam = 1,
+export async function getProductsList({
+  pageParam = 0,
   queryParams,
   countryCode,
 }: {
   pageParam?: number
-  queryParams?: HttpTypes.FindParams & HttpTypes.StoreProductParams
+  queryParams?: HttpTypes.StoreProductParams
   countryCode: string
-}): Promise<{
-  response: { products: HttpTypes.StoreProduct[]; count: number }
-  nextPage: number | null
-  queryParams?: HttpTypes.FindParams & HttpTypes.StoreProductParams
-}> {
-  noStore()
-
-  const limit = queryParams?.limit || 24
-  const offset = Math.max(0, (pageParam - 1) * limit)
-  const region = await getRegion(countryCode)
+}) {
+  const region = await getRegion(countryCode);
 
   if (!region) {
     return {
       response: { products: [], count: 0 },
       nextPage: null,
-    }
+      queryParams,
+    };
   }
+
   return sdk.store.product
-    .list(
-      {
-        limit,
-        offset,
-        region_id: region.id,
-        fields:
-          '*variants.calculated_price,+variants.inventory_quantity,*variants,*variants.prices',
-        ...queryParams,
-      },
-      { next: { tags: ['products'] } }
-    )
+    .list({
+      limit: queryParams?.limit || 12,
+      offset: pageParam,
+      region_id: region.id,
+      fields: '*variants.calculated_price,+variants.inventory_quantity,*variants,*variants.prices,*categories,+metadata',
+      ...(queryParams || {}),
+    }, {
+      next: { tags: ['products'] }
+    })
     .then(({ products, count }) => {
+      // Log the products with their categories for debugging
+      console.log('Products fetched with categories:', products.map(p => ({
+        id: p.id,
+        title: p.title,
+        categories: p.categories?.map(c => ({
+          id: c.id,
+          handle: c.handle,
+          name: c.name
+        }))
+      })));
+
       return {
         response: {
           products,
           count,
         },
-        nextPage: count > offset + limit ? pageParam + 1 : null,
+        nextPage: products.length === queryParams?.limit ? pageParam + 1 : null,
         queryParams,
-      }
+      };
     })
+    .catch((err) => {
+      console.error("Error fetching products:", err);
+      return {
+        response: { products: [], count: 0 },
+        nextPage: null,
+        queryParams,
+      };
+    });
 }
 
 export const getProductsListByCollectionId = async function ({

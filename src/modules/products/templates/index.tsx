@@ -82,9 +82,12 @@ const ProductTemplate: React.FC<ProductTemplateProps> = async ({
       {productsList.products.length > 0 && (
         <Suspense fallback={<SkeletonProductsCarousel />}>
           <ProductCarousel
-            products={productsList.products}
+            title="Recommended"
+            products={productsList.products.map(product => ({
+              ...product,
+              category: product.collection
+            }))}
             regionId={region.id}
-            title="Complete the look"
           />
         </Suspense>
       )}

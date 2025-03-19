@@ -256,7 +256,7 @@ export default function ProductGridItem({
               transition={{ delay: delay + 0.3 }}
             >
               {description && (
-                <p className="text-sm small:text-base text-gray-300">
+                <p className="text-sm small:text-base text-gray-300 font-latto">
                   {description}
                 </p>
               )}

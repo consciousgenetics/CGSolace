@@ -97,7 +97,7 @@ const ProductDescriptionTab = ({ description }: { description: string }) => {
     <Text
       data-testid="product-description-tab"
       size="md"
-      className="whitespace-pre-line text-gray-700"
+      className="whitespace-pre-line text-gray-700 font-latto"
     >
       {description}
     </Text>
@@ -113,10 +113,10 @@ const ProductDimensionsTab = ({
     <Box data-testid="product-dimensions-tab">
       {Object.entries(dimensions).map(([key, value]) => (
         <div key={key}>
-          <Text as="span" className="font-medium text-black">
+          <Text as="span" className="font-medium text-black font-latto">
             {formatKey(key, 'dim_')}:
           </Text>{' '}
-          <Text as="span" className="text-gray-700">
+          <Text as="span" className="text-gray-700 font-latto">
             {value as string}
           </Text>
         </div>
@@ -130,10 +130,10 @@ const ProductDesignTab = ({ design }: { design: Record<string, unknown> }) => {
     <Box data-testid="product-design-tab">
       {Object.entries(design).map(([key, value]) => (
         <div key={key}>
-          <Text as="span" className="font-medium text-black">
+          <Text as="span" className="font-medium text-black font-latto">
             {formatKey(key, 'des_')}:
           </Text>{' '}
-          <Text as="span" className="text-gray-700">
+          <Text as="span" className="text-gray-700 font-latto">
             {value as string}
           </Text>
         </div>
@@ -144,7 +144,7 @@ const ProductDesignTab = ({ design }: { design: Record<string, unknown> }) => {
 
 const ShippingInfoTab = () => {
   return (
-    <ul className="list-disc pl-4 text-md text-gray-700 2xl:pl-5">
+    <ul className="list-disc pl-4 text-md text-gray-700 font-latto 2xl:pl-5">
       <li>
         Free standard shipping on all orders within the continental U.S.
         Expedited shipping options are available at an additional cost. Orders

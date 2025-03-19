@@ -11,6 +11,9 @@ module.exports = {
   ],
   theme: {
     extend: {
+      screens: {
+        'xs': '480px',
+      },
       transitionProperty: {
         width: 'width margin',
         height: 'height',

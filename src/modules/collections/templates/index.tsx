@@ -141,7 +141,10 @@ export default async function CollectionTemplate({
       {recommendedProducts && recommendedProducts.length > 0 && region && (
         <Suspense fallback={<SkeletonProductsCarousel />}>
           <ProductCarousel
-            products={recommendedProducts}
+            products={recommendedProducts.map(product => ({
+              ...product,
+              category: product.collection
+            }))}
             regionId={region.id}
             title="Recommended products"
           />

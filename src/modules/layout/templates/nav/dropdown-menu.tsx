@@ -42,7 +42,7 @@ const DropdownMenu: React.FC<DropdownMenuProps> = ({
       <div className="mb-2 px-4">
         <Button
           variant="tonal"
-          className="group relative flex w-full items-center justify-between !px-4 !py-2 text-[13px] font-medium bg-amber-400 hover:bg-amber-500 text-black transition-all duration-300 rounded-lg overflow-hidden"
+          className="group relative flex w-full items-center justify-between !px-4 !py-2 text-[13px] font-medium bg-amber-400 hover:bg-amber-500 text-black transition-all duration-300 rounded-lg overflow-hidden font-anton"
           onClick={() => onOpenChange(false)}
           asChild
         >
@@ -63,7 +63,7 @@ const DropdownMenu: React.FC<DropdownMenuProps> = ({
           <div key={`${subItem.handle}-${index}`} className="group/item relative">
             <NavigationItem
               asChild
-              className="group relative flex items-center justify-between w-full px-4 py-2 text-[13px] font-medium text-black hover:bg-amber-500/50 transition-all duration-300"
+              className="group relative flex items-center justify-between w-full px-4 py-2 text-[13px] font-medium text-black hover:bg-amber-500/50 transition-all duration-300 font-anton"
               data-testid={formatNameForTestId(
                 `${subItem.name}-category-title`
               )}

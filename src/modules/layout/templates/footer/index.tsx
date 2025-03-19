@@ -62,16 +62,16 @@ export default async function Footer({ countryCode }: { countryCode: string }) {
   return (
     <Container
       as="footer"
-      className="mx-0 max-w-full border-t border-basic-primary bg-static px-0 py-0 small:px-0 small:py-0 relative z-20"
+      className="mx-0 max-w-full border-t border-transparent bg-static px-0 py-0 small:px-0 small:py-0 relative z-20"
     >
       <Container className="flex flex-col gap-6 text-static small:gap-12">
         <Box className="flex flex-col gap-8 small:gap-12 large:flex-row xl:gap-0">
           <Box className="flex flex-col justify-between xl:min-w-[437px]">
             <LocalizedClientLink
               href="#"
-              className="w-max cursor-pointer text-static"
+              className="w-full flex justify-center xl:justify-start cursor-pointer text-static"
             >
-              <ConsciousGeneticsLogo />
+              <ConsciousGeneticsLogo className="h-14 small:h-16 xl:h-20" />
             </LocalizedClientLink>
             <SocialMedia className="hidden large:flex" />
           </Box>

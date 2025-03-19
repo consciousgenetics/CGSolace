@@ -58,6 +58,13 @@ export default async function StoreTemplate({
     countryCode: countryCode,
   }).then(({ response }) => response)
 
+  // Get featured products
+  const { products: featuredProducts } = await getProductsList({
+    pageParam: 0,
+    queryParams: { limit: 9, collection_id: 'featured' },
+    countryCode: countryCode,
+  }).then(({ response }) => response)
+
   return (
     <>
       <Container className="flex flex-col gap-8 !pb-8 !pt-4">
@@ -98,9 +105,24 @@ export default async function StoreTemplate({
       {recommendedProducts && recommendedProducts.length > 0 && (
         <Suspense fallback={<SkeletonProductsCarousel />}>
           <ProductCarousel
-            products={recommendedProducts}
+            products={recommendedProducts.map(product => ({
+              ...product,
+              category: product.collection
+            }))}
             regionId={region.id}
             title="Recommended products"
+          />
+        </Suspense>
+      )}
+      {featuredProducts && featuredProducts.length > 0 && region && (
+        <Suspense fallback={<SkeletonProductsCarousel />}>
+          <ProductCarousel
+            products={featuredProducts.map(product => ({
+              ...product,
+              category: product.collection
+            }))}
+            regionId={region.id}
+            title="Featured products"
           />
         </Suspense>
       )}

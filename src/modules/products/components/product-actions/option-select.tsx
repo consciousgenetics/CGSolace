@@ -15,6 +15,7 @@ type OptionSelectProps = {
   title: string
   disabled: boolean
   'data-testid'?: string
+  productTitle?: string
 }
 
 const OptionSelect: React.FC<OptionSelectProps> = ({
@@ -25,6 +26,7 @@ const OptionSelect: React.FC<OptionSelectProps> = ({
   title,
   'data-testid': dataTestId,
   disabled,
+  productTitle,
 }) => {
   const filteredOptions = option.values
     ?.sort((a, b) => a.value.localeCompare(b.value))
@@ -39,6 +41,10 @@ const OptionSelect: React.FC<OptionSelectProps> = ({
     return value
   }
 
+  // Check if this is a pack product that should use dropdown
+  const useDropdown = productTitle?.toLowerCase().includes('merch pack') || 
+                     productTitle?.toLowerCase().includes('5 x favourite pack')
+
   return (
     <div className="flex flex-col gap-y-3">
       <Text as="p" className="text-md">
@@ -49,57 +55,76 @@ const OptionSelect: React.FC<OptionSelectProps> = ({
           {current}
         </Text>
       </Text>
-      <div className="flex flex-wrap gap-2" data-testid={dataTestId}>
-        {filteredOptions?.map((v) => {
-          const color = getVariantColor(v, variantsColors)
-          const image = color?.Image
-          const hex = color?.Color
-          const displayText = getDisplayText(v, title)
+      {useDropdown ? (
+        // Dropdown for pack products
+        <select
+          value={current}
+          onChange={(e) => updateOption(option.id, e.target.value)}
+          className="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#d67bef] bg-white"
+          disabled={disabled}
+          data-testid="variant-select"
+        >
+          <option value="">Select {title}</option>
+          {filteredOptions?.map((v) => (
+            <option key={v} value={v}>
+              {v}
+            </option>
+          ))}
+        </select>
+      ) : (
+        // Original circular buttons for other products
+        <div className="flex flex-wrap gap-2" data-testid={dataTestId}>
+          {filteredOptions?.map((v) => {
+            const color = getVariantColor(v, variantsColors)
+            const image = color?.Image
+            const hex = color?.Color
+            const displayText = getDisplayText(v, title)
 
-          return image ? (
-            <button
-              onClick={() => updateOption(option.id, v)}
-              key={v}
-              className={cn('border-primary h-12 w-12 border relative rounded-full overflow-hidden', {
-                'border-action-primary': v === current,
-              })}
-              aria-label={`Choose ${title.toLowerCase()} ${v}`}
-              disabled={disabled}
-              data-testid="option-button"
-            >
-              <Image
-                src={image.url}
-                alt={image.alternativeText ?? 'Variant color'}
-                width={80}
-                height={80}
-                className="h-full w-full object-cover"
-              />
-            </button>
-          ) : (
-            <button
-              onClick={() => updateOption(option.id, v)}
-              key={v}
-              className={cn(
-                'border-primary h-12 w-12 border relative flex items-center justify-center text-sm font-medium rounded-full', 
-                {
+            return image ? (
+              <button
+                onClick={() => updateOption(option.id, v)}
+                key={v}
+                className={cn('border-primary h-12 w-12 border relative rounded-full overflow-hidden', {
                   'border-action-primary': v === current,
-                }
-              )}
-              aria-label={`Choose ${title.toLowerCase()} ${v}`}
-              style={{ backgroundColor: hex }}
-              disabled={disabled}
-              data-testid="option-button"
-            >
-              <span className={cn(
-                'text-basic-primary',
-                { 'text-white': hex && hex.toLowerCase() !== '#ffffff' }
-              )}>
-                {displayText}
-              </span>
-            </button>
-          )
-        })}
-      </div>
+                })}
+                aria-label={`Choose ${title.toLowerCase()} ${v}`}
+                disabled={disabled}
+                data-testid="option-button"
+              >
+                <Image
+                  src={image.url}
+                  alt={image.alternativeText ?? 'Variant color'}
+                  width={80}
+                  height={80}
+                  className="h-full w-full object-cover"
+                />
+              </button>
+            ) : (
+              <button
+                onClick={() => updateOption(option.id, v)}
+                key={v}
+                className={cn(
+                  'border-primary h-12 w-12 border relative flex items-center justify-center text-sm font-medium rounded-full', 
+                  {
+                    'border-action-primary': v === current,
+                  }
+                )}
+                aria-label={`Choose ${title.toLowerCase()} ${v}`}
+                style={{ backgroundColor: hex }}
+                disabled={disabled}
+                data-testid="option-button"
+              >
+                <span className={cn(
+                  'text-basic-primary',
+                  { 'text-white': hex && hex.toLowerCase() !== '#ffffff' }
+                )}>
+                  {displayText}
+                </span>
+              </button>
+            )
+          })}
+        </div>
+      )}
     </div>
   )
 }

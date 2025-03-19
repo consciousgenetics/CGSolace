@@ -73,7 +73,7 @@ const LineItemPrice = ({
             </Text>
           </div>
           {style === 'default' && (
-            <span className="text-gray-700">
+            <span className="text-gray-700 font-latto">
               -{getPercentageDiff(originalPrice, currentPrice || 0)}%
             </span>
           )}

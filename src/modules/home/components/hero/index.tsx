@@ -134,25 +134,25 @@ const Hero = ({ data }: { data: HeroBannerData }) => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: "easeOut", delay: 0.2 }}
             className="absolute w-full flex flex-col items-center"
-            style={{ bottom: '45%' }}
+            style={{ bottom: '48%' }}
           >
             <motion.div 
               initial={{ scale: 0.9 }}
               animate={{ scale: 1 }}
               transition={{ duration: 0.5, ease: "easeOut", delay: 0.4 }}
-              className="px-12 py-6 sm:px-16 sm:py-8 md:px-20 md:py-10 rounded-[30px] border border-white/10 backdrop-blur-[2px]"
+              className="px-12 py-6 sm:px-16 sm:py-8 md:px-20 md:py-10"
             >
               <h2 className="text-white text-4xl sm:text-5xl md:text-7xl lg:text-8xl font-bold coming-soon-text font-latto">COMING SOON</h2>
             </motion.div>
           </motion.div>
           
-          {/* Button Container - moved lower */}
+          {/* Button Container - moved closer to text */}
           <motion.div 
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: "easeOut", delay: 0.6 }}
             className="absolute w-full flex justify-center"
-            style={{ bottom: '30%' }}
+            style={{ bottom: '35%' }}
           >
             <motion.div
               whileHover={{ scale: 1.05 }}
@@ -160,7 +160,7 @@ const Hero = ({ data }: { data: HeroBannerData }) => {
               transition={{ duration: 0.2 }}
               className="flex justify-center"
             >
-              <Button asChild className="font-latto w-max bg-[rgb(253,176,34)] px-10 py-5 sm:px-14 sm:py-7 md:px-24 md:py-10 lg:px-28 lg:py-12 text-xl sm:text-2xl md:text-4xl lg:text-5xl font-bold text-white hover:bg-[rgb(223,156,24)] rounded-[25px] sm:rounded-[30px] md:rounded-[35px] flex items-center shadow-xl">
+              <Button asChild className="font-latto w-max bg-[#FDD729] px-10 py-5 sm:px-14 sm:py-7 md:px-24 md:py-10 lg:px-28 lg:py-12 text-xl sm:text-2xl md:text-4xl lg:text-5xl font-bold text-black hover:bg-[#E5C125] rounded-[25px] sm:rounded-[30px] md:rounded-[35px] flex items-center shadow-xl">
                 <LocalizedClientLink href="/subscribe" className="flex items-center">
                   REGISTER NOW
                   <motion.svg 

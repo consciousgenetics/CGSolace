@@ -8,6 +8,10 @@
   body {
     @apply bg-primary;
     scroll-behavior: smooth;
+    font-family: 'Latto', sans-serif;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
     font-family: 'Anton', sans-serif;
   }
 }
@@ -15,6 +19,9 @@
 @layer components {
   .font-anton {
     font-family: 'Anton', sans-serif;
+  }
+  .font-latto {
+    font-family: 'Latto', sans-serif;
   }
 }
 

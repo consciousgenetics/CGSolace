@@ -100,7 +100,7 @@ export default async function ProductGrid() {
             "Sticker",
             "Lighter"
           ]}
-          buttonLink="/uk/products"
+          buttonLink="/uk/categories/clothing"
           buttonColor="amber"
           className="order-3 small:order-4"
         />

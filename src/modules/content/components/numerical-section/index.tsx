@@ -16,7 +16,7 @@ export const NumericalSection = ({
           <Heading className="text-4xl text-black small:text-5xl">
             {item.Title}
           </Heading>
-          <Text className="text-center text-gray-700" size="lg">
+          <Text className="text-center text-gray-700 font-latto" size="lg">
             {item.Text}
           </Text>
         </Box>

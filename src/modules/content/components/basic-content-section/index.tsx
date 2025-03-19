@@ -13,7 +13,7 @@ export const BasicContentSection = ({ data }: { data: ContentAttributes }) => {
         <Heading className="mb-4 text-2xl text-black small:text-3xl">
           {data.Title}
         </Heading>
-        <Text size="lg" className="text-gray-700">
+        <Text size="lg" className="text-gray-500 font-latto">
           {data.Text}
         </Text>
       </Box>

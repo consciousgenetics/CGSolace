@@ -202,12 +202,12 @@ export const createNavigation = (
     },
     {
       name: 'MERCH',
-      handle: '/shop',
+      handle: '/categories/clothing',
       category_children: [
         {
           name: 'Mens Merch',
           type: 'category',
-          handle: '/categories/mens-merch',
+          handle: '/categories/mens',
           category_children: [],
         },
         {

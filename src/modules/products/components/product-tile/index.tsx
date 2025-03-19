@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { differenceInDays } from 'date-fns'
 
 import { formatNameForTestId } from '@lib/util/formatNameForTestId'
@@ -46,7 +46,7 @@ const StarRating = ({ rating = 4.5 }: { rating?: number }) => {
         <svg 
           key={`full-${i}`} 
           className="w-6 h-6 mx-0.5"
-          fill="#FFC107"
+          fill="#FDD729"
           viewBox="0 0 24 24"
         >
           <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
@@ -61,7 +61,7 @@ const StarRating = ({ rating = 4.5 }: { rating?: number }) => {
         >
           <defs>
             <linearGradient id="halfStarGradient">
-              <stop offset="50%" stopColor="#FFC107" />
+              <stop offset="50%" stopColor="#FDD729" />
               <stop offset="50%" stopColor="#D1D5DB" />
             </linearGradient>
           </defs>
@@ -89,18 +89,26 @@ const StarRating = ({ rating = 4.5 }: { rating?: number }) => {
 
 // Get category tag for product
 const getCategoryTag = (product) => {
+  // Check if it's in a recommended carousel (on product pages)
+  if (product.category?.name === "Recommended") {
+    return "RECOMMENDED";
+  }
+  
   // Check if it's a seed product
-  if (product.collection?.title?.toLowerCase().includes('seed') || 
-      product.collection?.handle?.toLowerCase().includes('seed') ||
+  if (product.category?.title?.toLowerCase().includes('seed') || 
+      product.category?.handle?.toLowerCase().includes('seed') ||
       product.title?.toLowerCase().includes('seed')) {
     return "SEEDS";
   }
   
   // Check for merch/clothing
-  if (product.collection?.title?.toLowerCase().includes('merch') || 
-      product.collection?.handle?.toLowerCase().includes('merch')) {
+  if (product.category?.title?.toLowerCase().includes('merch') || 
+      product.category?.handle?.toLowerCase().includes('merch') ||
+      product.title?.toLowerCase().includes('merch')) {
     if (product.title?.toLowerCase().includes('women') || 
-        product.title?.toLowerCase().includes("women's")) {
+        product.title?.toLowerCase().includes("women's") ||
+        product.title?.toLowerCase().includes('female') ||
+        product.title?.toLowerCase().includes('pink')) {
       return "WOMEN'S";
     }
     if (product.title?.toLowerCase().includes('men') || 
@@ -111,18 +119,31 @@ const getCategoryTag = (product) => {
   }
   
   // Check for accessories
-  if (product.collection?.title?.toLowerCase().includes('accessor') || 
-      product.collection?.handle?.toLowerCase().includes('accessor') ||
+  if (product.category?.title?.toLowerCase().includes('accessor') || 
+      product.category?.handle?.toLowerCase().includes('accessor') ||
       product.title?.toLowerCase().includes('accessor')) {
     return "ACCESSORIES";
   }
   
-  // Default fallback
-  return "PRODUCT";
+  // Default tag based on title
+  if (product.title?.toLowerCase().includes('women') || 
+      product.title?.toLowerCase().includes("women's") ||
+      product.title?.toLowerCase().includes('female') ||
+      product.title?.toLowerCase().includes('pink')) {
+    return "WOMEN'S";
+  }
+  if (product.title?.toLowerCase().includes('men') || 
+      product.title?.toLowerCase().includes("men's")) {
+    return "MEN'S";
+  }
+  
+  // Absolute fallback
+  return "MERCH";
 };
 
-// Type definition for product collection
-interface ProductCollection {
+// Type definition for product category
+interface ProductCategory {
+  id?: string;
   title?: string;
   handle?: string;
 }
@@ -155,12 +176,24 @@ export function ProductTile({
     thumbnail: string
     calculatedPrice: string
     salePrice: string
-    collection?: ProductCollection
+    category?: ProductCategory
     description?: string | null
+    variants?: any[]
   }
   regionId: string
   isCarousel?: boolean
 }) {
+  const [selectedVariant, setSelectedVariant] = useState(product.variants?.[0]?.id || '')
+
+  // Function to handle variant selection
+  const handleVariantChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setSelectedVariant(e.target.value)
+  }
+
+  // Check if this is a pack product that needs variant selection
+  const isPackProduct = product.title?.toLowerCase().includes('merch pack') || 
+                       product.title?.toLowerCase().includes('5 x favourite pack')
+
   // Enhanced debugging for thumbnail URL
   console.log('ProductTile rendering for product:', product.title)
   console.log('Original thumbnail URL:', product.thumbnail)
@@ -225,24 +258,27 @@ export function ProductTile({
 
           {/* Product Card - peeking from bottom */}
           <Box className="w-full -mt-2">
-            <Box className="text-center px-5 py-3 pb-4 bg-white rounded-3xl shadow-lg">
+            <Box className="text-center px-5 py-3 pb-4 bg-white rounded-3xl shadow-lg relative">
               {/* Product Info */}
               <div className="space-y-2">
-                {/* Collection Badge - Only show in carousel */}
-                {isCarousel && product.collection?.title && (
-                  <span className={`inline-block px-2 py-0.5 text-sm font-medium text-gray-600 font-latto ${
-                    product.collection.title.toLowerCase().includes('merch') 
-                      ? 'bg-[#d67bef]/20'
-                      : 'bg-amber-100'
-                  } rounded-full mb-1 mt-2`}>
-                    {product.collection.title}
+                {/* Category Badge - Only show in carousel */}
+                {isCarousel && (
+                  <span className={`inline-block px-3 py-1 text-xs font-bold rounded-full mb-2 ${
+                    product.category?.title?.toLowerCase().includes('merch') || 
+                    product.title?.toLowerCase().includes('merch') ||
+                    getCategoryTag(product).includes("MEN'S") ||
+                    getCategoryTag(product).includes("WOMEN'S")
+                      ? 'bg-[#d67bef] text-white'
+                      : 'bg-amber-400 text-black'
+                  }`}>
+                    {getCategoryTag(product)}
                   </span>
                 )}
 
                 {/* Product Title */}
                 <Text
                   as="span"
-                  className="block text-base small:text-xl medium:text-2xl font-bold uppercase text-black line-clamp-2 tracking-wider font-latto px-2"
+                  className="block text-sm xs:text-base small:text-lg medium:text-xl font-bold uppercase text-black line-clamp-1 small:line-clamp-2 tracking-wider font-anton px-1 small:px-2 min-h-[40px] small:min-h-[56px] flex items-center justify-center"
                 >
                   {product.title}
                 </Text>
@@ -254,7 +290,7 @@ export function ProductTile({
                 
                 {/* Description with Read More - Only show in carousel */}
                 {isCarousel && product.description && (
-                  <div className="hidden small:block text-center px-1">
+                  <div className="text-center px-1">
                     <p className="text-gray-600 text-sm font-latto">
                       {product.description.length > 120 
                         ? `${product.description.substring(0, 120)}...` 
@@ -265,9 +301,9 @@ export function ProductTile({
                       <LocalizedClientLink 
                         href={`/products/${product.handle}`}
                         className={`text-sm font-medium hover:text-[#c15ed6] transition-colors mt-0.5 inline-block font-latto ${
-                          product.collection?.title?.toLowerCase().includes('merch')
+                          product.category?.title?.toLowerCase().includes('merch')
                             ? 'text-[#d67bef]'
-                            : 'text-amber-500 hover:text-amber-600'
+                            : 'text-[#FDD729]'
                         }`}
                       >
                         Read More
@@ -276,14 +312,31 @@ export function ProductTile({
                   </div>
                 )}
                 
+                {/* Variant Selection Dropdown - Only show for pack products */}
+                {isPackProduct && product.variants && product.variants.length > 0 && (
+                  <div className="mb-4">
+                    <select
+                      value={selectedVariant}
+                      onChange={handleVariantChange}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#d67bef]"
+                    >
+                      {product.variants.map((variant) => (
+                        <option key={variant.id} value={variant.id}>
+                          {variant.title}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+                
                 {/* Buy Now and Price */}
                 <div className="flex items-center justify-center gap-2 mt-1">
                   <span className="font-bold text-black text-base tracking-widest font-latto">BUY NOW</span>
                   <div className="h-4 w-px bg-gray-200"></div>
                   <span className={`font-medium text-base font-latto ${
-                    product.collection?.title?.toLowerCase().includes('merch')
+                    product.category?.title?.toLowerCase().includes('merch')
                       ? 'text-[#d67bef]'
-                      : 'text-amber-400'
+                      : 'text-[#FDD729]'
                   }`}>
                     {product.calculatedPrice}
                   </span>
@@ -389,24 +442,27 @@ export function ProductTile({
 
         {/* Product Card - peeking from bottom */}
         <Box className="w-full -mt-2">
-          <Box className="text-center px-5 py-3 pb-4 bg-white rounded-3xl shadow-lg">
+          <Box className="text-center px-5 py-3 pb-4 bg-white rounded-3xl shadow-lg relative">
             {/* Product Info */}
             <div className="space-y-2">
-              {/* Collection Badge - Only show in carousel */}
-              {isCarousel && product.collection?.title && (
-                <span className={`inline-block px-2 py-0.5 text-sm font-medium text-gray-600 font-latto ${
-                  product.collection.title.toLowerCase().includes('merch') 
-                    ? 'bg-[#d67bef]/20'
-                    : 'bg-amber-100'
-                } rounded-full mb-1 mt-2`}>
-                  {product.collection.title}
+              {/* Category Badge - Only show in carousel */}
+              {isCarousel && (
+                <span className={`inline-block px-3 py-1 text-xs font-bold rounded-full mb-2 ${
+                  product.category?.title?.toLowerCase().includes('merch') || 
+                  product.title?.toLowerCase().includes('merch') ||
+                  getCategoryTag(product).includes("MEN'S") ||
+                  getCategoryTag(product).includes("WOMEN'S")
+                    ? 'bg-[#d67bef] text-white'
+                    : 'bg-amber-400 text-black'
+                }`}>
+                  {getCategoryTag(product)}
                 </span>
               )}
 
               {/* Product Title */}
               <Text
                 as="span"
-                className="block text-base small:text-xl medium:text-2xl font-bold uppercase text-black line-clamp-2 tracking-wider font-latto px-2"
+                className="block text-sm xs:text-base small:text-lg medium:text-xl font-bold uppercase text-black line-clamp-1 small:line-clamp-2 tracking-wider font-anton px-1 small:px-2 min-h-[40px] small:min-h-[56px] flex items-center justify-center"
               >
                 {product.title}
               </Text>
@@ -418,7 +474,7 @@ export function ProductTile({
               
               {/* Description with Read More - Only show in carousel */}
               {isCarousel && product.description && (
-                <div className="hidden small:block text-center px-1">
+                <div className="text-center px-1">
                   <p className="text-gray-600 text-sm font-latto">
                     {product.description.length > 120 
                       ? `${product.description.substring(0, 120)}...` 
@@ -429,9 +485,9 @@ export function ProductTile({
                     <LocalizedClientLink 
                       href={`/products/${product.handle}`}
                       className={`text-sm font-medium hover:text-[#c15ed6] transition-colors mt-0.5 inline-block font-latto ${
-                        product.collection?.title?.toLowerCase().includes('merch')
+                        product.category?.title?.toLowerCase().includes('merch')
                           ? 'text-[#d67bef]'
-                          : 'text-amber-500 hover:text-amber-600'
+                          : 'text-[#FDD729]'
                       }`}
                     >
                       Read More
@@ -440,14 +496,31 @@ export function ProductTile({
                 </div>
               )}
               
+              {/* Variant Selection Dropdown - Only show for pack products */}
+              {isPackProduct && product.variants && product.variants.length > 0 && (
+                <div className="mb-4">
+                  <select
+                    value={selectedVariant}
+                    onChange={handleVariantChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#d67bef]"
+                  >
+                    {product.variants.map((variant) => (
+                      <option key={variant.id} value={variant.id}>
+                        {variant.title}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+              
               {/* Buy Now and Price */}
               <div className="flex items-center justify-center gap-2 mt-1">
                 <span className="font-bold text-black text-base tracking-widest font-latto">BUY NOW</span>
                 <div className="h-4 w-px bg-gray-200"></div>
                 <span className={`font-medium text-base font-latto ${
-                  product.collection?.title?.toLowerCase().includes('merch')
+                  product.category?.title?.toLowerCase().includes('merch')
                     ? 'text-[#d67bef]'
-                    : 'text-amber-400'
+                    : 'text-[#FDD729]'
                 }`}>
                   {product.calculatedPrice}
                 </span>
