@@ -269,7 +269,7 @@ export default async function CategoryTemplate({
             {/* Pink Waferz special description section */}
             {category.includes('pink-waferz') && (
               <div className="my-8 max-w-7xl mx-auto px-4">
-                <div className="grid grid-cols-1 large:grid-cols-2 gap-12">
+                <div className="grid grid-cols-1 large:grid-cols-2 gap-16 large:gap-24">
                   {/* Left column - Logo */}
                   <div>
                     <img 
@@ -280,7 +280,7 @@ export default async function CategoryTemplate({
                   </div>
 
                   {/* Right column - Text */}
-                  <div>
+                  <div className="flex flex-col justify-center">
                     <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold font-anton uppercase mb-8">
                       PINK WAFERZ-LINE
                     </h1>
@@ -320,7 +320,7 @@ export default async function CategoryTemplate({
             {/* Chronic Kush special description section */}
             {category.includes('chronics-kush') && (
               <div className="my-8 max-w-7xl mx-auto px-4">
-                <div className="grid grid-cols-1 large:grid-cols-2 gap-12">
+                <div className="grid grid-cols-1 large:grid-cols-2 gap-16 large:gap-24">
                   {/* Left column - Logo */}
                   <div>
                     <img 
@@ -331,7 +331,7 @@ export default async function CategoryTemplate({
                   </div>
 
                   {/* Right column - Text */}
-                  <div>
+                  <div className="flex flex-col justify-center">
                     <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold font-anton uppercase mb-8">
                       CHRONIC'S KUSH-LINE
                     </h1>
@@ -359,7 +359,7 @@ export default async function CategoryTemplate({
             {/* Zapplez special description section */}
             {category.includes('zapplez') && (
               <div className="my-8 max-w-7xl mx-auto px-4">
-                <div className="grid grid-cols-1 large:grid-cols-2 gap-12">
+                <div className="grid grid-cols-1 large:grid-cols-2 gap-16 large:gap-24">
                   {/* Left column - Logo */}
                   <div>
                     <img 
@@ -370,7 +370,7 @@ export default async function CategoryTemplate({
                   </div>
 
                   {/* Right column - Text */}
-                  <div>
+                  <div className="flex flex-col justify-center">
                     <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold font-anton uppercase mb-8">
                       ZAPPLEZ-LINE
                     </h1>
@@ -406,7 +406,7 @@ export default async function CategoryTemplate({
             {/* Red Kachina special description section */}
             {category.includes('red-kachina') && (
               <div className="my-8 max-w-7xl mx-auto px-4">
-                <div className="grid grid-cols-1 large:grid-cols-2 gap-12">
+                <div className="grid grid-cols-1 large:grid-cols-2 gap-16 large:gap-24">
                   {/* Left column - Logo */}
                   <div>
                     <img 
@@ -417,7 +417,7 @@ export default async function CategoryTemplate({
                   </div>
 
                   {/* Right column - Text */}
-                  <div>
+                  <div className="flex flex-col justify-center">
                     <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold font-anton uppercase mb-8">
                       RED KACHINA 2.0-LINE
                     </h1>

@@ -2,7 +2,7 @@
 
 import Image from 'next/image'
 import { motion } from 'framer-motion'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 
 import { Box } from '@modules/common/components/box'
 import { Button } from '@modules/common/components/button'
@@ -15,6 +15,35 @@ import { transformUrl } from '@lib/util/transform-url'
 
 const Hero = ({ data }: { data: HeroBannerData }) => {
   const [isMobile, setIsMobile] = useState(false)
+  const [isVisible, setIsVisible] = useState(true)
+  const [isTransitioning, setIsTransitioning] = useState(false)
+
+  const handleScroll = useCallback(() => {
+    const scrollPosition = window.scrollY
+    const windowHeight = window.innerHeight
+    const fadeStart = windowHeight * 0.4 // Start fading when 40% of the viewport is scrolled
+    
+    if (scrollPosition > fadeStart) {
+      const opacity = Math.max(0, 1 - (scrollPosition - fadeStart) / (windowHeight * 0.3))
+      setIsVisible(opacity > 0)
+      document.querySelector('.hero-content')?.setAttribute('style', `opacity: ${opacity}`)
+      
+      // If we've scrolled past the transition point, mark as transitioning
+      if (opacity < 1) {
+        setIsTransitioning(true)
+      }
+      
+      // If we've completed the transition, remove the lock
+      if (opacity === 0) {
+        document.body.style.overflow = 'auto'
+        setIsTransitioning(false)
+      }
+    } else {
+      setIsVisible(true)
+      document.querySelector('.hero-content')?.setAttribute('style', 'opacity: 1')
+      setIsTransitioning(false)
+    }
+  }, [])
 
   useEffect(() => {
     const checkMobile = () => {
@@ -26,14 +55,31 @@ const Hero = ({ data }: { data: HeroBannerData }) => {
     
     // Add event listener for window resize
     window.addEventListener('resize', checkMobile)
+    window.addEventListener('scroll', handleScroll)
+    
+    // Set initial scroll behavior
+    document.body.style.overflow = 'auto'
     
     // Cleanup
-    return () => window.removeEventListener('resize', checkMobile)
-  }, [])
+    return () => {
+      window.removeEventListener('resize', checkMobile)
+      window.removeEventListener('scroll', handleScroll)
+      document.body.style.overflow = 'auto'
+    }
+  }, [handleScroll])
+
+  // Lock scroll during transition
+  useEffect(() => {
+    if (isTransitioning) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = 'auto'
+    }
+  }, [isTransitioning])
 
   // Fallback content when backend is not available
   const fallbackDesktopImage = "/hero-banner.jpg"
-  const mobileImage = "/CGKmobile-banner.png"  // Removed @ symbol from path
+  const mobileImage = "/CGKmobile-banner.png"
   const fallbackCTA = {
     BtnText: "SUBSCRIBE",
     BtnLink: "/subscribe"
@@ -47,14 +93,8 @@ const Hero = ({ data }: { data: HeroBannerData }) => {
   // Always use mobile image for mobile view, regardless of Strapi data
   const imageUrl = isMobile ? mobileImage : desktopImageUrl
 
-  // Add console log to debug
-  useEffect(() => {
-    console.log('Is Mobile:', isMobile)
-    console.log('Current Image URL:', imageUrl)
-  }, [isMobile, imageUrl])
-
   return (
-    <div className="fixed top-0 left-0 h-screen w-full z-0">
+    <div className={`fixed top-0 left-0 h-screen w-full z-0 transition-opacity duration-300 ${!isVisible ? 'pointer-events-none' : ''}`}>
       {/* Background Image */}
       <div className="fixed inset-0 overflow-hidden z-0">
         {/* Mobile-specific styling */}
@@ -84,10 +124,12 @@ const Hero = ({ data }: { data: HeroBannerData }) => {
           /* Add space after the fixed hero banner */
           body {
             padding-top: 100vh;
+            scroll-behavior: smooth;
           }
 
           .hero-image-container {
             height: 100vh;
+            transition: opacity 0.3s ease-out;
           }
           
           @keyframes textPulse {
@@ -109,6 +151,15 @@ const Hero = ({ data }: { data: HeroBannerData }) => {
             letter-spacing: 4px;
             animation: textPulse 4s ease-in-out infinite;
           }
+
+          /* Add smooth transition for scroll locking */
+          html {
+            scroll-behavior: smooth;
+          }
+
+          body.scroll-locked {
+            overflow: hidden;
+          }
         `}</style>
         
         {/* Container for the image with transformable width */}
@@ -126,7 +177,7 @@ const Hero = ({ data }: { data: HeroBannerData }) => {
       </div>
 
       {/* Content Container */}
-      <div className="fixed inset-0 z-5">
+      <div className="fixed inset-0 z-5 hero-content transition-opacity duration-300">
         <div className="h-full w-full relative flex flex-col items-center justify-center">
           {/* Coming Soon text - positioned higher */}
           <motion.div 

@@ -121,32 +121,61 @@ export function ProductCarousel({
   const processedProducts = useMemo(() => {
     // First filter the products
     const filteredProducts = products.filter(product => {
-      // Only apply filtering for clothing section
-      if (testId !== 'clothing-section') return true;
-      
-      // Check if product has categories
-      if (!product.categories?.length) return false;
+      // Only apply filtering for seeds section
+      if (testId === 'seeds-section') {
+        // Check if product has categories
+        if (!product.categories?.length) return false;
 
-      // Filter based on Medusa categories
-      return product.categories.some(category => {
-        // Get the category handle
-        const categoryHandle = category.handle;
-        // For men's section, look for products in the mens category
-        if (clothingType === 'mens') {
-          return categoryHandle === 'mens';
-        }
-        // For women's section, look for products in the womens-merch category
-        return categoryHandle === 'womens-merch';
-      });
+        // Filter based on seed type
+        return product.categories.some(category => {
+          const categoryHandle = category.handle?.toLowerCase();
+          const categoryName = category.name?.toLowerCase();
+          const productTitle = product.title?.toLowerCase();
+
+          if (seedType === 'feminized') {
+            return categoryHandle?.includes('feminized') || 
+                   categoryName?.includes('feminized') ||
+                   productTitle?.includes('feminized') ||
+                   productTitle?.includes('fem');
+          } else {
+            return (categoryHandle?.includes('regular') || 
+                    categoryName?.includes('regular') ||
+                    productTitle?.includes('regular')) &&
+                   !categoryHandle?.includes('feminized') &&
+                   !categoryName?.includes('feminized') &&
+                   !productTitle?.includes('feminized') &&
+                   !productTitle?.includes('fem');
+          }
+        });
+      }
+      
+      // For clothing section
+      if (testId === 'clothing-section') {
+        if (!product.categories?.length) return false;
+        
+        return product.categories.some(category => {
+          const categoryHandle = category.handle;
+          return clothingType === 'mens' 
+            ? categoryHandle === 'mens'
+            : categoryHandle === 'womens-merch';
+        });
+      }
+      
+      // For other sections, show all products
+      return true;
     });
 
     // Then process the filtered products
-    return filteredProducts.map(product => ({
-      ...product,
-      calculatedPrice: getProductPrice({ product }),
-      salePrice: ''
-    }));
-  }, [products, testId, clothingType]);
+    return filteredProducts.map(product => {
+      const priceInfo = getProductPrice({ product });
+      
+      return {
+        ...product,
+        calculatedPrice: priceInfo.cheapestPrice.calculated_price,
+        salePrice: priceInfo.cheapestPrice.original_price
+      };
+    });
+  }, [products, testId, clothingType, seedType]);
 
   // Get displayed products based on showAllProducts state
   const displayedProducts = useMemo(() => {
@@ -622,7 +651,7 @@ export function ProductCarousel({
             </div>
             
             {/* View All and Shop All buttons container */}
-            <div className="flex flex-col items-center gap-0 mt-0 relative z-20">
+            <div className="flex flex-col items-center gap-0 mt-8 small:mt-12 relative z-20">
               {/* View All/Less button */}
               {processedProducts.length > 4 && (
                 <Button

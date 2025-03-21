@@ -387,7 +387,11 @@ export default async function Home(props: {
 
     return (
       <>
-        {heroBannerData?.data?.HeroBanner && <Hero data={heroBannerData} />}
+        <Suspense fallback={
+          <div className="w-full h-screen bg-black animate-pulse" />
+        }>
+          {heroBannerData?.data?.HeroBanner && <Hero data={heroBannerData} />}
+        </Suspense>
         {strapiCollections && collectionsList && collectionsList.length > 0 && (
           <Collections
             cmsCollections={strapiCollections}
@@ -601,7 +605,7 @@ export default async function Home(props: {
                   className="w-full h-full object-cover"
                 />
               </div>
-              <div className="max-w-[1400px] mx-auto px-4 py-8 sm:py-16 relative z-10">
+              <div className="max-w-[1400px] mx-auto px-4 py-8 sm:py-16 pb-0 relative z-10">
                 <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-center mb-4 font-latto text-[#d67bef]">GRINDERS, LIGHTERS & ASHTRAY</h2>
                 <p className="text-center text-base sm:text-lg md:text-xl mb-8 sm:mb-12 px-4 font-latto text-gray-600">Every genetic that we drop is a stable, trichome covered, terpene loaded gem!</p>
                 
@@ -736,7 +740,7 @@ export default async function Home(props: {
             </div>
 
             {/* Shop All Button */}
-            <div className="w-full flex justify-center py-8 bg-white relative">
+            <div className="w-full flex justify-center py-8 bg-white relative -mt-12">
               <div className="absolute inset-0 w-full h-full opacity-0">
                 <img 
                   src="/126.png"
