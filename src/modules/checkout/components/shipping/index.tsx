@@ -19,6 +19,8 @@ import {
 } from '@modules/common/components/radio'
 import { Stepper } from '@modules/common/components/stepper'
 import { Text } from '@modules/common/components/text'
+import { Spinner } from '@modules/common/icons'
+import { SubmitButton } from '@modules/checkout/components/submit-button'
 
 type ShippingProps = {
   cart: HttpTypes.StoreCart
@@ -30,6 +32,7 @@ const Shipping: React.FC<ShippingProps> = ({
   availableShippingMethods,
 }) => {
   const [isLoading, setIsLoading] = useState(false)
+  const [isTransitioning, setIsTransitioning] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [selectedMethods, setSelectedMethods] = useState<Record<string, string>>({})
 
@@ -118,7 +121,7 @@ const Shipping: React.FC<ShippingProps> = ({
     router.push(pathname + '?step=delivery', { scroll: false })
   }
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     // Check if all required profiles have a selected method
     const missingProfiles = Array.from(requiredShippingProfiles).filter(
       profileId => !selectedMethods[profileId]
@@ -130,8 +133,14 @@ const Shipping: React.FC<ShippingProps> = ({
       return
     }
 
-    console.log('Submitting with selected methods:', selectedMethods)
-    router.push(pathname + '?step=payment', { scroll: false })
+    setIsTransitioning(true)
+    try {
+      console.log('Submitting with selected methods:', selectedMethods)
+      await router.push(pathname + '?step=payment', { scroll: false })
+    } catch (error) {
+      console.error('Error during transition:', error)
+      setIsTransitioning(false)
+    }
   }
 
   const set = async (id: string, profileId: string) => {
@@ -232,72 +241,75 @@ const Shipping: React.FC<ShippingProps> = ({
             </Text>
           )}
           
-          {Object.entries(shippingOptionsByProfile).map(([profileId, options]) => (
-            <Box key={profileId} className="mb-6">
-              {hasMultipleProfiles && (
-                <Text className="mb-2 text-md font-medium text-basic-primary">
-                  {getProfileName(profileId)}:
-                </Text>
-              )}
-              
-              <RadioGroup 
-                value={selectedMethods[profileId] || ''} 
-                onChange={(id) => set(id, profileId)}
-              >
-                {options.map((option) => {
-                  return (
-                    <RadioGroup.Option
-                      key={option.id}
-                      value={option.id}
-                      data-testid="delivery-option-radio"
-                      className={cn(
-                        'flex cursor-pointer flex-row items-center justify-between gap-1 border p-2 !pr-4 text-basic-primary transition-all duration-200',
-                        {
-                          'border-action-primary':
-                            option.id === selectedMethods[profileId],
-                        }
-                      )}
-                    >
-                      <Box className="flex w-full items-center gap-x-2">
-                        <RadioGroupRoot className="m-3">
-                          <RadioGroupItem
-                            id={option.id}
-                            value={option.id}
-                            checked={option.id === selectedMethods[profileId]}
-                          >
-                            <RadioGroupIndicator />
-                          </RadioGroupItem>
-                        </RadioGroupRoot>
-                        <Box className="flex w-full flex-col gap-1 small:flex-row small:items-center small:justify-between">
-                          <span className="text-lg">{option.name}</span>
-                          <span className="justify-self-end text-md">
-                            {convertToLocale({
-                              amount: option.amount,
-                              currency_code: cart?.currency_code,
-                            })}
-                          </span>
+          <form onSubmit={(e) => {
+            e.preventDefault()
+            handleSubmit()
+          }}>
+            {Object.entries(shippingOptionsByProfile).map(([profileId, options]) => (
+              <Box key={profileId} className="mb-6">
+                {hasMultipleProfiles && (
+                  <Text className="mb-2 text-md font-medium text-basic-primary">
+                    {getProfileName(profileId)}:
+                  </Text>
+                )}
+                
+                <RadioGroup 
+                  value={selectedMethods[profileId] || ''} 
+                  onChange={(id) => set(id, profileId)}
+                >
+                  {options.map((option) => {
+                    return (
+                      <RadioGroup.Option
+                        key={option.id}
+                        value={option.id}
+                        data-testid="delivery-option-radio"
+                        className={cn(
+                          'flex cursor-pointer flex-row items-center justify-between gap-1 border p-2 !pr-4 text-basic-primary transition-all duration-200',
+                          {
+                            'border-action-primary':
+                              option.id === selectedMethods[profileId],
+                          }
+                        )}
+                      >
+                        <Box className="flex w-full items-center gap-x-2">
+                          <RadioGroupRoot className="m-3">
+                            <RadioGroupItem
+                              id={option.id}
+                              value={option.id}
+                              checked={option.id === selectedMethods[profileId]}
+                            >
+                              <RadioGroupIndicator />
+                            </RadioGroupItem>
+                          </RadioGroupRoot>
+                          <Box className="flex w-full flex-col gap-1 small:flex-row small:items-center small:justify-between">
+                            <span className="text-lg">{option.name}</span>
+                            <span className="justify-self-end text-md">
+                              {convertToLocale({
+                                amount: option.amount,
+                                currency_code: cart?.currency_code,
+                              })}
+                            </span>
+                          </Box>
                         </Box>
-                      </Box>
-                    </RadioGroup.Option>
-                  )
-                })}
-              </RadioGroup>
-            </Box>
-          ))}
-          
-          <ErrorMessage
-            error={error}
-            data-testid="delivery-option-error-message"
-          />
-          <Button
-            className="mt-6"
-            onClick={handleSubmit}
-            isLoading={isLoading}
-            disabled={Object.keys(selectedMethods).length === 0}
-            data-testid="submit-delivery-option-button"
-          >
-            Proceed to payment
-          </Button>
+                      </RadioGroup.Option>
+                    )
+                  })}
+                </RadioGroup>
+              </Box>
+            ))}
+            
+            <ErrorMessage
+              error={error}
+              data-testid="delivery-option-error-message"
+            />
+            <SubmitButton
+              isLoading={isLoading || isTransitioning}
+              className="mt-6"
+              data-testid="submit-delivery-button"
+            >
+              Proceed to payment
+            </SubmitButton>
+          </form>
         </Box>
       ) : (
         <Box className="text-small-regular">

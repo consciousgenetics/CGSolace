@@ -1,6 +1,6 @@
 'use client'
 
-import React, { startTransition, useActionState } from 'react'
+import React, { startTransition, useActionState, useState } from 'react'
 import {
   useParams,
   usePathname,
@@ -80,6 +80,7 @@ const Addresses = ({
 
   const checkout = useCheckoutForms(initialValues)
   const [, formAction] = useActionState(setAddresses, null)
+  const [isTransitioning, setIsTransitioning] = useState(false)
 
   const toggleSameAsShipping = (value: boolean) => {
     originalToggleSameAsShipping()
@@ -113,23 +114,30 @@ const Addresses = ({
           checkout.values.same_as_shipping ? 'on' : 'off'
         )
 
+        setIsTransitioning(true)
+
+        // Wrap the form action in startTransition
+        startTransition(() => {
+          formAction(formData)
+        })
+
+        // Then handle payment session if needed
         const activeSession = cart?.payment_collection?.payment_sessions?.find(
           (paymentSession: any) => paymentSession.status === 'pending'
         )
 
-        await Promise.all([
-          startTransition(() => {
-            formAction(formData)
-          }),
-          activeSession
-            ? initiatePaymentSession(cart, {
-                provider_id: activeSession.provider_id,
-              })
-            : Promise.resolve(),
-        ])
+        if (activeSession) {
+          await initiatePaymentSession(cart, {
+            provider_id: activeSession.provider_id,
+          })
+        }
+
+        // Navigate to the next step
+        router.push(pathname + '?step=delivery')
       }
     } catch (error) {
       console.error('Error:', error)
+      setIsTransitioning(false)
     }
   }
 
@@ -186,11 +194,18 @@ const Addresses = ({
               </div>
             )}
             <SubmitButton
-              isLoading={checkout.isSubmitting}
+              isLoading={checkout.isSubmitting || isTransitioning}
               className="mt-6"
               data-testid="submit-address-button"
             >
-              Proceed to delivery
+              {isTransitioning ? (
+                <Box className="flex items-center gap-2">
+                  <Spinner />
+                  <span>Processing...</span>
+                </Box>
+              ) : (
+                'Proceed to delivery'
+              )}
             </SubmitButton>
           </Box>
         </form>

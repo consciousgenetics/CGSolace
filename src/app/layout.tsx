@@ -6,6 +6,7 @@ import { ProgressBar } from '@modules/common/components/progress-bar'
 import { ThemeProvider } from '@modules/common/components/theme-provider'
 import { CorsProxyProvider } from '@modules/common/components/cors-proxy-provider'
 import { Toaster } from 'sonner'
+import CookieConsentBanner from '@modules/common/components/cookie-consent'
 
 import 'styles/globals.css'
 
@@ -41,6 +42,7 @@ export default function RootLayout(props: { children: React.ReactNode }) {
               <ProgressBar />
               <Toaster position="bottom-right" offset={65} closeButton />
               <main className="relative">{props.children}</main>
+              <CookieConsentBanner />
             </div>
           </CorsProxyProvider>
         </ThemeProvider>
