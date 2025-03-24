@@ -740,7 +740,7 @@ export default async function Home(props: {
             </div>
 
             {/* Shop All Button */}
-            <div className="w-full flex justify-center py-8 bg-white relative -mt-12">
+            <div className="w-full flex justify-center py-8 bg-white relative -mt-0">
               <div className="absolute inset-0 w-full h-full opacity-0">
                 <img 
                   src="/126.png"
