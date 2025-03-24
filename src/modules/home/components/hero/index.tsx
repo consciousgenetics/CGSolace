@@ -2,7 +2,7 @@
 
 import Image from 'next/image'
 import { motion } from 'framer-motion'
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState } from 'react'
 
 import { Box } from '@modules/common/components/box'
 import { Button } from '@modules/common/components/button'
@@ -16,34 +16,6 @@ import { transformUrl } from '@lib/util/transform-url'
 const Hero = ({ data }: { data: HeroBannerData }) => {
   const [isMobile, setIsMobile] = useState(false)
   const [isVisible, setIsVisible] = useState(true)
-  const [isTransitioning, setIsTransitioning] = useState(false)
-
-  const handleScroll = useCallback(() => {
-    const scrollPosition = window.scrollY
-    const windowHeight = window.innerHeight
-    const fadeStart = windowHeight * 0.4 // Start fading when 40% of the viewport is scrolled
-    
-    if (scrollPosition > fadeStart) {
-      const opacity = Math.max(0, 1 - (scrollPosition - fadeStart) / (windowHeight * 0.3))
-      setIsVisible(opacity > 0)
-      document.querySelector('.hero-content')?.setAttribute('style', `opacity: ${opacity}`)
-      
-      // If we've scrolled past the transition point, mark as transitioning
-      if (opacity < 1) {
-        setIsTransitioning(true)
-      }
-      
-      // If we've completed the transition, remove the lock
-      if (opacity === 0) {
-        document.body.style.overflow = 'auto'
-        setIsTransitioning(false)
-      }
-    } else {
-      setIsVisible(true)
-      document.querySelector('.hero-content')?.setAttribute('style', 'opacity: 1')
-      setIsTransitioning(false)
-    }
-  }, [])
 
   useEffect(() => {
     const checkMobile = () => {
@@ -55,27 +27,31 @@ const Hero = ({ data }: { data: HeroBannerData }) => {
     
     // Add event listener for window resize
     window.addEventListener('resize', checkMobile)
+
+    // Add scroll listener for fade effect
+    const handleScroll = () => {
+      const scrollPosition = window.scrollY
+      const windowHeight = window.innerHeight
+      const fadeStart = windowHeight * 0.4 // Start fading when 40% of the viewport is scrolled
+      
+      if (scrollPosition > fadeStart) {
+        const opacity = Math.max(0, 1 - (scrollPosition - fadeStart) / (windowHeight * 0.3))
+        setIsVisible(opacity > 0)
+        document.querySelector('.hero-content')?.setAttribute('style', `opacity: ${opacity}`)
+      } else {
+        setIsVisible(true)
+        document.querySelector('.hero-content')?.setAttribute('style', 'opacity: 1')
+      }
+    }
+
     window.addEventListener('scroll', handleScroll)
-    
-    // Set initial scroll behavior
-    document.body.style.overflow = 'auto'
     
     // Cleanup
     return () => {
       window.removeEventListener('resize', checkMobile)
       window.removeEventListener('scroll', handleScroll)
-      document.body.style.overflow = 'auto'
     }
-  }, [handleScroll])
-
-  // Lock scroll during transition
-  useEffect(() => {
-    if (isTransitioning) {
-      document.body.style.overflow = 'hidden'
-    } else {
-      document.body.style.overflow = 'auto'
-    }
-  }, [isTransitioning])
+  }, [])
 
   // Fallback content when backend is not available
   const fallbackDesktopImage = "/hero-banner.jpg"
@@ -124,7 +100,6 @@ const Hero = ({ data }: { data: HeroBannerData }) => {
           /* Add space after the fixed hero banner */
           body {
             padding-top: 100vh;
-            scroll-behavior: smooth;
           }
 
           .hero-image-container {
@@ -150,15 +125,6 @@ const Hero = ({ data }: { data: HeroBannerData }) => {
           .coming-soon-text {
             letter-spacing: 4px;
             animation: textPulse 4s ease-in-out infinite;
-          }
-
-          /* Add smooth transition for scroll locking */
-          html {
-            scroll-behavior: smooth;
-          }
-
-          body.scroll-locked {
-            overflow: hidden;
           }
         `}</style>
         
