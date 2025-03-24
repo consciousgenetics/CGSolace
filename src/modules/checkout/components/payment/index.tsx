@@ -80,15 +80,15 @@ const Payment = ({
     })
   }, [router, pathname, createQueryString])
 
-  // Automatically select manual payment if it's available and no payment method is selected
+  // Automatically select manual payment when payment page is opened
   useEffect(() => {
-    if (!selectedPaymentMethod && !activeSession && availablePaymentMethods?.length && isOpen) {
+    if (!paidByGiftcard && availablePaymentMethods?.length && isOpen) {
       const manualMethod = availablePaymentMethods.find(method => isManual(method.id))
       if (manualMethod) {
         handlePaymentMethodChange(manualMethod.id)
       }
     }
-  }, [availablePaymentMethods, selectedPaymentMethod, activeSession, isOpen, handlePaymentMethodChange])
+  }, [availablePaymentMethods, isOpen, handlePaymentMethodChange, paidByGiftcard])
 
   useEffect(() => {
     setError(null)

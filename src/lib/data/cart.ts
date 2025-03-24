@@ -72,14 +72,13 @@ const setCartIdViaAPI = async (cartId: string) => {
   }
 }
 
-export const getOrSetCart = async (countryCode: string = 'uk') => {
+export const getOrSetCart = async (countryCode: string = 'gb') => {
   try {
     const existingCartId = await getCartId()
-    // Always get the UK region regardless of country code
-    const region = await getRegion('uk')
+    const region = await getRegion(countryCode)
 
     if (!region) {
-      console.error('getOrSetCart: Region not found for UK')
+      console.error('getOrSetCart: Region not found')
       return null
     }
 
@@ -88,39 +87,17 @@ export const getOrSetCart = async (countryCode: string = 'uk') => {
       try {
         const authHeaders = await getAuthHeaders()
         const { cart } = await sdk.store.cart.retrieve(existingCartId, {}, authHeaders)
-
-        // Check if the cart exists and has the correct region
-        if (cart && cart.region_id === region.id) {
-          return cart
-        }
-
-        // If cart doesn't exist or has wrong region, remove the cart ID and create new one
-        await removeCartId()
-        
-        // Create a new cart with the UK region
-        const newCart = await createCart({
-          region_id: region.id,
-          country_code: 'uk',
-        })
-        
-        if (newCart) {
-          try {
-            await setCartId(newCart.id)
-          } catch (e) {
-            console.error('Error setting cart ID:', e)
-          }
-          return newCart
-        }
+        return cart
       } catch (error) {
         console.error('getOrSetCart: Error retrieving existing cart:', error)
         await removeCartId()
       }
     }
 
-    // Create a new cart with the UK region
+    // Create a new cart
     const cart = await createCart({
       region_id: region.id,
-      country_code: 'uk',
+      country_code: countryCode,
     })
 
     if (!cart) {
@@ -172,58 +149,51 @@ export async function addToCart({
   }
 
   try {
-    // First, ensure we have a valid region
-    const region = await getRegion(countryCode)
-    if (!region) {
-      throw new Error(`Region not found for country code: ${countryCode}`)
-    }
-
-    // Get or create cart with the correct region
-    const cart = await getOrSetCart(countryCode)
+    let cart = await retrieveCart()
+    
+    // Only create a new cart if we don't have one
     if (!cart) {
-      throw new Error('Failed to create or retrieve cart')
-    }
-
-    // Ensure the cart has the correct region
-    if (cart.region_id !== region.id) {
-      try {
-        await updateCart({ region_id: region.id })
-      } catch (error) {
-        console.error('Error updating cart region:', error)
-        throw new Error('Failed to update cart region')
+      const region = await getRegion(countryCode)
+      if (!region) {
+        throw new Error(`Region not found for country code: ${countryCode}`)
       }
+
+      cart = await createCart({
+        region_id: region.id,
+        country_code: countryCode,
+      })
+
+      if (!cart) {
+        throw new Error('Failed to create cart')
+      }
+
+      await setCartId(cart.id)
     }
 
     const authHeaders = await getAuthHeaders()
 
-    // Add the item to cart with error handling
-    try {
-      const response = await sdk.store.cart.createLineItem(
-        cart.id,
-        {
-          variant_id: variantId,
-          quantity,
-        },
-        {},
-        authHeaders
-      )
+    // Add the item to cart
+    const response = await sdk.store.cart.createLineItem(
+      cart.id,
+      {
+        variant_id: variantId,
+        quantity,
+      },
+      {},
+      authHeaders
+    )
 
-      if (!response.cart) {
-        throw new Error('Failed to add item to cart')
-      }
-
-      revalidateTag('cart')
-      return response.cart
-    } catch (error) {
-      console.error('addToCart: Error adding line item:', error)
-      if (error.response?.status >= 500) {
-        throw new Error('Server error occurred while adding to cart. Please try again.')
-      } else {
-        throw error
-      }
+    if (!response.cart) {
+      throw new Error('Failed to add item to cart')
     }
+
+    revalidateTag('cart')
+    return response.cart
   } catch (error) {
-    console.error('addToCart: Error in main try block:', error)
+    console.error('addToCart: Error:', error)
+    if (error.response?.status >= 500) {
+      throw new Error('Server error occurred while adding to cart. Please try again.')
+    }
     throw error
   }
 }
@@ -275,13 +245,6 @@ export async function addToCartCheapestVariant({
       return {
         success: false,
         error: 'No available variants found',
-      }
-    }
-
-    if (cheapestVariant.inventory_quantity !== null && cheapestVariant.inventory_quantity <= 0) {
-      return {
-        success: false,
-        error: 'Product is out of stock',
       }
     }
 
@@ -362,21 +325,12 @@ export async function enrichLineItems(
 ) {
   if (!lineItems) return []
 
-  // Get the UK region to ensure we use GBP prices
-  const ukRegion = await getRegion('uk')
-  if (!ukRegion) {
-    console.error('enrichLineItems: Failed to get UK region');
-    return lineItems;
-  }
-
-  // Prepare query parameters with UK region
-  const queryParams = {
-    ids: lineItems.map((lineItem) => lineItem.product_id!),
-    regionId: ukRegion.id, // Use UK region ID to get GBP prices
-  }
-
   // Fetch products by their IDs
-  const products = await getProductsById(queryParams)
+  const products = await getProductsById({
+    ids: lineItems.map((lineItem) => lineItem.product_id!),
+    regionId: regionId, // Use the provided regionId
+  })
+  
   if (!lineItems?.length || !products) {
     return []
   }
@@ -402,11 +356,6 @@ export async function enrichLineItems(
 
     // If we found a GBP price, use it to calculate totals
     if (gbpPrice && item.quantity) {
-      console.log(`enrichLineItems: Using GBP price for variant ${variant.id}:`, {
-        amount: gbpPrice.amount,
-        quantity: item.quantity
-      });
-
       const itemTotal = gbpPrice.amount * item.quantity;
       
       // Update item with GBP prices
@@ -417,14 +366,6 @@ export async function enrichLineItems(
       // Add to cart totals
       cartSubtotal += itemTotal;
       cartTotal += itemTotal;
-
-      console.log('enrichLineItems: Updated line item totals:', {
-        variantId: variant.id,
-        unitPrice: item.unit_price,
-        quantity: item.quantity,
-        subtotal: item.subtotal,
-        total: item.total
-      });
     }
 
     return {
@@ -435,31 +376,6 @@ export async function enrichLineItems(
       },
     }
   }) as HttpTypes.StoreCartLineItem[]
-
-  // Update cart with GBP totals
-  const cartId = await getCartId();
-  if (cartId) {
-    try {
-      const authHeaders = await getAuthHeaders();
-      
-      console.log('enrichLineItems: Updating cart region to UK:', {
-        cartId,
-        regionId: ukRegion.id
-      });
-
-      // Update cart to use UK region
-      await sdk.store.cart.update(
-        cartId,
-        { region_id: ukRegion.id },
-        {},
-        authHeaders
-      );
-
-      // Don't call revalidateTag here as it's not allowed during render
-    } catch (error) {
-      console.error('enrichLineItems: Error updating cart:', error);
-    }
-  }
 
   return enrichedItems;
 }

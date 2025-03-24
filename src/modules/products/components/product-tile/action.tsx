@@ -32,11 +32,8 @@ export function ProductActions({
       })
 
       if (result.success) {
-        setTimeout(() => {
-          openCartDropdown()
-
-          toast('success', result.message)
-        }, 1000)
+        openCartDropdown()
+        toast('success', result.message)
       } else {
         toast('error', result.error)
       }

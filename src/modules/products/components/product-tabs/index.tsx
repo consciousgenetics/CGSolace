@@ -44,10 +44,7 @@ export default function ProductTabs({ product }: ProductTabsProps) {
       label: 'Design',
       component: <ProductDesignTab design={design} />,
     },
-    {
-      label: 'Shipping & Returns',
-      component: <ShippingInfoTab />,
-    },
+   
   ].filter(Boolean)
 
   return (
@@ -142,22 +139,7 @@ const ProductDesignTab = ({ design }: { design: Record<string, unknown> }) => {
   )
 }
 
-const ShippingInfoTab = () => {
-  return (
-    <ul className="list-disc pl-4 text-md text-gray-700 font-latto 2xl:pl-5">
-      <li>
-        Free standard shipping on all orders within the continental U.S.
-        Expedited shipping options are available at an additional cost. Orders
-        typically ship within 3-5 business days.
-      </li>
-      <li>
-        We offer a 30-day return policy. If you are not completely satisfied
-        with your purchase, you can return the chair for a full refund or
-        exchange, provided it is in its original condition and packaging.
-      </li>
-    </ul>
-  )
-}
+
 
 const formatKey = (key: string, prefix: string): string => {
   return key
