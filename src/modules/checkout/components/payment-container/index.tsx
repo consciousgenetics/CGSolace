@@ -11,8 +11,6 @@ import {
   RadioGroupRoot,
 } from '@modules/common/components/radio'
 
-import PaymentTest from '../payment-test'
-
 type PaymentContainerProps = {
   paymentProviderId: string
   selectedPaymentOptionId: string | null
@@ -26,8 +24,6 @@ const PaymentContainer: React.FC<PaymentContainerProps> = ({
   paymentInfoMap,
   disabled = false,
 }) => {
-  const isDevelopment = process.env.NODE_ENV === 'development'
-
   return (
     <>
       <RadioGroup.Option
@@ -59,17 +55,11 @@ const PaymentContainer: React.FC<PaymentContainerProps> = ({
             <span className="text-lg">
               {paymentInfoMap[paymentProviderId]?.title || paymentProviderId}
             </span>
-            {isManual(paymentProviderId) && (
-              <PaymentTest className="hidden small:block" />
-            )}
             <span className="justify-self-end">
               {paymentInfoMap[paymentProviderId]?.icon}
             </span>
           </Box>
         </Box>
-        {isManual(paymentProviderId) && (
-          <PaymentTest className="text-[10px] small:hidden" />
-        )}
       </RadioGroup.Option>
     </>
   )

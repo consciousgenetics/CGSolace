@@ -61,18 +61,23 @@ const Payment = ({
       await initiatePaymentSession(cart, {
         provider_id: paymentMethodId,
       })
-      // Force a refresh of the cart to get the new payment session
-      window.location.reload()
+      // Only reload if we're not in the initial automatic selection
+      if (selectedPaymentMethod !== '') {
+        window.location.reload()
+      }
     } catch (err: any) {
       setError(err.message)
       setIsLoading(false)
     }
-  }, [cart])
+  }, [cart, selectedPaymentMethod])
 
   const handlePaymentMethodChange = useCallback(async (value: string) => {
-    setSelectedPaymentMethod(value)
-    await handleSubmit(value)
-  }, [handleSubmit])
+    // Only trigger the payment session update if the method actually changed
+    if (value !== selectedPaymentMethod) {
+      setSelectedPaymentMethod(value)
+      await handleSubmit(value)
+    }
+  }, [handleSubmit, selectedPaymentMethod])
 
   const handleEdit = useCallback(() => {
     router.push(pathname + '?' + createQueryString('step', 'payment'), {
@@ -82,13 +87,15 @@ const Payment = ({
 
   // Automatically select manual payment when payment page is opened
   useEffect(() => {
-    if (!paidByGiftcard && availablePaymentMethods?.length && isOpen) {
+    if (!paidByGiftcard && availablePaymentMethods?.length && isOpen && !selectedPaymentMethod) {
       const manualMethod = availablePaymentMethods.find(method => isManual(method.id))
       if (manualMethod) {
-        handlePaymentMethodChange(manualMethod.id)
+        setSelectedPaymentMethod(manualMethod.id)
+        // Initialize the payment session without reloading
+        handleSubmit(manualMethod.id)
       }
     }
-  }, [availablePaymentMethods, isOpen, handlePaymentMethodChange, paidByGiftcard])
+  }, [availablePaymentMethods, isOpen, selectedPaymentMethod, paidByGiftcard, handleSubmit])
 
   useEffect(() => {
     setError(null)
