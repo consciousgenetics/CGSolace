@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useMemo } from 'react'
+import { useEffect, useState, useMemo, startTransition, useActionState } from 'react'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 
 import { RadioGroup } from '@headlessui/react'
@@ -121,7 +121,9 @@ const Shipping: React.FC<ShippingProps> = ({
     router.push(pathname + '?step=delivery', { scroll: false })
   }
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+
     // Check if all required profiles have a selected method
     const missingProfiles = Array.from(requiredShippingProfiles).filter(
       profileId => !selectedMethods[profileId]
@@ -241,10 +243,7 @@ const Shipping: React.FC<ShippingProps> = ({
             </Text>
           )}
           
-          <form onSubmit={(e) => {
-            e.preventDefault()
-            handleSubmit()
-          }}>
+          <form onSubmit={handleSubmit}>
             {Object.entries(shippingOptionsByProfile).map(([profileId, options]) => (
               <Box key={profileId} className="mb-6">
                 {hasMultipleProfiles && (

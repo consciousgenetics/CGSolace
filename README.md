@@ -146,8 +146,22 @@ NEXT_PUBLIC_CDN_SPACE_DOMAIN=YOUR_CDN_SPACE_DOMAIN
 NEXT_PUBLIC_SPACE_DOMAIN=YOUR_SPACE_DOMAIN
 NEXT_PUBLIC_SPACE_ENDPOINT=YOUR_SPACE_ENDPOINT
 STRAPI_WEBHOOK_REVALIDATION_SECRET=YOUR_STRAPI_WEBHOOK_REVALIDATION_SECRET
+SENDGRID_API_KEY=YOUR_SENDGRID_API_KEY
+SENDGRID_FROM_EMAIL=your-verified-email@example.com
+SENDGRID_NEWSLETTER_LIST_ID=YOUR_SENDGRID_LIST_ID
 
 ```
+
+### `SendGrid Newsletter Setup`
+
+To enable newsletter functionality with SendGrid:
+
+1. Create a SendGrid account at [SendGrid](https://sendgrid.com/)
+2. Create an API key in your SendGrid dashboard
+3. Set up a sender identity for the `SENDGRID_FROM_EMAIL` (must be verified)
+4. Create a contact list for your newsletter subscribers and copy the list ID
+5. Add the required environment variables to your `.env` file
+6. Users can now subscribe to your newsletter through the website
 
 ### `Develop`
 
