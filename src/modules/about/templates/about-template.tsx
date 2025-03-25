@@ -6,6 +6,7 @@ import { Box } from '@modules/common/components/box'
 import { Button } from '@modules/common/components/button'
 import { Heading } from '@modules/common/components/heading'
 import Link from 'next/link'
+import Image from 'next/image'
 
 export function AboutTemplate() {
   return (
@@ -14,10 +15,14 @@ export function AboutTemplate() {
       <div className="w-full bg-white py-8">
         <Container className="grid grid-cols-1 small:grid-cols-2 gap-8 items-center max-w-6xl mx-auto">
           <div className="flex justify-center small:justify-start">
-            <img 
+            <Image 
               src="/conscious-genetics-logo.png" 
               alt="Conscious Genetics Logo" 
-              className="w-full max-w-[300px]" 
+              width={300}
+              height={150}
+              className="w-full max-w-[300px]"
+              unoptimized
+              priority
             />
           </div>
           

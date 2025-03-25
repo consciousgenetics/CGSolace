@@ -28,6 +28,7 @@ const Loading = () => {
             height={150}
             className="animate-pulse"
             priority
+            unoptimized
           />
         </motion.div>
         <motion.div

@@ -13,6 +13,7 @@ type LoadingImageProps = {
   sizes?: string
   className?: string
   onClick?: () => void
+  quality?: number
 }
 
 export const LoadingImage = ({
@@ -111,10 +112,10 @@ export const LoadingImage = ({
           alt={alt || ''}
           priority={priority}
           loading={loading}
-          quality={90}
+          quality={75}
           className={`${className} transition-all duration-300`}
           fill
-          sizes={sizes || "(max-width: 768px) 100vw, 400px"}
+          sizes={sizes || "(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"}
           style={{
             objectFit: 'cover',
             backgroundColor: 'transparent',

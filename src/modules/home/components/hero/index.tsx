@@ -138,6 +138,7 @@ const Hero = ({ data }: { data: HeroBannerData }) => {
             priority
             quality={100}
             sizes="100vw"
+            unoptimized
           />
         </div>
       </div>

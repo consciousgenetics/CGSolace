@@ -15,6 +15,7 @@ export const ConsciousGeneticsLogo = ({
       height={height}
       className={`${className} object-contain`}
       priority
+      unoptimized
       {...props}
     />
   )

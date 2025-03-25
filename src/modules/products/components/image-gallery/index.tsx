@@ -116,9 +116,11 @@ const ImageGallery = ({ images, title }: ImageGalleryProps) => {
               <LoadingImage
                 src={image.url}
                 alt={`${title} - product image`}
-                sizes="(max-width: 768px) 100vw, (max-width: 992px) 780px"
+                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                 className="object-cover"
                 loading={index === 0 ? 'eager' : 'lazy'}
+                priority={index === 0}
+                quality={index === 0 ? 75 : 60}
               />
               <div 
                 className="absolute inset-0 z-30 cursor-pointer"

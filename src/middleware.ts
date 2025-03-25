@@ -19,29 +19,70 @@ async function getRegionMap() {
     !regionMap.keys().next().value ||
     regionMapUpdated < Date.now() - 3600 * 1000
   ) {
-    // Fetch regions from Medusa. We can't use the JS client here because middleware is running on Edge and the client needs a Node environment.
-    const { regions } = await fetch(`${BACKEND_URL}/store/regions`, {
-      headers: {
-        'x-publishable-api-key': PUBLISHABLE_API_KEY!,
-      },
-      next: {
-        revalidate: 3600,
-        tags: ['regions'],
-      },
-    }).then((res) => res.json())
+    try {
+      // Log the environment variables (without sensitive data)
+      console.log('Fetching regions with backend URL:', BACKEND_URL)
+      
+      if (!BACKEND_URL) {
+        throw new Error('NEXT_PUBLIC_MEDUSA_BACKEND_URL is not set')
+      }
+      
+      if (!PUBLISHABLE_API_KEY) {
+        throw new Error('NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY is not set')
+      }
 
-    if (!regions?.length) {
-      notFound()
-    }
-
-    // Create a map of country codes to regions.
-    regions.forEach((region: HttpTypes.StoreRegion) => {
-      region.countries?.forEach((c) => {
-        regionMapCache.regionMap.set(c.iso_2 ?? '', region)
+      const response = await fetch(`${BACKEND_URL}/store/regions`, {
+        headers: {
+          'x-publishable-api-key': PUBLISHABLE_API_KEY,
+        },
+        next: {
+          revalidate: 3600,
+          tags: ['regions'],
+        },
       })
-    })
 
-    regionMapCache.regionMapUpdated = Date.now()
+      if (!response.ok) {
+        throw new Error(`Failed to fetch regions: ${response.status} ${response.statusText}`)
+      }
+
+      const data = await response.json()
+      
+      if (!data?.regions?.length) {
+        throw new Error('No regions found in the response')
+      }
+
+      // Create a map of country codes to regions.
+      data.regions.forEach((region: HttpTypes.StoreRegion) => {
+        region.countries?.forEach((c) => {
+          regionMapCache.regionMap.set(c.iso_2 ?? '', region)
+        })
+      })
+
+      regionMapCache.regionMapUpdated = Date.now()
+      
+      // Log success
+      console.log('Successfully fetched and cached regions')
+      
+    } catch (error) {
+      console.error('Error fetching regions:', error)
+      
+      // If we have cached regions, use them as fallback
+      if (regionMap.keys().next().value) {
+        console.log('Using cached regions as fallback')
+        return regionMap
+      }
+      
+      // If no cached regions and fetch failed, use default region
+      console.log('Using default region as fallback')
+      regionMapCache.regionMap.set(DEFAULT_REGION, {
+        id: 'default',
+        name: 'Default Region',
+        currency_code: 'usd',
+        tax_rate: 0,
+        countries: [{ id: 'default-country', iso_2: DEFAULT_REGION }],
+      } as HttpTypes.StoreRegion)
+      regionMapCache.regionMapUpdated = Date.now()
+    }
   }
 
   return regionMapCache.regionMap
