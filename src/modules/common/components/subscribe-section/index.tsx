@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { Container } from '@modules/common/components/container'
 import { toast } from '@modules/common/components/toast'
+import { emailRegex } from '@lib/constants'
 
 const SubscribeSection = () => {
   const [email, setEmail] = useState('')
@@ -13,6 +14,11 @@ const SubscribeSection = () => {
     
     if (!email) {
       toast('error', 'Please enter your email address')
+      return
+    }
+
+    if (!emailRegex.test(email)) {
+      toast('error', 'Please enter a valid email address')
       return
     }
     
