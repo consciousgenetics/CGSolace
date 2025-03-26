@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useEffect, useMemo, useRef, useState } from 'react'
-import { useParams } from 'next/navigation'
+import { useParams, useRouter } from 'next/navigation'
 
 import { addToCart } from '@lib/data/cart'
 import { useCartStore } from '@lib/store/useCartStore'
@@ -41,12 +41,13 @@ export default function ProductActions({
   colors,
   disabled,
 }: ProductActionsProps) {
-  const { openCartDropdown } = useCartStore()
+  const { openCartDropdown, setCartUpdated } = useCartStore()
   const actionsRef = useRef<HTMLDivElement>(null)
   const [qty, setQty] = useState(1)
   const [options, setOptions] = useState<Record<string, string | undefined>>({})
   const [isAdding, setIsAdding] = useState(false)
   const countryCode = useParams().countryCode as string
+  const router = useRouter()
 
   // update the options when a variant is selected
   const setOptionValue = (optionId: string, value: string) => {
@@ -80,10 +81,12 @@ export default function ProductActions({
         countryCode,
       });
       
-      setTimeout(() => {
-        openCartDropdown();
-        toast('success', 'Product was added to cart!');
-      }, 1000);
+      // Open cart dropdown immediately - no need for timeout
+      openCartDropdown();
+      toast('success', 'Product was added to cart!');
+      
+      // Signal that cart was updated so components can refresh
+      setCartUpdated(true);
     } catch (error) {
       console.error('Error adding to cart:', error);
       const errorMessage = error instanceof Error ? error.message : 'An error occurred while adding to cart';

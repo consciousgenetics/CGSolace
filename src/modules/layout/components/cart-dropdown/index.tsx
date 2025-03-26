@@ -25,7 +25,7 @@ const CartDropdown = ({
 }: {
   cart?: HttpTypes.StoreCart | null
 }) => {
-  const { isOpenCartDropdown, openCartDropdown, closeCartDropdown } =
+  const { isOpenCartDropdown, openCartDropdown, closeCartDropdown, cartItems: storeCartItems, setCartItems, isCartUpdated, setCartUpdated } =
     useCartStore()
   const router = useRouter()
 
@@ -33,6 +33,7 @@ const CartDropdown = ({
   const [totalItems, setTotalItems] = useState(0)
   const [isLoading, setIsLoading] = useState(false)
 
+  // Update cart when cartState changes from server
   useEffect(() => {
     const fetchCart = async () => {
       setIsLoading(true)
@@ -46,6 +47,11 @@ const CartDropdown = ({
           cartState.region_id!
         ) as HttpTypes.StoreCartLineItem[]
         cartState.items = enrichedItems
+        
+        // Update the store with the latest cart items
+        setCartItems(enrichedItems)
+      } else {
+        setCartItems(null)
       }
 
       setCart(cartState)
@@ -58,7 +64,15 @@ const CartDropdown = ({
     }
 
     fetchCart()
-  }, [cartState])
+  }, [cartState, setCartItems])
+
+  // Refresh cart data when isCartUpdated is true
+  useEffect(() => {
+    if (isCartUpdated) {
+      router.refresh()
+      setCartUpdated(false)
+    }
+  }, [isCartUpdated, router, setCartUpdated])
 
   // Calculate GBP subtotal from items
   const gbpSubtotal = cart?.items?.reduce((acc, item) => {
@@ -77,13 +91,8 @@ const CartDropdown = ({
   })
 
   useEffect(() => {
-    if (isOpenCartDropdown) {
-      const timer = setTimeout(() => {
-        closeCartDropdown()
-      }, 3000)
-
-      return () => clearTimeout(timer)
-    }
+    // We don't want to auto-close the cart dropdown anymore
+    // This allows users to see their cart updates
   }, [isOpenCartDropdown, closeCartDropdown])
 
   return (

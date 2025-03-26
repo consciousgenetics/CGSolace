@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { useParams } from 'next/navigation'
+import { useParams, useRouter } from 'next/navigation'
 
 import { addToCartCheapestVariant } from '@lib/data/cart'
 import { useCartStore } from '@lib/store/useCartStore'
@@ -18,8 +18,9 @@ export function ProductActions({
   regionId: string
 }) {
   const [isAddingToCart, setIsAddingToCart] = useState(false)
-  const { openCartDropdown } = useCartStore()
+  const { openCartDropdown, setCartUpdated } = useCartStore()
   const countryCode = useParams().countryCode as string
+  const router = useRouter()
 
   const handleAddToCart = async () => {
     setIsAddingToCart(true)
@@ -34,6 +35,9 @@ export function ProductActions({
       if (result.success) {
         openCartDropdown()
         toast('success', result.message)
+        
+        // Signal that cart was updated
+        setCartUpdated(true)
       } else {
         toast('error', result.error)
       }
