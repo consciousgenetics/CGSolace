@@ -12,27 +12,6 @@ import { getAuthHeaders, getCartId, removeCartId, setCartId } from './cookies'
 import { getProductByHandle, getProductsById } from './products'
 import { getRegion } from './regions'
 
-// Add type definition
-type ProductVariantWithPrices = HttpTypes.StoreProductVariant & {
-  prices?: Array<{ currency_code: string; amount: number }>
-}
-
-const createCart = async (data: {
-  region_id: string
-  country_code: string
-}) => {
-  try {
-    // Only send region_id to the Medusa backend
-    const result = await sdk.store.cart.create({
-      region_id: data.region_id
-    });
-    return result.cart;
-  } catch (error) {
-    console.error('createCart: Error creating cart:', error);
-    return null;
-  }
-}
-
 export async function retrieveCart() {
   const cartId = await getCartId()
 
@@ -50,72 +29,40 @@ export async function retrieveCart() {
     })
 }
 
-// Alternate function that uses the Route API to set cart ID
-const setCartIdViaAPI = async (cartId: string) => {
-  try {
-    const response = await fetch('/api/cart', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ cartId }),
-    })
-    
-    if (!response.ok) {
-      console.error('Error setting cart ID via API:', response.statusText)
-    }
-    
-    return response.ok
-  } catch (error) {
-    console.error('Failed to set cart ID via API:', error)
-    return false
+export async function getOrSetCart(countryCode: string) {
+  let cart = await retrieveCart()
+  const region = await getRegion(countryCode)
+
+  if (!region) {
+    throw new Error(`Region not found for country code: ${countryCode}`)
   }
-}
 
-export const getOrSetCart = async (countryCode: string = 'gb') => {
-  try {
-    const existingCartId = await getCartId()
-    const region = await getRegion(countryCode)
+  const authHeaders = await getAuthHeaders()
 
-    if (!region) {
-      console.error('getOrSetCart: Region not found')
-      return null
-    }
-
-    // If we have an existing cart, try to retrieve it
-    if (existingCartId) {
-      try {
-        const authHeaders = await getAuthHeaders()
-        const { cart } = await sdk.store.cart.retrieve(existingCartId, {}, authHeaders)
-        return cart
-      } catch (error) {
-        console.error('getOrSetCart: Error retrieving existing cart:', error)
-        await removeCartId()
-      }
-    }
-
-    // Create a new cart
-    const cart = await createCart({
-      region_id: region.id,
-      country_code: countryCode,
-    })
-
-    if (!cart) {
-      console.error('getOrSetCart: Failed to create new cart')
-      return null
-    }
-
-    try {
-      await setCartId(cart.id)
-    } catch (e) {
-      console.error('Error setting cart ID:', e)
-    }
-    
-    return cart
-  } catch (error) {
-    console.error('getOrSetCart: Error:', error)
-    return null
+  if (!cart) {
+    const cartResp = await sdk.store.cart.create(
+      { region_id: region.id },
+      {},
+      authHeaders
+    )
+    cart = cartResp.cart
+    setCartId(cart.id)
+    revalidateTag('cart')
   }
+
+  if (cart && cart?.region_id !== region.id) {
+    const authHeaders = await getAuthHeaders()
+
+    await sdk.store.cart.update(
+      cart.id,
+      { region_id: region.id },
+      {},
+      authHeaders
+    )
+    revalidateTag('cart')
+  }
+
+  return cart
 }
 
 export async function updateCart(data: HttpTypes.StoreUpdateCart) {
@@ -148,32 +95,15 @@ export async function addToCart({
     throw new Error('Missing variant ID when adding to cart')
   }
 
-  try {
-    let cart = await retrieveCart()
-    
-    // Only create a new cart if we don't have one
-    if (!cart) {
-      const region = await getRegion(countryCode)
-      if (!region) {
-        throw new Error(`Region not found for country code: ${countryCode}`)
-      }
+  const cart = await getOrSetCart(countryCode)
+  if (!cart) {
+    throw new Error('Error retrieving or creating cart')
+  }
 
-      cart = await createCart({
-        region_id: region.id,
-        country_code: countryCode,
-      })
+  const authHeaders = await getAuthHeaders()
 
-      if (!cart) {
-        throw new Error('Failed to create cart')
-      }
-
-      await setCartId(cart.id)
-    }
-
-    const authHeaders = await getAuthHeaders()
-
-    // Add the item to cart
-    const response = await sdk.store.cart.createLineItem(
+  await sdk.store.cart
+    .createLineItem(
       cart.id,
       {
         variant_id: variantId,
@@ -182,20 +112,10 @@ export async function addToCart({
       {},
       authHeaders
     )
-
-    if (!response.cart) {
-      throw new Error('Failed to add item to cart')
-    }
-
-    revalidateTag('cart')
-    return response.cart
-  } catch (error) {
-    console.error('addToCart: Error:', error)
-    if (error.response?.status >= 500) {
-      throw new Error('Server error occurred while adding to cart. Please try again.')
-    }
-    throw error
-  }
+    .then(() => {
+      revalidateTag('cart')
+    })
+    .catch(medusaError)
 }
 
 export async function addToCartCheapestVariant({
@@ -224,32 +144,24 @@ export async function addToCartCheapestVariant({
       }
     }
 
-    // Find the cheapest variant with valid price and inventory
-    const variants = detailedProduct.variants as ProductVariantWithPrices[]
-    const cheapestVariant = variants
-      .filter(variant => 
-        variant.prices?.some(p => p.currency_code?.toUpperCase() === 'GBP') && 
-        (variant.inventory_quantity === null || variant.inventory_quantity > 0)
-      )
-      .reduce((cheapest, current) => {
-        const currentGbpPrice = current.prices?.find(p => p.currency_code?.toUpperCase() === 'GBP')
-        const cheapestGbpPrice = cheapest?.prices?.find(p => p.currency_code?.toUpperCase() === 'GBP')
-        
-        if (!currentGbpPrice) return cheapest
-        if (!cheapestGbpPrice) return current
-        
-        return currentGbpPrice.amount < cheapestGbpPrice.amount ? current : cheapest
-      }, variants[0])
+    // Find the cheapest variant
+    const cheapestVariant = detailedProduct.variants.reduce(
+      (cheapest, current) =>
+        cheapest.calculated_price.original_amount <
+        current.calculated_price.original_amount
+          ? cheapest
+          : current
+    )
 
-    if (!cheapestVariant || !cheapestVariant.id) {
+    if (cheapestVariant.inventory_quantity <= 0) {
       return {
         success: false,
-        error: 'No available variants found',
+        error: 'Product is out of stock',
       }
     }
 
-    const result = await addToCart({
-      variantId: cheapestVariant.id,
+    await addToCart({
+      variantId: cheapestVariant.id, // Add the cheapest variant to the cart
       quantity: 1,
       countryCode,
     })
@@ -257,13 +169,13 @@ export async function addToCartCheapestVariant({
     return {
       success: true,
       message: 'Product added to cart',
-      cart: result
     }
   } catch (error) {
     console.error('Error adding product to cart:', error)
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'An unknown error occurred',
+      error:
+        error instanceof Error ? error.message : 'An unknown error occurred',
     }
   }
 }
@@ -325,49 +237,32 @@ export async function enrichLineItems(
 ) {
   if (!lineItems) return []
 
-  // Fetch products by their IDs
-  const products = await getProductsById({
+  // Prepare query parameters
+  const queryParams = {
     ids: lineItems.map((lineItem) => lineItem.product_id!),
-    regionId: regionId, // Use the provided regionId
-  })
-  
+    regionId: regionId,
+  }
+
+  // Fetch products by their IDs
+  const products = await getProductsById(queryParams)
+  // If there are no line items or products, return an empty array
   if (!lineItems?.length || !products) {
     return []
   }
-
-  let cartSubtotal = 0;
-  let cartTotal = 0;
 
   // Enrich line items with product and variant information
   const enrichedItems = lineItems.map((item) => {
     const product = products.find((p: any) => p.id === item.product_id)
     const variant = product?.variants?.find(
       (v: any) => v.id === item.variant_id
-    ) as HttpTypes.StoreProductVariant & { prices?: Array<{ currency_code: string; amount: number }> }
+    )
 
+    // If product or variant is not found, return the original item
     if (!product || !variant) {
       return item
     }
 
-    // Find GBP price for the variant
-    const gbpPrice = variant.prices?.find(p => 
-      p.currency_code?.toUpperCase() === 'GBP'
-    )
-
-    // If we found a GBP price, use it to calculate totals
-    if (gbpPrice && item.quantity) {
-      const itemTotal = gbpPrice.amount * item.quantity;
-      
-      // Update item with GBP prices
-      item.unit_price = gbpPrice.amount;
-      item.subtotal = itemTotal;
-      item.total = itemTotal;
-      
-      // Add to cart totals
-      cartSubtotal += itemTotal;
-      cartTotal += itemTotal;
-    }
-
+    // If product and variant are found, enrich the item
     return {
       ...item,
       variant: {
@@ -377,7 +272,7 @@ export async function enrichLineItems(
     }
   }) as HttpTypes.StoreCartLineItem[]
 
-  return enrichedItems;
+  return enrichedItems
 }
 
 export async function setShippingMethod({
@@ -389,50 +284,12 @@ export async function setShippingMethod({
 }) {
   const authHeaders = await getAuthHeaders()
 
-  try {
-    // First get the cart to check existing shipping methods
-    const cartResponse = await sdk.store.cart.retrieve(cartId, {}, authHeaders)
-    const cart = cartResponse.cart
-
-    // Get all shipping methods for this cart
-    const shippingOptions = await sdk.store.fulfillment.listCartOptions(
-      { cart_id: cartId },
-      {},
-      authHeaders
-    )
-
-    // Group shipping options by profile
-    const optionsByProfile = shippingOptions.shipping_options.reduce((acc, option) => {
-      if (!acc[option.shipping_profile_id]) {
-        acc[option.shipping_profile_id] = []
-      }
-      acc[option.shipping_profile_id].push(option)
-      return acc
-    }, {} as Record<string, any[]>)
-
-    // Get the profile ID of the selected shipping method
-    const selectedOption = shippingOptions.shipping_options.find(
-      option => option.id === shippingMethodId
-    )
-
-    if (!selectedOption) {
-      throw new Error('Selected shipping method not found')
-    }
-
-    // Add the shipping method
-    await sdk.store.cart.addShippingMethod(
-      cartId,
-      { option_id: shippingMethodId },
-      {},
-      authHeaders
-    )
-
-    revalidateTag('cart')
-    return true
-  } catch (error) {
-    console.error('Error setting shipping method:', error)
-    throw error
-  }
+  return sdk.store.cart
+    .addShippingMethod(cartId, { option_id: shippingMethodId }, {}, authHeaders)
+    .then(() => {
+      revalidateTag('cart')
+    })
+    .catch(medusaError)
 }
 
 export async function initiatePaymentSession(
@@ -442,8 +299,7 @@ export async function initiatePaymentSession(
     context?: Record<string, unknown>
   }
 ) {
-  // Make authentication optional by using empty object if no auth headers
-  const authHeaders = await getAuthHeaders().catch(() => ({}))
+  const authHeaders = await getAuthHeaders()
 
   return sdk.store.payment
     .initiatePaymentSession(cart, data, {}, authHeaders)
@@ -583,75 +439,22 @@ export async function placeOrder() {
 
   const authHeaders = await getAuthHeaders()
 
-  try {
-    // First, check if the cart has shipping methods
-    const cartResponse = await sdk.store.cart.retrieve(cartId, {}, authHeaders)
-    const cart = cartResponse.cart
-    
-    if (!cart.shipping_methods || cart.shipping_methods.length === 0) {
-      throw new Error('No shipping methods selected. Please select a shipping method before placing your order.')
-    }
-
-    // Get all required shipping profiles from cart items
-    const requiredProfiles = new Set(
-      cart.items
-        .filter(item => item.variant?.product?.shipping_profile_id)
-        .map(item => item.variant.product.shipping_profile_id)
-    )
-
-    // Check if all required profiles have a shipping method
-    const selectedProfiles = new Set(
-      cart.shipping_methods.map(method => {
-        const item = cart.items.find(item => 
-          item.variant?.product?.shipping_profile_id && 
-          item.shipping_methods?.some(sm => sm.shipping_option_id === method.shipping_option_id)
-        )
-        return item?.variant?.product?.shipping_profile_id
-      }).filter(Boolean)
-    )
-
-    // Compare required vs selected profiles
-    if (requiredProfiles.size !== selectedProfiles.size) {
-      throw new Error('Some items in your cart require different shipping methods. Please go back to the delivery step and select all required shipping methods.')
-    }
-
-    // Log shipping methods for debugging
-    console.log('Placing order with shipping methods:', {
-      required: Array.from(requiredProfiles),
-      selected: Array.from(selectedProfiles),
-      methods: cart.shipping_methods
+  const cartRes = await sdk.store.cart
+    .complete(cartId, {}, authHeaders)
+    .then((cartRes) => {
+      revalidateTag('cart')
+      return cartRes
     })
+    .catch(medusaError)
 
-    const cartRes = await sdk.store.cart
-      .complete(cartId, {}, authHeaders)
-      .then((cartRes) => {
-        revalidateTag('cart')
-        return cartRes
-      })
-      .catch((error) => {
-        console.error('Error completing cart:', error)
-        throw error
-      })
-
-    if (cartRes?.type === 'order') {
-      const countryCode =
-        cartRes.order.shipping_address?.country_code?.toLowerCase()
-      removeCartId()
-      redirect(`/${countryCode}/order/confirmed/${cartRes?.order.id}`)
-    }
-
-    return cartRes.cart
-  } catch (error) {
-    console.error('Error placing order:', error)
-    
-    // Check if it's a shipping profile error
-    if (error.message && error.message.includes('shipping profiles')) {
-      throw new Error('Some items in your cart require different shipping methods. Please go back to the delivery step and select all required shipping methods.')
-    }
-    
-    // Re-throw the original error
-    throw error
+  if (cartRes?.type === 'order') {
+    const countryCode =
+      cartRes.order.shipping_address?.country_code?.toLowerCase()
+    removeCartId()
+    redirect(`/${countryCode}/order/confirmed/${cartRes?.order.id}`)
   }
+
+  return cartRes.cart
 }
 
 /**
