@@ -23,16 +23,16 @@ export default async function NavWrapper(props: any) {
 
   return (
     <div className="fixed top-0 left-0 right-0 w-full z-[1000]">
-      <div className="bg-white transition-all duration-300">
+      <div className="bg-black transition-all duration-300">
         <Container className="!p-0">
           <CountdownTimer />
         </Container>
       </div>
       <Container
         as="nav"
-        className="duration-300 h-16 xsmall:h-20 medium:h-24 mx-0 max-w-full border-b border-basic-primary/10 bg-primary/95 !py-0 transition-all ease-in-out medium:!px-14 backdrop-blur-lg"
+        className="duration-300 h-16 xsmall:h-20 medium:h-24 mx-0 max-w-full border-b border-white/10 bg-black !py-0 transition-all ease-in-out medium:!px-14 backdrop-blur-lg"
       >
-        <Container className="flex h-full items-center justify-between !p-0">
+        <Container className="flex h-full items-center justify-between !p-0 text-white">
           <NavContent
             productCategories={productCategories}
             collections={collections}

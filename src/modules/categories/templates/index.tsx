@@ -20,6 +20,8 @@ import ActiveProductFilters from '@modules/store/components/filters/active-filte
 import ProductFiltersDrawer from '@modules/store/components/filters/filters-drawer'
 import PaginatedProducts from '@modules/store/templates/paginated-products'
 import ClientSideSort from './client-side-sort'
+import { CountdownTimer } from '@modules/layout/components/countdown-timer'
+import DynamicCountdownWrapper from './dynamic-countdown-wrapper'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = false // Disable revalidation for dynamic routes
@@ -49,6 +51,16 @@ export async function generateStaticParams() {
   }
   
   return params
+}
+
+// Helper function to check if the countdown has ended
+function isCountdownEnded() {
+  // Use the same date calculation as in CountdownContext
+  const now = new Date()
+  const targetDate = new Date('2025-05-01T00:00:00')
+  
+  // If current time is past the target date, countdown has ended
+  return now >= targetDate
 }
 
 export default async function CategoryTemplate({
@@ -97,74 +109,28 @@ export default async function CategoryTemplate({
     
     // Get initial products with default sorting
     let initialProducts = { results: [], count: 0 };
+    
     try {
-      console.log('Fetching products for category:', {
-        categoryId: currentCategory.id,
-        categoryName: currentCategory.name
-      });
-      
-      // Try to load products directly from product API first
-      const productsData = await getProductsList({
+      const initialProductsData = await getProductsList({
         pageParam: 0,
         queryParams: { 
           category_id: [currentCategory.id],
-          limit: 100, // Increase limit to get all products
-          fields: '*variants.calculated_price,+variants.inventory_quantity,*variants,*variants.prices'
+          limit: 24,
+          offset: 0
         },
-        countryCode: countryCode,
-      });
+        countryCode: countryCode
+      })
       
-      if (productsData?.response?.products?.length > 0) {
-        console.log(`Found ${productsData.response.products.length} products using direct product API`);
-        
-        // Transform products to match SearchedProduct format
+      if (initialProductsData && initialProductsData.response) {
         initialProducts = {
-          results: productsData.response.products.map(p => {
-            const priceData = getProductPrice({ product: p });
-            return {
-              id: p.id,
-              title: p.title,
-              handle: p.handle,
-              thumbnail: p.thumbnail,
-              created_at: p.created_at,
-              calculatedPrice: priceData.cheapestPrice?.calculated_price || "Price unavailable",
-              salePrice: priceData.cheapestPrice?.original_price || "Price unavailable",
-              originalPrice: priceData.cheapestPrice?.original_price || "Price unavailable"
-            };
-          }),
-          count: productsData.response.count,
-        };
-      } else {
-        // If direct API returns no results, try search API as fallback
-        console.log('No results from direct API, trying search API...');
-        initialProducts = await search({
-          currency_code: region.currency_code,
-          category_id: currentCategory.id,
-          order: 'relevance',
-          page: 1,
-          limit: 100 // Increase limit to get all products
-        });
-
-        if (initialProducts.results.length > 0) {
-          console.log(`Found ${initialProducts.results.length} products using search API`);
-          initialProducts.results = initialProducts.results.map(p => {
-            const priceData = getProductPrice({ product: p });
-            return {
-              id: p.id,
-              title: p.title,
-              handle: p.handle,
-              thumbnail: p.thumbnail,
-              created_at: p.created_at,
-              calculatedPrice: priceData.cheapestPrice?.calculated_price || "Price unavailable",
-              salePrice: priceData.cheapestPrice?.original_price || "Price unavailable",
-              originalPrice: priceData.cheapestPrice?.original_price || "Price unavailable"
-            };
-          });
+          results: initialProductsData.response.products || [],
+          count: initialProductsData.response.count || 0
         }
+      } else {
+        console.error(`Error getting initial products for category: ${currentCategory.handle}`)
       }
-    } catch (err) {
-      console.error("Error fetching category products:", err);
-      // Continue with empty initial products
+    } catch (error) {
+      console.error(`Error in initial products fetch: ${error}`)
     }
 
     // Get related products for the current category
@@ -428,19 +394,20 @@ export default async function CategoryTemplate({
 
                     <div className="prose prose-lg max-w-none text-gray-700">
                       <p className="text-lg sm:text-xl leading-relaxed font-latto italic">
-                        The Red Kachina 2.0 Feminized Line stands as one of the most exceptional purple cannabis seed lines in the world.
+                        For this feminized line, we decided to reverse a phenotype of our "Red Kachina" (Jelly Breath x OGKB 2.1).
                       </p>
                       
                       <p className="text-lg sm:text-xl leading-relaxed font-latto">
-                        Known for its stunning deep purple hues, vibrant red undertones, and heavy resin production, Red Kachina isn't just about bag appeal – it's a strain that delivers on every front. What truly sets Red Kachina 2.0 apart is its high concentration of anthocyanins – the natural pigments responsible for its striking purple coloration.
+                        This strain has a striking visual appearance, dense structure, high resin, and amazing terp profile. 
+                        This particular pheno, #3, is roughly 30% Jelly Breath and 70% OGKB. 
+                        We chose it for its smell, appearance, and denser buds—all improvements over the Original Red Kachina. 
+                        Additionally, the pheno finishes earlier than most OGKB cuts and grows bigger trichome heads.
                       </p>
                       
                       <p className="text-lg sm:text-xl leading-relaxed font-latto">
-                        Beyond their visual appeal, anthocyanins are known for their antioxidant, anti-inflammatory, and neuroprotective properties, giving this strain an added edge in the realm of medicinal cannabis. The rich purple hues are more than just eye candy. Anthocyanins have been studied for their potential anti-inflammatory, antioxidant, and neuroprotective properties. This makes Red Kachina particularly appealing to medical cannabis users.
-                      </p>
-                      
-                      <p className="text-lg sm:text-xl leading-relaxed font-latto">
-                        To further diversify its appeal, Red Kachina 2.0 has been crossed with four elite strains, each adding unique traits while maintaining its signature purple hues and medicinal potential. This line is all about putting terps into purps – combining eye-popping colours with explosive flavours and potent effects.
+                        This line combines the distinctive traits of Red Kachina with selected phenos of our other top strains. 
+                        These crosses create unique expressions with Red Kachina's characteristic density, trichome coverage, 
+                        and enhanced flavor profiles.
                       </p>
                     </div>
                   </div>
@@ -450,13 +417,18 @@ export default async function CategoryTemplate({
               </div>
             )}
             
-            <ClientSideSort 
-              initialProducts={initialProducts}
-              countryCode={countryCode}
-              currentCategory={currentCategory}
-              region={region}
-              filters={filters}
-            />
+            {/* For Red Kachina page, conditionally render products or countdown */}
+            {category.includes('red-kachina') && !isCountdownEnded() ? (
+              <DynamicCountdownWrapper />
+            ) : (
+              <ClientSideSort 
+                initialProducts={initialProducts}
+                countryCode={countryCode}
+                currentCategory={currentCategory}
+                region={region}
+                filters={filters}
+              />
+            )}
           </Container>
         </div>
       </>

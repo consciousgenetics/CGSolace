@@ -29,7 +29,7 @@ const ProfileDropdown = ({ loggedIn }: { loggedIn: boolean }) => {
     <Box className="z-50 h-full" onMouseEnter={open} onMouseLeave={close}>
       <Popover className="relative h-full">
         <Popover.Button
-          className="cursor-default rounded-full bg-transparent !p-2 text-action-primary outline-none hover:text-action-primary-hover active:bg-fg-secondary-pressed active:text-action-primary-pressed xsmall:!p-3.5 small:hover:bg-fg-secondary-hover"
+          className="cursor-default rounded-full bg-transparent !p-2 text-white outline-none hover:bg-black/20 hover:text-white active:bg-black/30 active:text-white xsmall:!p-3.5 small:hover:bg-black/20"
           data-testid="profile-dropdown-button"
         >
           <UserIcon />

@@ -59,8 +59,8 @@ export default function Navigation({
             >
               <NavigationItem
                 href={`/${countryCode}${item.handle}`}
-                className={cn('relative !py-2 px-3 text-[18px] font-medium tracking-wide transition-colors hover:text-action-primary font-anton', {
-                  'text-action-primary': active || isCategories,
+                className={cn('relative !py-2 px-3 text-[18px] font-medium tracking-wide transition-colors text-white hover:text-white/80 font-anton', {
+                  'text-white font-bold': active || isCategories,
                 })}
               >
                 {item.name}

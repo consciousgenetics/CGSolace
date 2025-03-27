@@ -12,57 +12,60 @@ interface TimeLeft {
 interface CountdownContextType {
   timeLeft: TimeLeft
   isVisible: boolean
+  hasCompleted: boolean
 }
 
 const CountdownContext = createContext<CountdownContextType | undefined>(undefined)
 
 export function CountdownProvider({ children }: { children: ReactNode }) {
   const [timeLeft, setTimeLeft] = useState<TimeLeft>({
-    days: '02',
-    hours: '22',
-    minutes: '29',
-    seconds: '57'
+    days: '00',
+    hours: '00',
+    minutes: '00',
+    seconds: '00'
   })
   const [isVisible, setIsVisible] = useState(true)
+  const [hasCompleted, setHasCompleted] = useState(false)
 
   useEffect(() => {
-    const timer = setInterval(() => {
-      setTimeLeft(prev => {
-        let secs = parseInt(prev.seconds)
-        let mins = parseInt(prev.minutes)
-        let hrs = parseInt(prev.hours)
-        let days = parseInt(prev.days)
-
-        secs--
-        if (secs < 0) {
-          secs = 59
-          mins--
-          if (mins < 0) {
-            mins = 59
-            hrs--
-            if (hrs < 0) {
-              hrs = 23
-              days--
-              if (days < 0) {
-                // Reset to initial time or handle end of countdown
-                return {
-                  days: '003',
-                  hours: '22',
-                  minutes: '29',
-                  seconds: '57'
-                }
-              }
-            }
-          }
-        }
-
+    // Set target date to May 1st, 2025
+    const targetDate = new Date('2025-05-01T00:00:00').getTime()
+    
+    const calculateTimeLeft = () => {
+      const now = new Date().getTime()
+      const difference = targetDate - now
+      
+      // If we've reached the target date
+      if (difference <= 0) {
+        setHasCompleted(true)
         return {
-          days: days.toString().padStart(2, '0'),
-          hours: hrs.toString().padStart(2, '0'),
-          minutes: mins.toString().padStart(2, '0'),
-          seconds: secs.toString().padStart(2, '0')
+          days: '00',
+          hours: '00',
+          minutes: '00',
+          seconds: '00'
         }
-      })
+      }
+      
+      // Calculate remaining time
+      const days = Math.floor(difference / (1000 * 60 * 60 * 24))
+      const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))
+      const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60))
+      const seconds = Math.floor((difference % (1000 * 60)) / 1000)
+      
+      return {
+        days: days.toString().padStart(2, '0'),
+        hours: hours.toString().padStart(2, '0'),
+        minutes: minutes.toString().padStart(2, '0'),
+        seconds: seconds.toString().padStart(2, '0')
+      }
+    }
+    
+    // Set initial time left
+    setTimeLeft(calculateTimeLeft())
+    
+    // Update time every second
+    const timer = setInterval(() => {
+      setTimeLeft(calculateTimeLeft())
     }, 1000)
 
     // Handle scroll event
@@ -84,7 +87,7 @@ export function CountdownProvider({ children }: { children: ReactNode }) {
   }, [])
 
   return (
-    <CountdownContext.Provider value={{ timeLeft, isVisible }}>
+    <CountdownContext.Provider value={{ timeLeft, isVisible, hasCompleted }}>
       {children}
     </CountdownContext.Provider>
   )
