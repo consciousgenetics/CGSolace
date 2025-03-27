@@ -17,7 +17,7 @@ export const dynamic = 'force-dynamic'
 
 interface CollectionPageLayoutProps {
   children: React.ReactNode
-  params: Promise<{ handle: string; countryCode: string }>
+  params: { handle: string; countryCode: string }
 }
 
 // Skip static params completely for now to ensure build succeeds
@@ -30,7 +30,7 @@ export async function generateMetadata(
   props: CollectionPageLayoutProps
 ): Promise<Metadata> {
   try {
-    const params = await props.params
+    const params = props.params
     const collection = await getCollectionByHandle(params.handle).catch(() => null)
 
     if (!collection) {
@@ -57,7 +57,7 @@ export default async function CollectionPageLayout(
   props: CollectionPageLayoutProps
 ) {
   try {
-    const params = await props.params
+    const params = props.params
     const { handle } = params
     const { children } = props
 

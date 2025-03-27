@@ -12,11 +12,17 @@ type ItemsTemplateProps = {
 const ItemsTemplate = ({ items }: ItemsTemplateProps) => {
   return (
     <>
-      {items
+      {items && items.length > 0
         ? items
             .sort((a, b) => {
+              // Stable sort to prevent unnecessary reordering
+              if ((a.created_at ?? '') === (b.created_at ?? '')) {
+                return a.id > b.id ? 1 : -1;
+              }
               return (a.created_at ?? '') > (b.created_at ?? '') ? -1 : 1
             })
+            // Only render items that have required properties
+            .filter(item => item && item.id)
             .map((item) => {
               return <Item key={item.id} item={item} />
             })

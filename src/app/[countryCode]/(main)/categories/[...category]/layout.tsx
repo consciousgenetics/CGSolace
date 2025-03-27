@@ -15,7 +15,7 @@ export const dynamic = 'force-dynamic'
 
 interface CategoryPageLayoutProps {
   children: React.ReactNode
-  params: Promise<{ category: string[] }>
+  params: { category: string[]; countryCode: string }
 }
 
 // Skip static params completely for now to ensure build succeeds
@@ -28,9 +28,11 @@ export async function generateMetadata(
   props: CategoryPageLayoutProps
 ): Promise<Metadata> {
   try {
-    const params = await props.params
-    const { product_categories } = await getCategoryByHandle(params.category)
+    const params = props.params
+    const categoryData = await getCategoryByHandle(params.category)
       .catch(() => ({ product_categories: [] }))
+    
+    const { product_categories } = categoryData || { product_categories: [] }
 
     if (!product_categories || product_categories.length === 0) {
       return {
@@ -67,7 +69,7 @@ export default async function CategoryPageLayout(
   props: CategoryPageLayoutProps
 ) {
   try {
-    const params = await props.params
+    const params = props.params
     const { category } = params
     const { children } = props
 

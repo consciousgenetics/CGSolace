@@ -10,15 +10,14 @@ import CategoryTemplate from '@modules/categories/templates'
 
 // Set dynamic rendering to prevent build-time errors
 export const dynamic = 'force-dynamic'
-export const revalidate = false // Disable revalidation for dynamic routes
+export const revalidate = 300 // 5 minutes instead of disabling revalidation
 
 export default async function CategoryPage({ params }: { 
   params: { countryCode: string; category: string[] } 
 }) {
   try {
-    // Make sure params is properly awaited before destructuring
-    const paramsResolved = await Promise.resolve(params)
-    const { countryCode, category } = paramsResolved
+    // Use params directly without awaiting
+    const { countryCode, category } = params
 
     // Get region data - if not found, show 404
     const region = await getRegion(countryCode)
@@ -76,7 +75,7 @@ export default async function CategoryPage({ params }: {
     }
 
     // Pass to the template component with the resolved params
-    return <CategoryTemplate params={paramsResolved} />
+    return <CategoryTemplate params={params} />
   } catch (error) {
     console.error('Error in CategoryPage:', error)
     return (

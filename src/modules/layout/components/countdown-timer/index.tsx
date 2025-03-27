@@ -20,28 +20,26 @@ export function CountdownTimer() {
         }}
       >
         <div className="flex items-center justify-center text-base small:text-lg text-black h-full px-2 small:px-4 relative w-full">
-          {/* For mobile, we stack the elements to ensure the countdown is centered */}
+          {/* For mobile, we keep everything on a single row with smaller font sizes */}
           {isMobile ? (
-            <div className="w-full flex flex-col items-center justify-center">
-              <div className="flex items-center justify-center text-center">
-                <span className="font-medium tracking-wider text-sm small:text-base text-black">RED KACHINA RELEASE (MAY 1, 2025):</span>
-                <div className="flex items-center gap-2 small:gap-3 ml-2 small:ml-3">
-                  <div className="flex items-center">
-                    <span className="font-bold text-black text-base small:text-lg">{timeLeft.days}</span>
-                    <span className="ml-0.5 text-black text-sm">d</span>
-                  </div>
-                  <div className="flex items-center">
-                    <span className="font-bold text-black text-base small:text-lg">{timeLeft.hours}</span>
-                    <span className="ml-0.5 text-black text-sm">h</span>
-                  </div>
-                  <div className="flex items-center">
-                    <span className="font-bold text-black text-base small:text-lg">{timeLeft.minutes}</span>
-                    <span className="ml-0.5 text-black text-sm">m</span>
-                  </div>
-                  <div className="flex items-center">
-                    <span className="font-bold text-black text-base small:text-lg">{timeLeft.seconds}</span>
-                    <span className="ml-0.5 text-black text-sm">s</span>
-                  </div>
+            <div className="w-full flex items-center justify-center">
+              <span className="font-medium tracking-wider text-xs small:text-sm text-black whitespace-nowrap">RED KACHINA:</span>
+              <div className="flex items-center gap-1 small:gap-2 ml-1 small:ml-2">
+                <div className="flex items-center">
+                  <span className="font-bold text-black text-xs small:text-sm">{timeLeft.days}</span>
+                  <span className="ml-0.5 text-black text-xs">d</span>
+                </div>
+                <div className="flex items-center">
+                  <span className="font-bold text-black text-xs small:text-sm">{timeLeft.hours}</span>
+                  <span className="ml-0.5 text-black text-xs">h</span>
+                </div>
+                <div className="flex items-center">
+                  <span className="font-bold text-black text-xs small:text-sm">{timeLeft.minutes}</span>
+                  <span className="ml-0.5 text-black text-xs">m</span>
+                </div>
+                <div className="flex items-center">
+                  <span className="font-bold text-black text-xs small:text-sm">{timeLeft.seconds}</span>
+                  <span className="ml-0.5 text-black text-xs">s</span>
                 </div>
               </div>
             </div>

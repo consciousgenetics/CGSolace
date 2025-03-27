@@ -15,16 +15,35 @@ import SkeletonProductsCarousel from '@modules/skeletons/templates/skeleton-prod
 import { CollectionsData, HeroBannerData } from 'types/strapi'
 import SeedLineCountdown from '@modules/home/components/seed-line-countdown'
 import LocalizedClientLink from '@modules/common/components/localized-client-link'
+import { cache } from 'react'
 
 // Set dynamic rendering to prevent build-time errors
 export const dynamic = 'force-dynamic'
 
+// Add revalidation time to reduce API call frequency
+export const revalidate = 300 // revalidate content every 5 minutes
+
+// Cache the category fetch operation
+const getCachedCategories = cache(async () => {
+  try {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL}/store/product-categories`, {
+      headers: {
+        "x-publishable-api-key": process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY || "temp",
+      },
+      next: { revalidate: 3600 }, // Cache for 1 hour
+    });
+    return response.json();
+  } catch (error) {
+    console.error("Error fetching categories:", error);
+    return { product_categories: [] };
+  }
+});
+
 export default async function Home(props: {
-  params: Promise<{ countryCode: string }>
+  params: { countryCode: string }
 }) {
   try {
-    const params = await props.params
-    const { countryCode } = params
+    const { countryCode } = props.params
 
     let collectionsList = [];
     let seedProducts = [];
@@ -44,137 +63,13 @@ export default async function Home(props: {
         .catch(() => null);
         
       if (region) {
-        // Get all products first as a fallback
-        const allProductsResult = await getProductsList({
-          pageParam: 0,
-          queryParams: { limit: 16 },
-          countryCode: countryCode,
-        })
-          .then(({ response }) => response)
-          .catch(() => ({ products: [] }));
-        
-        const allProducts = allProductsResult?.products || [];
-        
-        // Try to find collection IDs for seeds
-        const seedCollections = collectionsList.filter(collection => {
-          const title = (collection.title || '').toLowerCase();
-          const handle = (collection.handle || '').toLowerCase();
-          
-          // Log each collection for debugging
-          console.log('Checking collection:', {
-            title,
-            handle,
-            id: collection.id,
-            full: collection
-          });
-          
-          // Check for seed collections
-          return handle.includes('seed') || 
-                 title.includes('seed') || 
-                 handle.includes('regular') || 
-                 title.includes('regular') ||
-                 handle.includes('feminized') || 
-                 title.includes('feminized');
-        });
-
-        // Separate regular and feminized collections
-        const regularSeedCollections = seedCollections.filter(collection => {
-          const title = (collection.title || '').toLowerCase();
-          const handle = (collection.handle || '').toLowerCase();
-          return handle.includes('regular') || title.includes('regular');
-        });
-
-        const feminizedSeedCollections = seedCollections.filter(collection => {
-          const title = (collection.title || '').toLowerCase();
-          const handle = (collection.handle || '').toLowerCase();
-          return handle.includes('feminized') || title.includes('feminized');
-        });
-
-        // Log collections for debugging
-        console.log('Regular seed collections:', regularSeedCollections.map(c => ({
-          id: c.id,
-          title: c.title,
-          handle: c.handle
-        })));
-        
-        console.log('Feminized seed collections:', feminizedSeedCollections.map(c => ({
-          id: c.id,
-          title: c.title,
-          handle: c.handle
-        })));
-
-        // Find all clothing-related collections
-        const clothingCollections = collectionsList.filter(collection => {
-          const title = (collection.title || '').toLowerCase();
-          const handle = (collection.handle || '').toLowerCase();
-          
-          // Log each collection for debugging
-          console.log('Checking clothing collection:', {
-            title,
-            handle,
-            id: collection.id
-          });
-          
-          return handle.includes('merch') || 
-                 title.includes('merch') ||
-                 handle.includes('clothing') ||
-                 title.includes('clothing') ||
-                 handle.includes('apparel') ||
-                 title.includes('apparel') ||
-                 handle.includes('unisex') ||
-                 title.includes('unisex');
-        });
-
-        // Separate mens and womens clothing collections
-        const mensClothingCollections = clothingCollections.filter(collection => {
-          const title = (collection.title || '').toLowerCase();
-          const handle = (collection.handle || '').toLowerCase();
-          return ((handle.includes('mens') || handle.includes("men's") || 
-                 title.includes('mens') || title.includes("men's")) &&
-                 !handle.includes('womens') && !handle.includes("women's") &&
-                 !title.includes('womens') && !title.includes("women's")) ||
-                 handle.includes('unisex') || 
-                 title.includes('unisex');
-        });
-        
-        // Log specific mens collection details
-        console.log('Mens collections for fetching:', mensClothingCollections.map(c => ({
-          id: c.id,
-          title: c.title,
-          handle: c.handle
-        })));
-        
-        const womensClothingCollections = clothingCollections.filter(collection => {
-          const title = (collection.title || '').toLowerCase();
-          const handle = (collection.handle || '').toLowerCase();
-          return handle.includes('womens') || handle.includes("women's") || 
-                 title.includes('womens') || title.includes("women's");
-        });
-
-        // Log found clothing collections
-        console.log('Found clothing collections:', clothingCollections.map(c => ({
-          id: c.id,
-          title: c.title,
-          handle: c.handle
-        })));
-
-        // Fetch seed products by category
+        let allProducts = [];
+        // Fetch all products in a single call with proper filtering
         try {
           // First, fetch all product categories to get the correct IDs
-          const categoriesResponse = await fetch(`${process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL}/store/product-categories`, {
-            headers: {
-              "x-publishable-api-key": process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY || "temp",
-            },
-          }).then(res => res.json());
+          const categoriesResponse = await getCachedCategories();
 
-          // Log categories for debugging
-          console.log('Available categories:', categoriesResponse.product_categories?.map(cat => ({
-            id: cat.id,
-            handle: cat.handle,
-            name: cat.name
-          })));
-
-          // Find the seed categories
+          // Find the categories
           const regularSeedsCategory = categoriesResponse.product_categories?.find(
             cat => cat.handle === 'seeds'
           );
@@ -182,168 +77,43 @@ export default async function Home(props: {
             cat => cat.handle === 'feminized-seeds'
           );
 
-          console.log('Found seed categories:', {
-            regular: regularSeedsCategory,
-            feminized: feminizedSeedsCategory
-          });
-
-          // Fetch regular seed products
-          const regularSeedProductsResult = await getProductsList({
+          // Fetch all products in a single call with expanded fields
+          const allProductsResult = await getProductsList({
             pageParam: 0,
             queryParams: { 
-              limit: 9,
-              category_id: regularSeedsCategory ? [regularSeedsCategory.id] : [],
-              fields: '*variants.calculated_price,+variants.inventory_quantity,*variants,*variants.prices,*categories,+metadata'
+              limit: 100, // Increased limit to get all products at once
+              fields: '*images,*thumbnail,*variants.calculated_price,+variants.inventory_quantity,*variants,*variants.prices,*categories,+metadata'
             },
             countryCode: countryCode,
-          })
-            .then(({ response }) => response)
-            .catch(() => ({ products: [] }));
-
-          // Fetch feminized seed products
-          const feminizedSeedProductsResult = await getProductsList({
-            pageParam: 0,
-            queryParams: { 
-              limit: 9,
-              category_id: feminizedSeedsCategory ? [feminizedSeedsCategory.id] : [],
-              fields: '*variants.calculated_price,+variants.inventory_quantity,*variants,*variants.prices,*categories,+metadata'
-            },
-            countryCode: countryCode,
-          })
-            .then(({ response }) => response)
-            .catch(() => ({ products: [] }));
-
-          // Combine both types of products
-          seedProducts = [
-            ...regularSeedProductsResult?.products || [],
-            ...feminizedSeedProductsResult?.products || []
-          ];
-
-          // Log the fetched products for debugging
-          console.log('Fetched seed products:', {
-            regular: {
-              categoryId: regularSeedsCategory?.id,
-              products: regularSeedProductsResult?.products?.map(p => ({
-                id: p.id,
-                title: p.title,
-                categories: p.categories?.map(c => ({
-                  id: c.id,
-                  handle: c.handle
-                }))
-              }))
-            },
-            feminized: {
-              categoryId: feminizedSeedsCategory?.id,
-              products: feminizedSeedProductsResult?.products?.map(p => ({
-                id: p.id,
-                title: p.title,
-                categories: p.categories?.map(c => ({
-                  id: c.id,
-                  handle: c.handle
-                }))
-              }))
-            }
           });
-        } catch (error) {
-          console.error("Error fetching seed products:", error);
-        }
-        
-        // If we found any clothing collections, try to fetch those products
-        if (clothingCollections.length > 0) {
-          try {
-            // First, fetch all product categories to get the correct IDs
-            const categoriesResponse = await fetch(`${process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL}/store/product-categories`, {
-              headers: {
-                "x-publishable-api-key": process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY || "temp",
-              },
-            }).then(res => res.json());
 
-            // Log all available categories
-            console.log('Available categories for clothing:', categoriesResponse.product_categories?.map(cat => ({
-              id: cat.id,
-              handle: cat.handle,
-              name: cat.name
-            })));
+          allProducts = allProductsResult.response.products || [];
 
-            // Find the mens category - try different possible handles
-            const mensCategory = categoriesResponse.product_categories?.find(
-              cat => cat.handle === 'mens' || 
-                    cat.handle === 'mens-merch' || 
-                    cat.handle === 'men'
-            );
+          // Filter products by category
+          seedProducts = allProducts.filter(product => {
+            const productCategories = product.categories?.map(c => c.id) || [];
+            return productCategories.includes(regularSeedsCategory?.id) || 
+                   productCategories.includes(feminizedSeedsCategory?.id);
+          });
 
-            console.log('Found mens category:', mensCategory);
-
-            // Find womens category
-            const womensCategory = categoriesResponse.product_categories?.find(
-              cat => cat.handle === 'womens-merch' || 
-                    cat.handle === 'womens' || 
-                    cat.handle === "women's"
-            );
-
-            console.log('Found womens category:', womensCategory);
-
-            // Fetch clothing products by category
-            const [mensProductsResult, womensProductsResult] = await Promise.all([
-              getProductsList({
-                pageParam: 0,
-                queryParams: { 
-                  limit: 12,
-                  category_id: mensCategory ? [mensCategory.id] : [],
-                  fields: '*variants.calculated_price,+variants.inventory_quantity,*variants,*variants.prices,*categories,+metadata'
-                },
-                countryCode: countryCode,
-              }).then(({ response }) => response).catch(() => ({ products: [] })),
-              
-              getProductsList({
-                pageParam: 0,
-                queryParams: { 
-                  limit: 12,
-                  category_id: womensCategory ? [womensCategory.id] : [],
-                  fields: '*variants.calculated_price,+variants.inventory_quantity,*variants,*variants.prices,*categories,+metadata'
-                },
-                countryCode: countryCode,
-              }).then(({ response }) => response).catch(() => ({ products: [] }))
-            ]);
+          clothingProducts = allProducts.filter(product => {
+            const productCategories = product.categories?.map(c => c.id) || [];
+            const isMens = productCategories.includes(categoriesResponse.product_categories?.find(
+              cat => cat.handle === 'mens'
+            )?.id);
+            const isWomens = productCategories.includes(categoriesResponse.product_categories?.find(
+              cat => cat.handle === 'womens'
+            )?.id);
             
-            // Combine both mens and womens products, ensuring no duplicates
-            const seenIds = new Set();
-            clothingProducts = [
-              ...(mensProductsResult.products || []).map(product => ({
-                ...product,
-                clothing_type: 'mens'
-              })),
-              ...(womensProductsResult.products || []).map(product => ({
-                ...product,
-                clothing_type: 'womens'
-              }))
-            ].filter(product => {
-              if (seenIds.has(product.id)) {
-                return false;
-              }
-              seenIds.add(product.id);
+            if (isMens || isWomens) {
+              product.clothing_type = isMens ? 'mens' : 'womens';
               return true;
-            });
-            
-            // Log clothing products for debugging
-            console.log('All clothing products fetched:', {
-              total: clothingProducts.length,
-              mens: mensProductsResult.products?.length || 0,
-              womens: womensProductsResult.products?.length || 0,
-              products: clothingProducts.map(p => ({
-                id: p.id,
-                title: p.title,
-                handle: p.handle,
-                categories: p.categories?.map(cat => ({
-                  id: cat.id,
-                  handle: cat.handle,
-                  name: cat.name
-                }))
-              }))
-            });
-          } catch (error) {
-            console.error("Error fetching clothing products:", error);
-          }
+            }
+            return false;
+          });
+
+        } catch (error) {
+          console.error("Error fetching and filtering products:", error);
         }
         
         // Use all products as fallback if either collection was not found

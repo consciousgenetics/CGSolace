@@ -24,7 +24,7 @@ import { CountdownTimer } from '@modules/layout/components/countdown-timer'
 import DynamicCountdownWrapper from './dynamic-countdown-wrapper'
 
 export const dynamic = 'force-dynamic'
-export const revalidate = false // Disable revalidation for dynamic routes
+export const revalidate = 300 // 5 minutes instead of disabling revalidation
 
 export async function generateStaticParams() {
   const categories = [
@@ -69,9 +69,8 @@ export default async function CategoryTemplate({
   params: { countryCode: string; category: string[] }
 }) {
   try {
-    // Make sure params is properly awaited before destructuring
-    const paramsResolved = await Promise.resolve(params)
-    const { countryCode, category } = paramsResolved
+    // Use params directly without awaiting
+    const { countryCode, category } = params
 
     // Get region data - if not found, show 404
     const region = await getRegion(countryCode)

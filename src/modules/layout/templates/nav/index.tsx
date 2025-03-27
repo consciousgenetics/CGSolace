@@ -1,14 +1,16 @@
+import { cache } from 'react'
 import { listCategories } from '@lib/data/categories'
 import { getCollectionsList } from '@lib/data/collections'
 import { getCollectionsData } from '@lib/data/fetch'
 import { getProductsList } from '@lib/data/products'
 import { Container } from '@modules/common/components/container'
-import { CountdownTimer } from '@modules/layout/components/countdown-timer'
+import ClientCountdownTimer from '@modules/layout/components/countdown-timer/client-wrapper'
 
 import NavActions from './nav-actions'
 import NavContent from './nav-content'
 
-export default async function NavWrapper(props: any) {
+// Cache the navigation data to prevent repeated fetching
+const getNavData = cache(async (countryCode: string) => {
   const [productCategories, { collections }, strapiCollections, { products }] =
     await Promise.all([
       listCategories(),
@@ -17,15 +19,30 @@ export default async function NavWrapper(props: any) {
       getProductsList({
         pageParam: 0,
         queryParams: { limit: 4 },
-        countryCode: props.countryCode,
+        countryCode: countryCode,
       }).then(({ response }) => response),
     ])
+
+  return {
+    productCategories,
+    collections,
+    strapiCollections,
+    products
+  }
+})
+
+// Add revalidation time to reduce API call frequency 
+export const revalidate = 300 // 5 minutes
+
+export default async function NavWrapper(props: any) {
+  const { productCategories, collections, strapiCollections, products } = 
+    await getNavData(props.countryCode)
 
   return (
     <div className="fixed top-0 left-0 right-0 w-full z-[1000]">
       <div className="bg-black transition-all duration-300">
         <Container className="!p-0">
-          <CountdownTimer />
+          <ClientCountdownTimer />
         </Container>
       </div>
       <Container

@@ -9,10 +9,11 @@ export const metadata: Metadata = {
 }
 
 export default async function PageLayout(props: {
-  params: Promise<{ countryCode: string }>
+  params: { countryCode: string }
   children: React.ReactNode
 }) {
-  const { countryCode } = await props.params
+  // Make sure countryCode is available by resolving params
+  const { countryCode } = props.params
 
   return (
     <>
