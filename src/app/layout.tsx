@@ -5,6 +5,7 @@ import { getBaseURL } from '@lib/util/env'
 import { ProgressBar } from '@modules/common/components/progress-bar'
 import { ThemeProvider } from '@modules/common/components/theme-provider'
 import { CorsProxyProvider } from '@modules/common/components/cors-proxy-provider'
+import { CountdownProvider } from '@lib/context/CountdownContext'
 import { Toaster } from 'sonner'
 import CookieConsentBanner from '@modules/common/components/cookie-consent'
 
@@ -27,9 +28,16 @@ export const metadata: Metadata = {
   },
 }
 
+// Increase revalidation period to reduce API calls
+export const revalidate = 3600 // 1 hour
+
 export default function RootLayout(props: { children: React.ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning className={inter.variable}>
+      <head>
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+      </head>
       <body suppressHydrationWarning>
         <ThemeProvider
           attribute="class"
@@ -37,14 +45,16 @@ export default function RootLayout(props: { children: React.ReactNode }) {
           forcedTheme="light"
           disableTransitionOnChange
         >
-          <CorsProxyProvider>
-            <div className="text-black">
-              <ProgressBar />
-              <Toaster position="bottom-right" offset={65} closeButton />
-              <main className="relative">{props.children}</main>
-              <CookieConsentBanner />
-            </div>
-          </CorsProxyProvider>
+          <CountdownProvider>
+            <CorsProxyProvider>
+              <div className="text-black">
+                <ProgressBar />
+                <Toaster position="bottom-right" offset={65} closeButton />
+                <main className="relative">{props.children}</main>
+                <CookieConsentBanner />
+              </div>
+            </CorsProxyProvider>
+          </CountdownProvider>
         </ThemeProvider>
       </body>
     </html>

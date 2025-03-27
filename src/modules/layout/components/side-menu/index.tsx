@@ -123,7 +123,7 @@ const SideMenu = ({
             {hasChildren ? (
               <Button
                 variant="ghost"
-                className={`w-full justify-between py-3 ${isSeedItem ? 'font-semibold' : ''} ${isExpanded ? 'bg-gray-50' : ''} font-anton`}
+                className={`w-full justify-between py-3 text-black ${isSeedItem ? 'font-semibold' : ''} ${isExpanded ? 'bg-gray-50' : ''} font-anton hover:bg-gray-100`}
                 onClick={() => handleCategoryClick(
                   { name: item.name, handle: item.handle },
                   hasChildren
@@ -140,7 +140,7 @@ const SideMenu = ({
             ) : (
               <Button
                 variant="ghost"
-                className={`w-full justify-between py-3 ${isSeedItem ? 'font-semibold' : ''} font-anton`}
+                className={`w-full justify-between py-3 text-black ${isSeedItem ? 'font-semibold' : ''} font-anton hover:bg-gray-100`}
                 onClick={() => handleOpenDialogChange(false)}
                 asChild
               >
@@ -177,25 +177,25 @@ const SideMenu = ({
         <Button
           variant="icon"
           withIcon
-          className="flex h-auto !p-2 xsmall:!p-3.5 large:hidden"
+          className="flex h-auto !p-2 xsmall:!p-3.5 large:hidden text-white"
         >
-          <BarsIcon />
+          <BarsIcon color="white" />
         </Button>
       </DialogTrigger>
       <DialogPortal>
         <DialogOverlay />
         <DialogContent
-          className="!max-h-full !rounded-none !max-w-full overflow-hidden"
+          className="!max-h-full !rounded-none !max-w-full overflow-hidden bg-white text-black"
           aria-describedby={undefined}
         >
-          <DialogHeader className="flex items-center gap-4 !p-4 text-xl text-basic-primary small:text-2xl">
+          <DialogHeader className="flex items-center gap-4 !p-4 text-xl small:text-2xl font-bold border-b border-gray-200 bg-white text-black">
             MENU
             <Button
               onClick={() => handleOpenDialogChange(false)}
               variant="icon"
               withIcon
               size="sm"
-              className="ml-auto p-2"
+              className="ml-auto p-2 text-black"
             >
               <XIcon />
             </Button>
@@ -204,11 +204,11 @@ const SideMenu = ({
             <DialogTitle>Menu modal</DialogTitle>
           </VisuallyHidden.Root>
           
-          <DialogBody className="p-4 small:p-5 overflow-y-auto">
+          <DialogBody className="p-4 small:p-5 overflow-y-auto bg-white text-black">
             <Box className="flex flex-col">
               <Button
                 variant="tonal"
-                className="mb-4 w-max"
+                className="mb-4 w-max bg-black text-white hover:bg-gray-800"
                 size="sm"
                 onClick={() => handleOpenDialogChange(false)}
                 asChild
