@@ -19,7 +19,7 @@ export default async function PageLayout(props: {
     <>
       <NavWrapper countryCode={countryCode} />
       <div className="min-h-screen bg-gray-50">
-        <div className="pt-[110px] xsmall:pt-[120px] medium:pt-[140px] [&>*:has(.hero-banner)]:!pt-0">
+        <div className="pt-0 [&>div:not(:has([data-testid='product-container']))]:pt-[110px] [&>div:not(:has([data-testid='product-container']))]:xsmall:pt-[120px] [&>div:not(:has([data-testid='product-container']))]:medium:pt-[140px] [&>*:has(.hero-banner)]:!pt-0">
           {props.children}
         </div>
       </div>

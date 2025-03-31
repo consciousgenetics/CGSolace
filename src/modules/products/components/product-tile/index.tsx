@@ -10,7 +10,6 @@ import { Button } from '@modules/common/components/button'
 import LocalizedClientLink from '@modules/common/components/localized-client-link'
 import { Text } from '@modules/common/components/text'
 
-import { ProductActions } from './action'
 import { LoadingImage } from './loading-image'
 import ProductPrice from './price'
 
@@ -239,102 +238,99 @@ export function ProductTile({
               <span className="sr-only">View {product.title}</span>
             </LocalizedClientLink>
           </div>
-          <div className="absolute inset-0 z-20">
-            <ProductActions productHandle={product.handle} regionId={regionId} />
-          </div>
         </Box>
 
         {/* Product Card - peeking from bottom */}
         <Box className="w-full -mt-2">
-          <Box className="text-center px-5 py-3 pb-4 bg-white rounded-3xl shadow-lg relative">
-            {/* Product Info */}
-            <div className="space-y-3">
-              {/* Category Badge - Only show in carousel */}
-              {isCarousel && (
-                <span className={`inline-block px-3 py-1 text-xs font-bold rounded-full mt-3 mb-3 ${
-                  product.category?.title?.toLowerCase().includes('merch') || 
-                  product.title?.toLowerCase().includes('merch') ||
-                  getCategoryTag(product).includes("MEN'S") ||
-                  getCategoryTag(product).includes("WOMEN'S")
-                    ? 'bg-[#d67bef] text-white'
-                    : 'bg-amber-400 text-black'
-                }`}>
-                  {getCategoryTag(product)}
-                </span>
-              )}
+          <LocalizedClientLink href={`/products/${product.handle}`} className="block">
+            <Box className="text-center px-5 py-3 pb-4 bg-white rounded-3xl shadow-lg relative hover:shadow-xl transition-all duration-300">
+              {/* Product Info */}
+              <div className="space-y-3">
+                {/* Category Badge - Only show in carousel */}
+                {isCarousel && (
+                  <span className={`inline-block px-3 py-1 text-xs font-bold rounded-full mt-3 mb-3 ${
+                    product.category?.title?.toLowerCase().includes('merch') || 
+                    product.title?.toLowerCase().includes('merch') ||
+                    getCategoryTag(product).includes("MEN'S") ||
+                    getCategoryTag(product).includes("WOMEN'S")
+                      ? 'bg-[#d67bef] text-white'
+                      : 'bg-amber-400 text-black'
+                  }`}>
+                    {getCategoryTag(product)}
+                  </span>
+                )}
 
-              {/* Product Title */}
-              <Text
-                as="span"
-                className="block text-base xs:text-lg small:text-lg medium:text-xl font-bold uppercase text-black line-clamp-1 small:line-clamp-2 tracking-wider font-anton px-1 small:px-2 min-h-[40px] small:min-h-[56px] flex items-center justify-center"
-              >
-                {product.title}
-              </Text>
-              
-              {/* Stars */}
-              <div className="mb-1">
-                <StarRating rating={productRating} />
-              </div>
-              
-              {/* Description with Read More - Only show in carousel and on non-mobile devices */}
-              {isCarousel && product.description && (
-                <div className="text-center px-1 hidden medium:block">
-                  <p className="text-gray-600 text-sm font-latto">
-                    {product.description.length > 120 
-                      ? `${product.description.substring(0, 120)}...` 
-                      : product.description
-                    }
-                  </p>
-                  {product.description.length > 120 && (
-                    <LocalizedClientLink 
-                      href={`/products/${product.handle}`}
-                      className={`text-sm font-medium hover:text-[#c15ed6] transition-colors mt-0.5 inline-block font-latto ${
-                        product.category?.title?.toLowerCase().includes('merch')
-                          ? 'text-[#d67bef]'
-                          : 'text-[#FDD729]'
-                      }`}
+                {/* Product Title */}
+                <Text
+                  as="span"
+                  className="block text-base xs:text-lg small:text-lg medium:text-xl font-bold uppercase text-black line-clamp-1 small:line-clamp-2 tracking-wider font-anton px-1 small:px-2 min-h-[40px] small:min-h-[56px] flex items-center justify-center"
+                >
+                  {product.title}
+                </Text>
+                
+                {/* Stars */}
+                <div className="mb-1">
+                  <StarRating rating={productRating} />
+                </div>
+                
+                {/* Description with Read More - Only show in carousel and on non-mobile devices */}
+                {isCarousel && product.description && (
+                  <div className="text-center px-1 hidden medium:block">
+                    <p className="text-gray-600 text-sm font-latto">
+                      {product.description.length > 120 
+                        ? `${product.description.substring(0, 120)}...` 
+                        : product.description
+                      }
+                    </p>
+                    {product.description.length > 120 && (
+                      <span 
+                        className={`text-sm font-medium hover:text-[#c15ed6] transition-colors mt-0.5 inline-block font-latto ${
+                          product.category?.title?.toLowerCase().includes('merch')
+                            ? 'text-[#d67bef]'
+                            : 'text-[#FDD729]'
+                        }`}
+                      >
+                        Read More
+                      </span>
+                    )}
+                  </div>
+                )}
+                
+                {/* Variant Selection Dropdown - Only show for pack products */}
+                {isPackProduct && product.variants && product.variants.length > 0 && (
+                  <div className="mb-4">
+                    <select
+                      value={selectedVariant}
+                      onChange={handleVariantChange}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#d67bef]"
+                      onClick={(e) => e.stopPropagation()}
                     >
-                      Read More
-                    </LocalizedClientLink>
-                  )}
-                </div>
-              )}
-              
-              {/* Variant Selection Dropdown - Only show for pack products */}
-              {isPackProduct && product.variants && product.variants.length > 0 && (
-                <div className="mb-4">
-                  <select
-                    value={selectedVariant}
-                    onChange={handleVariantChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#d67bef]"
-                  >
-                    {product.variants.map((variant) => (
-                      <option key={variant.id} value={variant.id}>
-                        {variant.title}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              )}
-              
-              {/* Buy Now and Price */}
-              <div className="flex items-center justify-center gap-2 mt-1">
-                <LocalizedClientLink href={`/products/${product.handle}`}>
-                  <span className="font-bold text-black text-base tracking-widest font-latto cursor-pointer hover:text-amber-500 transition-colors">
+                      {product.variants.map((variant) => (
+                        <option key={variant.id} value={variant.id}>
+                          {variant.title}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+                
+                {/* Buy Now and Price */}
+                <div className="flex items-center justify-center gap-2 mt-1">
+                  <span className="font-bold text-black text-base tracking-widest font-latto">
                     BUY NOW
                   </span>
-                </LocalizedClientLink>
-                <div className="h-4 w-px bg-gray-200"></div>
-                <span className={`font-medium text-base font-latto ${
-                  product.category?.title?.toLowerCase().includes('merch')
-                    ? 'text-[#d67bef]'
-                    : 'text-[#FDD729]'
-                }`}>
-                  {product.calculatedPrice}
-                </span>
+                  <div className="h-4 w-px bg-gray-200"></div>
+                  <span className={`font-medium text-base font-latto ${
+                    product.category?.title?.toLowerCase().includes('merch')
+                      ? 'text-[#d67bef]'
+                      : 'text-[#FDD729]'
+                  }`}>
+                    {product.calculatedPrice}
+                  </span>
+                </div>
               </div>
-            </div>
-          </Box>
+            </Box>
+          </LocalizedClientLink>
         </Box>
       </div>
       

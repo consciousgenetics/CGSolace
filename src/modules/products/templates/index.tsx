@@ -45,13 +45,12 @@ const ProductTemplate: React.FC<ProductTemplateProps> = async ({
   const cart = await retrieveCart()
 
   return (
-    <>
+    <div data-testid="product-container" className="pt-6 small:pt-8 medium:pt-10 mt-0">
       <Container
-        className="relative flex flex-col gap-y-4 small:gap-y-6 !py-4 small:!py-8 medium:gap-y-12"
-        data-testid="product-container"
+        className="relative flex flex-col gap-y-4 small:gap-y-6 medium:gap-y-12"
       >
-        <div aria-hidden id="top-of-product"></div>
-        <div className="flex flex-col gap-y-4 small:gap-y-6">
+        <div aria-hidden id="top-of-product" className="!h-0 !m-0 !p-0"></div>
+        <div className="flex flex-col gap-y-4 small:gap-y-6 !mt-0 !pt-0">
           <ProductBreadcrumbs
             product={product}
             countryCode={countryCode}
@@ -91,7 +90,7 @@ const ProductTemplate: React.FC<ProductTemplateProps> = async ({
           />
         </Suspense>
       )}
-    </>
+    </div>
   )
 }
 

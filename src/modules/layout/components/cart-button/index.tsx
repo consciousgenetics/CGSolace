@@ -19,8 +19,8 @@ export default async function CartButton() {
           <BagIcon />
           {totalItems > 0 && (
             <span 
-              style={{backgroundColor: '#ef4444'}} 
-              className="absolute top-0 right-0 translate-x-3/4 -translate-y-1/2 flex h-4 w-4 items-center justify-center rounded-full !bg-red-500 text-[10px] text-white"
+              style={{backgroundColor: '#FDB022'}} 
+              className="absolute top-0 right-0 -mt-1 -mr-1 flex h-4 w-4 items-center justify-center rounded-full !bg-yellow-400 text-[10px] text-white"
             >
               {`${totalItems}`}
             </span>
