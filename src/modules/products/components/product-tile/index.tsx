@@ -319,7 +319,11 @@ export function ProductTile({
               
               {/* Buy Now and Price */}
               <div className="flex items-center justify-center gap-2 mt-1">
-                <span className="font-bold text-black text-base tracking-widest font-latto">BUY NOW</span>
+                <LocalizedClientLink href={`/products/${product.handle}`}>
+                  <span className="font-bold text-black text-base tracking-widest font-latto cursor-pointer hover:text-amber-500 transition-colors">
+                    BUY NOW
+                  </span>
+                </LocalizedClientLink>
                 <div className="h-4 w-px bg-gray-200"></div>
                 <span className={`font-medium text-base font-latto ${
                   product.category?.title?.toLowerCase().includes('merch')
