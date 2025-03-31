@@ -18,7 +18,7 @@ export function ProductActions({
   regionId: string
 }) {
   const [isAddingToCart, setIsAddingToCart] = useState(false)
-  const { openCartDropdown, setCartUpdated } = useCartStore()
+  const { setCartUpdated } = useCartStore()
   const countryCode = useParams().countryCode as string
   const router = useRouter()
 
@@ -33,7 +33,6 @@ export function ProductActions({
       })
 
       if (result.success) {
-        openCartDropdown()
         toast('success', result.message)
         
         // Signal that cart was updated

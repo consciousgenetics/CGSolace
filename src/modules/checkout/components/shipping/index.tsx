@@ -55,7 +55,6 @@ const Shipping: React.FC<ShippingProps> = ({
       return acc
     }, {} as Record<string, HttpTypes.StoreCartShippingOption[]>)
 
-    console.log('Available shipping options by profile:', grouped)
     return grouped
   }, [availableShippingMethods])
 
@@ -92,17 +91,13 @@ const Shipping: React.FC<ShippingProps> = ({
       profiles.add(defaultProfile)
     }
     
-    console.log('Required shipping profiles:', Array.from(profiles))
     return profiles
   }, [cart?.items, cart.shipping_methods, availableShippingMethods])
 
-  // Check if we have multiple shipping profiles
-  const hasMultipleProfiles = Object.keys(shippingOptionsByProfile).length > 1
-
-  // Initialize selected methods from cart
+  // Initialize selected methods from cart - more efficiently
   useEffect(() => {
     if (cart.shipping_methods && cart.shipping_methods.length > 0) {
-      const methods = cart.shipping_methods.reduce((acc, method) => {
+      setSelectedMethods(cart.shipping_methods.reduce((acc, method) => {
         const option = availableShippingMethods?.find(
           opt => opt.id === method.shipping_option_id
         )
@@ -110,12 +105,16 @@ const Shipping: React.FC<ShippingProps> = ({
           acc[option.shipping_profile_id] = option.id
         }
         return acc
-      }, {} as Record<string, string>)
-      
-      console.log('Initializing selected methods:', methods)
-      setSelectedMethods(methods)
+      }, {} as Record<string, string>))
     }
   }, [cart.shipping_methods, availableShippingMethods])
+
+  // Prefetch the payment page to make transition faster
+  useEffect(() => {
+    if (isOpen && cart?.shipping_methods?.length > 0) {
+      router.prefetch(pathname + '?step=payment')
+    }
+  }, [isOpen, cart?.shipping_methods?.length, router, pathname])
 
   const handleEdit = () => {
     router.push(pathname + '?step=delivery', { scroll: false })
@@ -135,10 +134,15 @@ const Shipping: React.FC<ShippingProps> = ({
       return
     }
 
+    // Set transitioning state immediately to show loading UI
     setIsTransitioning(true)
+    
+    // Prefetch the payment page again right before transition
+    router.prefetch(pathname + '?step=payment')
+    
     try {
-      console.log('Submitting with selected methods:', selectedMethods)
-      await router.push(pathname + '?step=payment', { scroll: false })
+      // Transition to payment page
+      router.push(pathname + '?step=payment', { scroll: false })
     } catch (error) {
       console.error('Error during transition:', error)
       setIsTransitioning(false)
@@ -146,20 +150,21 @@ const Shipping: React.FC<ShippingProps> = ({
   }
 
   const set = async (id: string, profileId: string) => {
+    // Don't do anything if this shipping method is already selected
+    if (selectedMethods[profileId] === id) return
+    
     setIsLoading(true)
     setError(null)
     
     try {
-      console.log('Setting shipping method:', { id, profileId })
-      
       // Update local state first for better UX
       setSelectedMethods(prev => ({
         ...prev,
         [profileId]: id
       }))
       
+      // Set shipping method in background
       await setShippingMethod({ cartId: cart.id, shippingMethodId: id })
-      console.log('Successfully set shipping method')
     } catch (err) {
       console.error('Error setting shipping method:', err)
       setError(err.message)
@@ -191,11 +196,8 @@ const Shipping: React.FC<ShippingProps> = ({
     return 'Physical Products'
   }
 
-  // Debug information
-  console.log('Cart Items:', cart?.items)
-  console.log('Required Profiles:', Array.from(requiredShippingProfiles))
-  console.log('Selected Methods:', selectedMethods)
-  console.log('Available Methods:', shippingOptionsByProfile)
+  // Check if we have multiple shipping profiles
+  const hasMultipleProfiles = Object.keys(shippingOptionsByProfile).length > 1
 
   return (
     <Box className="bg-primary p-5">

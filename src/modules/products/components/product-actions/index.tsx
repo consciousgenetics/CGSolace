@@ -41,7 +41,7 @@ export default function ProductActions({
   colors,
   disabled,
 }: ProductActionsProps) {
-  const { openCartDropdown, setCartUpdated } = useCartStore()
+  const { setCartUpdated } = useCartStore()
   const actionsRef = useRef<HTMLDivElement>(null)
   const [qty, setQty] = useState(1)
   const [options, setOptions] = useState<Record<string, string | undefined>>({})
@@ -81,8 +81,7 @@ export default function ProductActions({
         countryCode,
       });
       
-      // Open cart dropdown immediately - no need for timeout
-      openCartDropdown();
+      // Show toast notification
       toast('success', 'Product was added to cart!');
       
       // Signal that cart was updated so components can refresh

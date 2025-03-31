@@ -12,7 +12,6 @@ type LineItemPriceProps = {
   item: HttpTypes.StoreCartLineItem | HttpTypes.StoreOrderLineItem
   className?: string
   style?: 'default' | 'tight'
-  isInCartDropdown?: boolean
 }
 
 // Define a type for the price values to fix TypeScript errors
@@ -26,7 +25,6 @@ const LineItemPrice = ({
   item,
   className,
   style = 'default',
-  isInCartDropdown = false,
 }: LineItemPriceProps) => {
   // Safely get price data with proper typing
   const prices = getPricesForVariant(item.variant) as PriceValues | null;
@@ -50,9 +48,7 @@ const LineItemPrice = ({
       className={cn(
         'flex flex-row-reverse items-center gap-2',
         className,
-        isInCartDropdown
-          ? 'small:flex-row-reverse'
-          : 'small:flex-col small:items-end small:gap-0'
+        'small:flex-col small:items-end small:gap-0'
       )}
     >
       {hasReducedPrice && (
