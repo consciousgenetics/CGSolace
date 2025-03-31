@@ -1,3 +1,4 @@
+import { unstable_cache as cache } from 'next/cache'
 import { listCartShippingMethods } from '@lib/data/fulfillment'
 import { listCartPaymentMethods } from '@lib/data/payment'
 import { HttpTypes } from '@medusajs/types'
@@ -6,6 +7,30 @@ import Payment from '@modules/checkout/components/payment'
 import Shipping from '@modules/checkout/components/shipping'
 import { Box } from '@modules/common/components/box'
 import { Text } from '@modules/common/components/text'
+
+// Cache shipping methods fetching
+const getShippingMethods = cache(
+  (cartId: string) => listCartShippingMethods(cartId),
+  ['shipping-methods'],
+  { revalidate: 10 }
+)
+
+// Cache payment methods fetching
+const getPaymentMethods = cache(
+  async (regionId: string) => {
+    // Try with region ID first
+    const methods = await listCartPaymentMethods(regionId)
+    
+    // If no methods found, try without region ID
+    if (!methods || methods.length === 0) {
+      return listCartPaymentMethods('')
+    }
+    
+    return methods
+  },
+  ['payment-methods'],
+  { revalidate: 10 }
+)
 
 export default async function CheckoutForm({
   cart,
@@ -18,28 +43,19 @@ export default async function CheckoutForm({
     return null
   }
 
-  // Get shipping methods for the cart
-  const shippingMethods = await listCartShippingMethods(cart.id)
-  
-  // Get payment methods with fallback to empty region ID if needed
+  // Fetch both shipping and payment methods in parallel
   const regionId = cart.region?.id || ''
-  console.log('CheckoutForm: Getting payment methods for region ID:', regionId);
-  
-  let paymentMethods = await listCartPaymentMethods(regionId)
-  
-  // If no payment methods found, try without a region ID as a fallback
-  if (!paymentMethods || paymentMethods.length === 0) {
-    console.log('CheckoutForm: No payment methods found with region ID, trying fallback');
-    paymentMethods = await listCartPaymentMethods('')
-  }
+  const [shippingMethods, paymentMethods] = await Promise.all([
+    getShippingMethods(cart.id),
+    getPaymentMethods(regionId)
+  ])
 
   if (!shippingMethods) {
-    console.error('CheckoutForm: No shipping methods available');
-    return null
-  }
-  
-  if (!paymentMethods || paymentMethods.length === 0) {
-    console.error('CheckoutForm: No payment methods available');
+    return (
+      <Box className="p-4 bg-error-light rounded-lg">
+        <Text className="text-error">No shipping methods available. Please contact support.</Text>
+      </Box>
+    )
   }
 
   return (

@@ -109,19 +109,17 @@ const Shipping: React.FC<ShippingProps> = ({
     }
   }, [cart.shipping_methods, availableShippingMethods])
 
-  // Prefetch the payment page to make transition faster
-  useEffect(() => {
-    if (isOpen && cart?.shipping_methods?.length > 0) {
-      router.prefetch(pathname + '?step=payment')
-    }
-  }, [isOpen, cart?.shipping_methods?.length, router, pathname])
-
   const handleEdit = () => {
     router.push(pathname + '?step=delivery', { scroll: false })
   }
 
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
+    
+    // Prevent multiple submissions or if already transitioning
+    if (isTransitioning || isLoading) {
+      return
+    }
 
     // Check if all required profiles have a selected method
     const missingProfiles = Array.from(requiredShippingProfiles).filter(
@@ -137,46 +135,41 @@ const Shipping: React.FC<ShippingProps> = ({
     // Set transitioning state immediately to show loading UI
     setIsTransitioning(true)
     
-    // Prefetch the payment page again right before transition
-    router.prefetch(pathname + '?step=payment')
-    
-    try {
-      // Transition to payment page
-      router.push(pathname + '?step=payment', { scroll: false })
-    } catch (error) {
-      console.error('Error during transition:', error)
-      setIsTransitioning(false)
-    }
+    // Use simple direct navigation for best performance
+    window.location.href = `${pathname}?step=payment`;
   }
 
-  const set = async (id: string, profileId: string) => {
+  const set = (id: string, profileId: string) => {
     // Don't do anything if this shipping method is already selected
     if (selectedMethods[profileId] === id) return
     
     setIsLoading(true)
     setError(null)
     
-    try {
-      // Update local state first for better UX
-      setSelectedMethods(prev => ({
-        ...prev,
-        [profileId]: id
-      }))
-      
-      // Set shipping method in background
-      await setShippingMethod({ cartId: cart.id, shippingMethodId: id })
-    } catch (err) {
-      console.error('Error setting shipping method:', err)
-      setError(err.message)
-      // Revert the local state update on error
-      setSelectedMethods(prev => {
-        const newState = { ...prev }
-        delete newState[profileId]
-        return newState
+    // Update local state first for better UX
+    setSelectedMethods(prev => ({
+      ...prev,
+      [profileId]: id
+    }))
+    
+    // Set shipping method in background with promise
+    setShippingMethod({ cartId: cart.id, shippingMethodId: id })
+      .then(() => {
+        // Success case is already handled by updating the state
       })
-    } finally {
-      setIsLoading(false)
-    }
+      .catch(err => {
+        console.error('Error setting shipping method:', err)
+        setError(err.message)
+        // Revert the local state update on error
+        setSelectedMethods(prev => {
+          const newState = { ...prev }
+          delete newState[profileId]
+          return newState
+        })
+      })
+      .finally(() => {
+        setIsLoading(false)
+      })
   }
 
   useEffect(() => {

@@ -7,41 +7,50 @@ const BACKEND_URL = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL
 const PUBLISHABLE_API_KEY = process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY
 const DEFAULT_REGION = process.env.NEXT_PUBLIC_DEFAULT_REGION || 'us'
 
+// Increase cache time to 24 hours to reduce API calls
 const regionMapCache = {
   regionMap: new Map<string, HttpTypes.StoreRegion>(),
   regionMapUpdated: Date.now(),
+  ttl: 24 * 60 * 60 * 1000, // 24 hours
 }
 
 async function getRegionMap() {
-  const { regionMap, regionMapUpdated } = regionMapCache
+  const { regionMap, regionMapUpdated, ttl } = regionMapCache
 
+  // Only refetch if cache is empty or expired
   if (
     !regionMap.keys().next().value ||
-    regionMapUpdated < Date.now() - 3600 * 1000
+    regionMapUpdated < Date.now() - ttl
   ) {
-    // Fetch regions from Medusa. We can't use the JS client here because middleware is running on Edge and the client needs a Node environment.
-    const { regions } = await fetch(`${BACKEND_URL}/store/regions`, {
-      headers: {
-        'x-publishable-api-key': PUBLISHABLE_API_KEY!,
-      },
-      next: {
-        revalidate: 3600,
-        tags: ['regions'],
-      },
-    }).then((res) => res.json())
+    try {
+      // Fetch regions from Medusa with longer revalidation time
+      const { regions } = await fetch(`${BACKEND_URL}/store/regions`, {
+        headers: {
+          'x-publishable-api-key': PUBLISHABLE_API_KEY!,
+        },
+        next: {
+          revalidate: ttl / 1000, // Convert ms to seconds
+          tags: ['regions'],
+        },
+      }).then((res) => res.json())
 
-    if (!regions?.length) {
-      notFound()
-    }
+      if (!regions?.length) {
+        return regionMap // Return existing map as fallback
+      }
 
-    // Create a map of country codes to regions.
-    regions.forEach((region: HttpTypes.StoreRegion) => {
-      region.countries?.forEach((c) => {
-        regionMapCache.regionMap.set(c.iso_2 ?? '', region)
+      // Create a map of country codes to regions.
+      regions.forEach((region: HttpTypes.StoreRegion) => {
+        region.countries?.forEach((c) => {
+          regionMapCache.regionMap.set(c.iso_2 ?? '', region)
+        })
       })
-    })
 
-    regionMapCache.regionMapUpdated = Date.now()
+      regionMapCache.regionMapUpdated = Date.now()
+    } catch (error) {
+      console.error('Error fetching regions:', error)
+      // Still return existing map on error
+      return regionMap
+    }
   }
 
   return regionMapCache.regionMap
@@ -89,6 +98,15 @@ function getCountryCode(
  * Middleware to handle region selection and onboarding status.
  */
 export async function middleware(request: NextRequest) {
+  // Skip middleware for checkout URLs with step params to avoid double processing
+  const isCheckoutWithStep = 
+    request.nextUrl.pathname.includes('/checkout') && 
+    request.nextUrl.search.includes('step=');
+  
+  if (isCheckoutWithStep) {
+    return NextResponse.next();
+  }
+
   const searchParams = request.nextUrl.searchParams
   const isOnboarding = searchParams.get('onboarding') === 'true'
   const cartId = searchParams.get('cart_id')
@@ -129,9 +147,13 @@ export async function middleware(request: NextRequest) {
 
   // If a cart_id is in the params, we set it as a cookie and redirect to the address step.
   if (cartId && !checkoutStep) {
-    redirectUrl = `${redirectUrl}&step=address`
-    response = NextResponse.redirect(`${redirectUrl}`, 307)
     response.cookies.set('_medusa_cart_id', cartId, { maxAge: 60 * 60 * 24 })
+    
+    // Only add step=address if we're on a checkout page
+    if (request.nextUrl.pathname.includes('/checkout')) {
+      redirectUrl = `${redirectUrl}&step=address`
+      response = NextResponse.redirect(`${redirectUrl}`, 307)
+    }
   }
 
   // Set a cookie to indicate that we're onboarding. This is used to show the onboarding flow.

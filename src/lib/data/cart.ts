@@ -237,37 +237,46 @@ export async function enrichLineItems(
 ) {
   if (!lineItems) return []
 
-  // Prepare query parameters
-  const queryParams = {
-    ids: lineItems.map((lineItem) => lineItem.product_id!),
-    regionId: regionId,
-  }
+  // Direct SDK call with minimal fields for better performance
+  const products = await sdk.store.product
+    .list(
+      {
+        id: lineItems.map((lineItem) => lineItem.product_id!),
+        region_id: regionId,
+        fields: 'id,title,thumbnail,variants.id,variants.calculated_price,variants.inventory_quantity',
+      },
+      { next: { tags: ['products'] } }
+    )
+    .then(({ products }) => products)
+    .catch(() => null)
 
-  // Fetch products by their IDs
-  const products = await getProductsById(queryParams)
   // If there are no line items or products, return an empty array
   if (!lineItems?.length || !products) {
     return []
   }
 
-  // Enrich line items with product and variant information
+  // Create a minimal enriched item with only necessary data
   const enrichedItems = lineItems.map((item) => {
-    const product = products.find((p: any) => p.id === item.product_id)
-    const variant = product?.variants?.find(
-      (v: any) => v.id === item.variant_id
-    )
-
-    // If product or variant is not found, return the original item
-    if (!product || !variant) {
-      return item
-    }
-
-    // If product and variant are found, enrich the item
+    const product = products.find((p) => p.id === item.product_id)
+    
+    if (!product) return item
+    
+    const variant = product.variants?.find((v) => v.id === item.variant_id)
+    
+    if (!variant) return item
+    
+    // Return minimally enriched item
     return {
       ...item,
       variant: {
-        ...variant,
-        product: omit(product, 'variants'),
+        id: variant.id,
+        calculated_price: variant.calculated_price,
+        inventory_quantity: variant.inventory_quantity,
+        product: {
+          id: product.id,
+          title: product.title,
+          thumbnail: product.thumbnail,
+        },
       },
     }
   }) as HttpTypes.StoreCartLineItem[]
