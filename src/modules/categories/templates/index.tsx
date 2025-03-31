@@ -55,12 +55,8 @@ export async function generateStaticParams() {
 
 // Helper function to check if the countdown has ended
 function isCountdownEnded() {
-  // Use the same date calculation as in CountdownContext
-  const now = new Date()
-  const targetDate = new Date('2025-05-01T00:00:00')
-  
-  // If current time is past the target date, countdown has ended
-  return now >= targetDate
+  // Always return true to bypass the countdown and show products
+  return true
 }
 
 export default async function CategoryTemplate({
@@ -392,21 +388,20 @@ export default async function CategoryTemplate({
                     </h2>
 
                     <div className="prose prose-lg max-w-none text-gray-700">
-                      <p className="text-lg sm:text-xl leading-relaxed font-latto italic">
-                        For this feminized line, we decided to reverse a phenotype of our "Red Kachina" (Jelly Breath x OGKB 2.1).
+                      <p className="text-lg sm:text-xl leading-relaxed font-latto">
+                        The Red Kachina 2.0 Feminized Line stands as one of the most exceptional purple cannabis seed lines in the world, offering a perfect blend of visual beauty, potent effects, rich terpenes, and unique medicinal properties. Known for its stunning deep purple hues, vibrant red undertones, and heavy resin production, Red Kachina isnt just about bag appeal its a strain that delivers on every front.
                       </p>
                       
                       <p className="text-lg sm:text-xl leading-relaxed font-latto">
-                        This strain has a striking visual appearance, dense structure, high resin, and amazing terp profile. 
-                        This particular pheno, #3, is roughly 30% Jelly Breath and 70% OGKB. 
-                        We chose it for its smell, appearance, and denser buds—all improvements over the Original Red Kachina. 
-                        Additionally, the pheno finishes earlier than most OGKB cuts and grows bigger trichome heads.
+                        What truly sets Red Kachina 2.0 apart is its high concentration of anthocyanins - the natural pigments responsible for its striking purple coloration. Beyond their visual appeal, anthocyanins are known for their antioxidant, anti-inflammatory, and neuroprotective properties, giving this strain an added edge in the realm of medicinal cannabis.
                       </p>
                       
                       <p className="text-lg sm:text-xl leading-relaxed font-latto">
-                        This line combines the distinctive traits of Red Kachina with selected phenos of our other top strains. 
-                        These crosses create unique expressions with Red Kachina's characteristic density, trichome coverage, 
-                        and enhanced flavor profiles.
+                        <strong>Red Kachina 2.0 has been crossed with four elite strains, each adding unique traits while maintaining its signature purple hues and medicinal potential.</strong>
+                      </p>
+                      
+                      <p className="text-lg sm:text-xl leading-relaxed font-latto">
+                        This line is all about putting terps into purps combining eye-popping colours with explosive flavours and potent effects.
                       </p>
                     </div>
                   </div>

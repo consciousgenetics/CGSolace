@@ -61,6 +61,19 @@ const LineItemUnitPrice = ({
   const calculated_price_number = priceData?.calculated_price_number ?? 0;
   const percentage_diff = priceData?.percentage_diff ?? 0;
   
+  // Only check if price data is completely missing, not if it's zero
+  const hasNoPrice = priceData === null || calculated_price === 'N/A';
+
+  if (hasNoPrice) {
+    return (
+      <div className="flex items-center gap-x-2">
+        <span className="text-md text-gray-500 italic" data-testid="unit-price-unavailable">
+          Price unavailable
+        </span>
+      </div>
+    );
+  }
+  
   // Only show reduced price if both values exist and calculated is less than original
   const hasReducedPrice = 
     original_price_number > 0 && 

@@ -5,6 +5,7 @@ import React from 'react'
 import { Box } from '@modules/common/components/box'
 import { convertToLocale } from '@lib/util/money'
 import { HttpTypes } from '@medusajs/types'
+import { Text } from '@modules/common/components/text'
 
 type CartTotalsProps = {
   totals: HttpTypes.StoreCart
@@ -40,6 +41,20 @@ const CartTotals: React.FC<CartTotalsProps> = ({ totals }) => {
       total: item.unit_price * item.quantity
     }))
   })
+
+  // Only show warning when there are items but no price data at all
+  const hasNoItemsWithPrice = items?.length > 0 && !items.some(item => item.unit_price !== undefined);
+  
+  // Display message when prices are completely unavailable
+  if (hasNoItemsWithPrice) {
+    return (
+      <Box className="flex flex-col gap-2 text-gray-700">
+        <Text className="text-lg text-gray-500 italic">
+          Price information unavailable. Please contact support.
+        </Text>
+      </Box>
+    )
+  }
 
   return (
     <Box className="flex flex-col gap-4 text-md text-black small:gap-5">

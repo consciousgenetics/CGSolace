@@ -2,6 +2,8 @@
 
 import { useEffect, useState, useMemo, startTransition, useActionState } from 'react'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
+import Image from 'next/image'
+import { motion } from 'framer-motion'
 
 import { RadioGroup } from '@headlessui/react'
 import { setShippingMethod } from '@lib/data/cart'
@@ -194,6 +196,46 @@ const Shipping: React.FC<ShippingProps> = ({
 
   return (
     <Box className="bg-primary p-5">
+      {isTransitioning && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black">
+          <div className="relative flex flex-col items-center">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.5 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{
+                duration: 0.5,
+                ease: [0, 0.71, 0.2, 1.01],
+                scale: {
+                  type: "spring",
+                  damping: 5,
+                  stiffness: 100,
+                  restDelta: 0.001
+                }
+              }}
+            >
+              <Image
+                src="/conscious-genetics-logo.png"
+                alt="Conscious Genetics"
+                width={300}
+                height={150}
+                className="animate-pulse"
+                priority
+                unoptimized
+              />
+            </motion.div>
+            <motion.div
+              initial={{ width: 0 }}
+              animate={{ width: 200 }}
+              transition={{
+                duration: 1.5,
+                repeat: Infinity,
+                ease: "easeInOut"
+              }}
+              className="h-1 bg-gradient-to-r from-purple-600 via-amber-400 to-purple-600 mt-6 rounded-full"
+            />
+          </div>
+        </div>
+      )}
       <Box
         className={cn('flex flex-row items-center justify-between', {
           'mb-6': isOpen || (!isOpen && cart.shipping_methods?.length > 0),
@@ -280,7 +322,7 @@ const Shipping: React.FC<ShippingProps> = ({
                             <span className="justify-self-end text-md">
                               {convertToLocale({
                                 amount: option.amount,
-                                currency_code: cart?.currency_code,
+                                currency_code: 'GBP',
                               })}
                             </span>
                           </Box>
@@ -301,7 +343,14 @@ const Shipping: React.FC<ShippingProps> = ({
               className="mt-6"
               data-testid="submit-delivery-button"
             >
-              Proceed to payment
+              {isTransitioning ? (
+                <Box className="flex items-center gap-2">
+                  <Spinner />
+                  <span>Processing...</span>
+                </Box>
+              ) : (
+                'Proceed to payment'
+              )}
             </SubmitButton>
           </form>
         </Box>
@@ -322,7 +371,7 @@ const Shipping: React.FC<ShippingProps> = ({
                     {getProfileName(option.shipping_profile_id)}: {option.name},{' '}
                     {convertToLocale({
                       amount: option.amount,
-                      currency_code: cart?.currency_code,
+                      currency_code: 'GBP',
                     })}
                   </Text>
                 ) : null

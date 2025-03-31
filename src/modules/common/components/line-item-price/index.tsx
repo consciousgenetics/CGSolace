@@ -43,6 +43,20 @@ const LineItemPrice = ({
   const currentPrice = calculated_price_number * item.quantity - adjustmentsSum
   const hasReducedPrice = currentPrice < originalPrice
 
+  // More flexible price check - if we have a variant with a price, use it even if zero
+  const hasNoPrice = prices === null || calculated_price_number === undefined;
+  
+  // Only show price unavailable if there's truly no price data
+  if (hasNoPrice) {
+    return (
+      <div className="flex items-center gap-x-2">
+        <span className="text-md text-gray-500 italic" data-testid="product-price-unavailable">
+          Price unavailable
+        </span>
+      </div>
+    );
+  }
+
   return (
     <div
       className={cn(

@@ -130,50 +130,16 @@ export const getPricesForVariant = (variant: any, productInfo?: any) => {
     }
   }
 
-  // Fast fallback pricing based on product category
-  // This is a temporary solution until proper prices are set up in Medusa
-  let defaultPrice = 10.0 // Base price
-  
-  // If we have a SKU, use it for quick categorization
-  if (variant.sku && typeof variant.sku === 'string') {
-    if (variant.sku.includes('FEM')) {
-      defaultPrice = 75.0 // Feminized seeds
-    } else if (variant.sku.includes('REG')) {
-      defaultPrice = 60.0 // Regular seeds
-    } else if (variant.sku.includes('MERCH')) {
-      defaultPrice = 35.0 // Merchandise
-    }
-  } 
-  // Use product title as a fallback
-  else if (productInfo && productInfo.title && typeof productInfo.title === 'string') {
-    const productTitle = productInfo.title.toLowerCase();
-    if (productTitle.includes('seed') || productTitle.includes('fem')) {
-      defaultPrice = 75.0
-    } else if (productTitle.includes('merch') || productTitle.includes('shirt')) {
-      defaultPrice = 30.0
-    }
-  }
+  // Log when no price is found
+  console.log('No price found for variant:', {
+    variantId: variant.id,
+    sku: variant.sku || 'No SKU',
+    title: variant.title || 'No title',
+    productTitle: productInfo?.title || 'Unknown product'
+  });
 
-  // Simple result without expensive calculations
-  const result = {
-    calculated_price_number: defaultPrice,
-    calculated_price: convertToLocale({
-      amount: defaultPrice,
-      currency_code: 'GBP',
-    }),
-    original_price_number: defaultPrice,
-    original_price: convertToLocale({
-      amount: defaultPrice, 
-      currency_code: 'GBP',
-    }),
-    currency_code: 'GBP',
-    price_type: null,
-    percentage_diff: 0
-  }
-  
-  // Cache the result
-  if (cacheKey) priceCache.set(cacheKey, result)
-  return result
+  // Return null when no price is available - this will ensure we don't use hardcoded defaults
+  return null;
 }
 
 export function getProductPrice({
@@ -192,24 +158,7 @@ export function getProductPrice({
 
   const cheapestPrice = () => {
     if (!product.variants?.length) {
-      return {
-        variantId: 'no-variant',
-        price: {
-          calculated_price_number: 0,
-          calculated_price: convertToLocale({
-            amount: 0,
-            currency_code: 'GBP',
-          }),
-          original_price_number: 0,
-          original_price: convertToLocale({
-            amount: 0,
-            currency_code: 'GBP',
-          }),
-          currency_code: 'GBP',
-          price_type: null,
-          percentage_diff: 0,
-        }
-      }
+      return null;
     }
 
     // Get prices for all variants (using cache where possible)
@@ -224,24 +173,7 @@ export function getProductPrice({
       .filter(v => v.priceData !== null)
 
     if (variantsWithPrices.length === 0) {
-      return {
-        variantId: 'no-valid-price-variant',
-        price: {
-          calculated_price_number: 0,
-          calculated_price: convertToLocale({
-            amount: 0,
-            currency_code: 'GBP',
-          }),
-          original_price_number: 0,
-          original_price: convertToLocale({
-            amount: 0,
-            currency_code: 'GBP',
-          }),
-          currency_code: 'GBP',
-          price_type: null,
-          percentage_diff: 0,
-        }
-      }
+      return null;
     }
 
     // Sort by price and take the cheapest - simplified to improve performance
