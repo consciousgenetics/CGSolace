@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useEffect } from 'react'
 import { differenceInDays } from 'date-fns'
 
 import { formatNameForTestId } from '@lib/util/formatNameForTestId'
@@ -183,6 +183,17 @@ export function ProductTile({
   isCarousel?: boolean
 }) {
   const [selectedVariant, setSelectedVariant] = useState(product.variants?.[0]?.id || '')
+  const [isRedKachinaPage, setIsRedKachinaPage] = useState(false)
+  
+  // Check if we're on a Red Kachina category page
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const pathname = window.location.pathname
+      if (pathname.includes('/categories/red-kachina')) {
+        setIsRedKachinaPage(true)
+      }
+    }
+  }, [])
 
   // Function to handle variant selection
   const handleVariantChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -317,7 +328,14 @@ export function ProductTile({
                 {/* Buy Now and Price */}
                 <div className="flex items-center justify-center gap-2 mt-1">
                   <span className="font-bold text-black text-base tracking-widest font-latto">
-                    BUY NOW
+                    {isRedKachinaPage || 
+                     product.category?.handle?.toLowerCase().includes('red-kachina') || 
+                     product.category?.title?.toLowerCase().includes('red kachina') ||
+                     product.category?.title?.toLowerCase().includes('red-kachina') ||
+                     product.handle?.toLowerCase().includes('red-kachina') || 
+                     product.title?.toLowerCase().includes('red kachina') ||
+                     product.title?.toLowerCase().includes('red-kachina') ? 
+                     'PREORDER' : 'BUY NOW'}
                   </span>
                   <div className="h-4 w-px bg-gray-200"></div>
                   <span className={`font-medium text-base font-latto ${

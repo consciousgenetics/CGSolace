@@ -1,4 +1,6 @@
-import React from 'react'
+'use client'
+
+import React, { useEffect } from 'react'
 
 import { HttpTypes } from '@medusajs/types'
 import { Container } from '@modules/common/components/container'
@@ -8,6 +10,17 @@ import ItemsTemplate from './items'
 import Summary from './summary'
 
 const CartTemplate = ({ cart }: { cart: HttpTypes.StoreCart | null }) => {
+  useEffect(() => {
+    // Dynamically import the Red Kachina script
+    import('../components/red-kachina-injector')
+      .then(() => {
+        console.log('Red Kachina disclaimer script loaded');
+      })
+      .catch((error) => {
+        console.error('Failed to load Red Kachina disclaimer script:', error);
+      });
+  }, []);
+
   return (
     <Container className="flex items-center justify-center">
       {cart?.items?.length ? (

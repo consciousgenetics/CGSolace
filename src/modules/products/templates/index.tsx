@@ -47,7 +47,7 @@ const ProductTemplate: React.FC<ProductTemplateProps> = async ({
   return (
     <div data-testid="product-container" className="pt-0">
       <Container
-        className="relative flex flex-col gap-y-1 small:gap-y-2 medium:gap-y-10"
+        className="relative flex flex-col gap-y-1 small:gap-y-2 medium:gap-y-4"
       >
         <div aria-hidden id="top-of-product" className="!h-0 !m-0 !p-0"></div>
         <ProductBreadcrumbs
