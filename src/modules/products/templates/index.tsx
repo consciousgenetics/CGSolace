@@ -45,24 +45,24 @@ const ProductTemplate: React.FC<ProductTemplateProps> = async ({
   const cart = await retrieveCart()
 
   return (
-    <div data-testid="product-container" className="pt-6 small:pt-8 medium:pt-10 mt-0">
+    <div data-testid="product-container" className="pt-0">
       <Container
-        className="relative flex flex-col gap-y-4 small:gap-y-6 medium:gap-y-12"
+        className="relative flex flex-col gap-y-1 small:gap-y-2 medium:gap-y-10"
       >
         <div aria-hidden id="top-of-product" className="!h-0 !m-0 !p-0"></div>
-        <div className="flex flex-col gap-y-4 small:gap-y-6 !mt-0 !pt-0">
-          <ProductBreadcrumbs
-            product={product}
-            countryCode={countryCode}
-          />
-          <Box className="relative flex flex-col gap-y-4 small:gap-y-6 large:flex-row large:items-start large:gap-x-8 xl:gap-x-[120px]">
+        <ProductBreadcrumbs
+          product={product}
+          countryCode={countryCode}
+        />
+        <div className="flex flex-col gap-y-1 small:gap-y-2 !mt-0 !pt-0">
+          <Box className="relative flex flex-col gap-y-2 small:gap-y-3 large:flex-row large:items-start large:gap-x-12 xl:gap-x-[160px]">
             <Box className="relative block w-full">
               <ImageGallery
                 title={product.title}
                 images={product?.images || []}
               />
             </Box>
-            <Box className="flex w-full flex-col gap-y-4 small:gap-y-6 py-4 small:py-8 large:sticky large:top-24 large:max-w-[440px] large:py-0">
+            <Box className="flex w-full flex-col gap-y-4 small:gap-y-6 py-4 small:py-8 large:sticky large:top-24 large:max-w-[500px] large:py-0">
               <ProductInfo product={product} />
               <Suspense fallback={<SkeletonProductActions />}>
                 <ProductActionsWrapper

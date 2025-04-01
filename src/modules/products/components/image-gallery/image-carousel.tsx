@@ -44,7 +44,7 @@ const ImageCarousel = ({ images, openDialog }: ImageCarouselProps) => {
         <div className="flex">
           {images.map((image, index) => (
             <div
-              className="relative aspect-square max-h-[400px] w-full shrink-0"
+              className="relative aspect-square w-full shrink-0"
               key={image.id}
             >
               <Image
@@ -52,7 +52,7 @@ const ImageCarousel = ({ images, openDialog }: ImageCarouselProps) => {
                 alt={`Product image ${index + 1}`}
                 fill
                 priority={index <= 2}
-                className="object-cover"
+                className="object-cover object-center"
                 sizes="(max-width: 768px) 100vw, (max-width: 992px) 780px"
                 onError={(e: any) => {
                   console.error('Image failed to load, using fallback:', image.url);
@@ -72,11 +72,6 @@ const ImageCarousel = ({ images, openDialog }: ImageCarouselProps) => {
                   }
                 }}
                 unoptimized={true}
-              />
-              <div 
-                className="absolute inset-0 z-30 cursor-pointer"
-                onClick={() => openDialog(index)}
-                style={{ touchAction: 'none' }}
               />
             </div>
           ))}

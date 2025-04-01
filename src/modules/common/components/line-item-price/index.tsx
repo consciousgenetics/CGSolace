@@ -26,12 +26,37 @@ const LineItemPrice = ({
   className,
   style = 'default',
 }: LineItemPriceProps) => {
-  // Safely get price data with proper typing
+  // Try to get prices from variant first
   const prices = getPricesForVariant(item.variant) as PriceValues | null;
   
-  // Use optional chaining and nullish coalescing for safer access
+  // Check for direct unit_price from enrichLineItems
+  const hasValidUnitPrice = typeof item.unit_price === 'number' && 
+                           !isNaN(item.unit_price) && 
+                           item.unit_price > 0;
+  
+  // Check for prices from variant calculation
+  const hasValidVariantPrice = typeof prices?.calculated_price_number === 'number' && 
+                              !isNaN(prices.calculated_price_number) && 
+                              prices.calculated_price_number > 0;
+  
+  // Determine if we have any valid price to display
+  const hasAnyValidPrice = hasValidUnitPrice || hasValidVariantPrice;
+  
+  // If no valid price is available, show price unavailable
+  if (!hasAnyValidPrice) {
+    return (
+      <div className="flex items-center gap-x-2">
+        <span className="text-md text-gray-500 italic" data-testid="product-price-unavailable">
+          Price unavailable
+        </span>
+      </div>
+    );
+  }
+  
+  // Use optional chaining and nullish coalescing for safer access with fallbacks
   const currency_code = prices?.currency_code ?? 'GBP';
-  const calculated_price_number = prices?.calculated_price_number ?? 0;
+  const calculated_price_number = hasValidVariantPrice ? prices.calculated_price_number : 
+                                 (hasValidUnitPrice ? item.unit_price : 0);
   const original_price_number = prices?.original_price_number ?? calculated_price_number;
 
   const adjustmentsSum = (item.adjustments || []).reduce(
@@ -42,20 +67,6 @@ const LineItemPrice = ({
   const originalPrice = original_price_number * item.quantity
   const currentPrice = calculated_price_number * item.quantity - adjustmentsSum
   const hasReducedPrice = currentPrice < originalPrice
-
-  // More flexible price check - if we have a variant with a price, use it even if zero
-  const hasNoPrice = prices === null || calculated_price_number === undefined;
-  
-  // Only show price unavailable if there's truly no price data
-  if (hasNoPrice) {
-    return (
-      <div className="flex items-center gap-x-2">
-        <span className="text-md text-gray-500 italic" data-testid="product-price-unavailable">
-          Price unavailable
-        </span>
-      </div>
-    );
-  }
 
   return (
     <div

@@ -265,8 +265,12 @@ export async function enrichLineItems(
     
     if (!variant) return item
     
-    // Return minimally enriched item
-    return {
+    // Only add unit_price if calculated_amount is a valid number
+    const calculatedAmount = variant.calculated_price?.calculated_amount;
+    const hasValidPrice = typeof calculatedAmount === 'number' && !isNaN(calculatedAmount) && calculatedAmount > 0;
+    
+    // Base enriched item
+    const enrichedItem = {
       ...item,
       variant: {
         id: variant.id,
@@ -278,7 +282,17 @@ export async function enrichLineItems(
           thumbnail: product.thumbnail,
         },
       },
+    };
+    
+    // Only add unit_price if we have a valid price
+    if (hasValidPrice) {
+      return {
+        ...enrichedItem,
+        unit_price: calculatedAmount,
+      };
     }
+    
+    return enrichedItem;
   }) as HttpTypes.StoreCartLineItem[]
 
   return enrichedItems

@@ -24,9 +24,29 @@ const CartTotals: React.FC<CartTotalsProps> = ({ totals }) => {
 
   // Calculate GBP totals from items
   const gbpSubtotal = items?.reduce((acc, item) => {
-    // Use unit_price which should be in GBP from enrichLineItems
-    return acc + (item.unit_price || 0) * (item.quantity || 0)
-  }, 0) || 0
+    // Only use price if it's a valid positive number
+    // Check unit_price or variant calculated_price
+    const variantPrice = item.variant?.calculated_price?.calculated_amount;
+    
+    // Validate we have a proper price before using it
+    const hasValidUnitPrice = typeof item.unit_price === 'number' && 
+                              !isNaN(item.unit_price) && 
+                              item.unit_price > 0;
+                              
+    const hasValidVariantPrice = typeof variantPrice === 'number' && 
+                                !isNaN(variantPrice) && 
+                                variantPrice > 0;
+    
+    // Use the first valid price we find
+    let price = 0;
+    if (hasValidUnitPrice) {
+      price = item.unit_price;
+    } else if (hasValidVariantPrice) {
+      price = variantPrice;
+    }
+    
+    return acc + (price * (item.quantity || 0));
+  }, 0) || 0;
 
   // Calculate other totals in GBP
   const gbpTotal = gbpSubtotal + (shipping_total || 0) + (tax_total || 0) - (discount_total || 0)
@@ -37,13 +57,29 @@ const CartTotals: React.FC<CartTotalsProps> = ({ totals }) => {
     items: items?.map(item => ({
       title: item.title,
       unitPrice: item.unit_price,
+      variantPrice: item.variant?.calculated_price?.calculated_amount,
       quantity: item.quantity,
-      total: item.unit_price * item.quantity
+      itemTotal: (
+        (typeof item.unit_price === 'number' && !isNaN(item.unit_price) && item.unit_price > 0) 
+          ? item.unit_price * item.quantity 
+          : 'price unavailable'
+      )
     }))
   })
 
   // Only show warning when there are items but no price data at all
-  const hasNoItemsWithPrice = items?.length > 0 && !items.some(item => item.unit_price !== undefined);
+  const hasNoItemsWithPrice = items?.length > 0 && 
+    !items.some(item => {
+      const hasValidUnitPrice = typeof item.unit_price === 'number' && 
+                              !isNaN(item.unit_price) && 
+                              item.unit_price > 0;
+                              
+      const hasValidVariantPrice = typeof item.variant?.calculated_price?.calculated_amount === 'number' && 
+                                !isNaN(item.variant?.calculated_price?.calculated_amount) && 
+                                item.variant?.calculated_price?.calculated_amount > 0;
+                                
+      return hasValidUnitPrice || hasValidVariantPrice;
+    });
   
   // Display message when prices are completely unavailable
   if (hasNoItemsWithPrice) {

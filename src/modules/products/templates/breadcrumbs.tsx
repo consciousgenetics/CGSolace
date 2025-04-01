@@ -20,7 +20,7 @@ export default function ProductBreadcrumbs({
 }) {
   return (
     <>
-      <Breadcrumbs className="text-basic-primary">
+      <Breadcrumbs className="text-basic-primary pl-[20px] sm:pl-[20px] md:pl-[10px] lg:pl-0 xl:pl-0">
         <BreadcrumbsList className="hidden small:flex">
           <BreadcrumbsItem>
             <BreadcrumbsLink href="/">Homepage</BreadcrumbsLink>

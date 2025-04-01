@@ -21,10 +21,6 @@ const ImageGallery = ({ images, title }: ImageGalleryProps) => {
   const [additionalImages, setAdditionalImages] = useState(0)
   const [selectedImage, setSelectedImage] = useState(null)
 
-  const handleImageClick = (index) => {
-    setSelectedImage(index)
-  }
-
   // Enhanced debugging for image URLs
   console.log('ImageGallery rendering for:', title)
   console.log('Original images:', JSON.stringify(images, null, 2))
@@ -98,38 +94,47 @@ const ImageGallery = ({ images, title }: ImageGalleryProps) => {
   })
 
   return (
-    <div className="flex flex-col justify-center gap-4">
-      <div className="hidden grid-cols-2 gap-1 medium:grid">
-        {transformedImages
-          .slice(0, MAX_INITIAL_IMAGES + additionalImages)
-          .map((image, index) => (
-            <div
-              className={cn(
-                'relative w-full shrink-0 z-0',
-                index === 0
-                  ? 'col-span-2 aspect-square max-h-[540px]'
-                  : 'col-span-1 aspect-square max-h-[440px]'
-              )}
-              key={image.id}
-              style={{ pointerEvents: 'auto' }}
-            >
-              <LoadingImage
-                src={image.url}
-                alt={`${title} - product image`}
-                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                className="object-cover"
-                loading={index === 0 ? 'eager' : 'lazy'}
-                priority={index === 0}
-                quality={index === 0 ? 75 : 60}
-              />
-              <div 
-                className="absolute inset-0 z-30 cursor-pointer"
-                onClick={() => handleImageClick(index)}
-                style={{ touchAction: 'none' }}
-              />
-            </div>
-          ))}
-      </div>
+    <div className="flex flex-col justify-start gap-1">
+      {/* Hero image - takes full width */}
+      {transformedImages.length > 0 && (
+        <div className="hidden medium:block w-full">
+          <div className="relative aspect-square w-full max-w-[600px] mx-0 ml-0 mr-auto">
+            <LoadingImage
+              src={transformedImages[0].url}
+              alt={`${title} - product image`}
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 600px"
+              className="object-cover object-center"
+              loading="eager"
+              priority={true}
+              quality={75}
+            />
+          </div>
+        </div>
+      )}
+      
+      {/* Smaller images underneath in a grid */}
+      {transformedImages.length > 1 && (
+        <div className="hidden medium:grid grid-cols-2 gap-1 w-full max-w-[600px] mx-0 ml-0 mr-auto">
+          {transformedImages
+            .slice(1, MAX_INITIAL_IMAGES + additionalImages)
+            .map((image, index) => (
+              <div
+                className="relative aspect-square w-full"
+                key={image.id}
+              >
+                <LoadingImage
+                  src={image.url}
+                  alt={`${title} - product image ${index + 2}`}
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 300px"
+                  className="object-cover object-center"
+                  loading="lazy"
+                  quality={60}
+                />
+              </div>
+            ))}
+        </div>
+      )}
+      
       {additionalImages + MAX_INITIAL_IMAGES < transformedImages.length && (
         <Button
           className="mx-auto hidden w-fit outline-none medium:flex"
@@ -143,12 +148,14 @@ const ImageGallery = ({ images, title }: ImageGalleryProps) => {
           See more images
         </Button>
       )}
+      
       <GalleryDialog
         activeImg={selectedImage}
         onChange={setSelectedImage}
         images={transformedImages}
         title={title}
       />
+      
       <ImageCarousel images={transformedImages} openDialog={setSelectedImage} />
     </div>
   )

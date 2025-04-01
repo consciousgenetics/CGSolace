@@ -107,7 +107,7 @@ export const GalleryDialog = ({
                   ))}
                 </div>
               </div>
-              <Box className="relative order-1 mx-auto flex h-full max-h-[458px] w-full items-center small:max-h-[758px] small:max-w-[549px] large:order-2 large:-translate-x-20 xl:max-w-[660px] 2xl:max-h-[1137px] 2xl:max-w-[990px]">
+              <Box className="relative order-1 mx-auto flex w-full max-w-[600px] aspect-square items-center">
                 <LoadingImage
                   src={images[currentIndex].url}
                   alt={title ? `${title} - product image` : 'Product image'}

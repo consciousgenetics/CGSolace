@@ -93,11 +93,13 @@ export default async function ProductPage(props: Props) {
     })
 
     return (
-      <ProductTemplate
-        product={pricedProduct}
-        region={region}
-        countryCode={params.countryCode}
-      />
+      <div style={{ marginTop: '-80px' }}>
+        <ProductTemplate
+          product={pricedProduct}
+          region={region}
+          countryCode={params.countryCode}
+        />
+      </div>
     )
   } catch (error) {
     console.error("Error loading product page:", error)
