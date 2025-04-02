@@ -6,37 +6,29 @@
   function addRedKachinaDisclaimers() {
     console.log("Checking for Red Kachina products in cart...");
     
-    // Find all product items in the cart
-    const cartItems = document.querySelectorAll('.flex.w-full.justify-between.p-5');
+    // Find all product titles in the cart
+    const productTitles = document.querySelectorAll('.flex.w-full.justify-between.p-5 h3');
     
-    if (cartItems.length === 0) {
-      console.log("No cart items found yet");
+    if (productTitles.length === 0) {
+      console.log("No product titles found in cart yet");
       return;
     }
     
-    console.log(`Found ${cartItems.length} items in cart`);
+    console.log(`Found ${productTitles.length} products in cart`);
     
-    // Process each cart item
-    cartItems.forEach(cartItem => {
-      // Get the product title element
-      const titleElement = cartItem.querySelector('h3');
-      if (!titleElement) return;
-      
+    // Process each product title
+    productTitles.forEach(titleElement => {
       const title = titleElement.textContent.toLowerCase();
       
-      // More specific check for Red Kachina products
-      // First check for category indicators that might be present in the cart
-      const isRedKachinaProduct = 
-        // Check product title for specific Red Kachina indicators
-        (title.includes('red kachina') || title === 'red opal') ||
-        // Check for any other indicators in the cart item that might show Red Kachina category
-        cartItem.textContent.toLowerCase().includes('red kachina collection');
-      
-      if (isRedKachinaProduct) {
+      // Check if this is a Red Kachina product
+      if (title.includes('red kachina') || title.includes('red-kachina') || title.includes('red opal')) {
         console.log(`Found Red Kachina product: ${titleElement.textContent}`);
         
-        // Check if we already added a disclaimer to this item
-        if (!cartItem.querySelector('.red-kachina-disclaimer')) {
+        // Find the parent container (flex item container)
+        const titleContainer = titleElement.closest('div');
+        
+        // Check if we already added a disclaimer
+        if (titleContainer && !titleContainer.querySelector('.red-kachina-disclaimer')) {
           console.log("Adding disclaimer...");
           
           // Create disclaimer element
@@ -50,45 +42,22 @@
           disclaimer.style.fontSize = '12px';
           disclaimer.style.fontWeight = 'bold';
           disclaimer.style.textAlign = 'center';
-          disclaimer.style.marginLeft = 'auto'; // Push to the right
-          disclaimer.style.width = 'fit-content'; // Only take as much width as needed
-          disclaimer.style.maxWidth = '180px'; // Set maximum width
-          disclaimer.style.display = 'block'; // Ensure block display
           
           // Add content
           disclaimer.textContent = '⚠️ PREORDER: Will ship near seed drop date';
           
-          // Find the column that contains product info (first flex column)
-          const productInfoColumn = cartItem.querySelector('.flex.h-full.flex-col');
-          
-          if (productInfoColumn) {
-            // Create a flex container to align the disclaimer to the right
-            const flexContainer = document.createElement('div');
-            flexContainer.style.display = 'flex';
-            flexContainer.style.justifyContent = 'flex-end';
-            flexContainer.style.width = '100%';
-            flexContainer.style.marginTop = '6px';
-            
-            // Add the disclaimer to the flex container
-            flexContainer.appendChild(disclaimer);
-            
-            // Insert at the end of the product info column
-            productInfoColumn.appendChild(flexContainer);
-            console.log("Disclaimer added successfully with right alignment");
+          // Insert after the product variant info
+          const variantElement = titleContainer.querySelector('[data-testid="product-variant"]');
+          if (variantElement) {
+            variantElement.insertAdjacentElement('afterend', disclaimer);
+            console.log("Disclaimer added successfully");
           } else {
-            // Fallback: insert after the title
-            const flexContainer = document.createElement('div');
-            flexContainer.style.display = 'flex';
-            flexContainer.style.justifyContent = 'flex-end';
-            flexContainer.style.width = '100%';
-            flexContainer.style.marginTop = '6px';
-            
-            flexContainer.appendChild(disclaimer);
-            titleElement.insertAdjacentElement('afterend', flexContainer);
-            console.log("Disclaimer added after title with right alignment (fallback)");
+            // If no variant element, insert after the title
+            titleElement.insertAdjacentElement('afterend', disclaimer);
+            console.log("Disclaimer added after title (no variant found)");
           }
         } else {
-          console.log("Disclaimer already exists for this item");
+          console.log("Disclaimer already exists or container not found");
         }
       }
     });

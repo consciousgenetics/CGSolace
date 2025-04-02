@@ -1,12 +1,40 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { toast } from '@modules/common/components/toast'
 import { emailRegex } from '@lib/constants'
 
 const RedKachinaSignup = () => {
   const [email, setEmail] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
+
+  useEffect(() => {
+    // Simple CSS to adjust spacing
+    const style = document.createElement('style')
+    style.textContent = `
+      /* Make sure the main content has no top padding */
+      #content.pt-\\[110px\\], #content.pt-\\[120px\\], #content.pt-\\[140px\\] {
+        padding-top: 80px !important; /* Just enough for header */
+      }
+      
+      /* Reset container styling */
+      .red-kachina-container {
+        margin-top: 0 !important;
+        padding-top: 24px !important;
+        padding-bottom: 24px !important;
+      }
+      
+      /* Fix content padding */
+      #red-kachina-page .container {
+        padding-top: 0 !important;
+      }
+    `
+    document.head.appendChild(style)
+    
+    return () => {
+      document.head.removeChild(style)
+    }
+  }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -49,12 +77,12 @@ const RedKachinaSignup = () => {
   }
 
   return (
-    <div className="w-full bg-[#FDD729] py-12">
+    <div className="red-kachina-container w-full bg-[#FDD729] py-16">
       <div className="max-w-2xl mx-auto px-4 text-center">
-        <h2 className="text-4xl sm:text-5xl font-bold font-anton uppercase mb-4">
+        <h2 className="text-4xl sm:text-5xl font-bold font-anton uppercase mb-6">
           REGISTER FOR RED KACHINA
         </h2>
-        <p className="text-lg mb-6 font-latto">
+        <p className="text-lg mb-8 font-latto">
           Be the first to know about new collections and exclusive offers.
         </p>
         <form onSubmit={handleSubmit} className="flex max-w-md mx-auto">
