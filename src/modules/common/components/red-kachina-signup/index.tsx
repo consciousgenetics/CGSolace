@@ -77,12 +77,12 @@ const RedKachinaSignup = () => {
   }
 
   return (
-    <div className="red-kachina-container w-full bg-[#FDD729] py-16">
-      <div className="max-w-2xl mx-auto px-4 text-center">
-        <h2 className="text-4xl sm:text-5xl font-bold font-anton uppercase mb-6">
+    <div className="red-kachina-container w-full bg-[#FDD729] py-24">
+      <div className="max-w-2xl mx-auto px-4 text-center py-6">
+        <h2 className="text-5xl sm:text-6xl font-bold font-anton uppercase mb-8">
           REGISTER FOR RED KACHINA
         </h2>
-        <p className="text-lg mb-8 font-latto">
+        <p className="text-xl mb-12 font-latto max-w-lg mx-auto">
           Be the first to know about new collections and exclusive offers.
         </p>
         <form onSubmit={handleSubmit} className="flex max-w-md mx-auto">
@@ -91,14 +91,14 @@ const RedKachinaSignup = () => {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="Email"
-            className="flex-grow px-4 py-3 border border-black/10 rounded-l focus:outline-none focus:ring-2 focus:ring-black/20"
+            className="flex-grow px-4 py-4 border border-black/10 rounded-l focus:outline-none focus:ring-2 focus:ring-black/20 text-lg"
             required
             disabled={isSubmitting}
           />
           <button
             type="submit"
             disabled={isSubmitting}
-            className="bg-black text-white px-6 py-3 font-bold rounded-r hover:bg-black/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="bg-black text-white px-8 py-4 font-bold rounded-r hover:bg-black/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-lg"
           >
             {isSubmitting ? '...' : '→'}
           </button>
