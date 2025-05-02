@@ -206,17 +206,6 @@ const SideMenu = ({
           
           <DialogBody className="p-4 small:p-5 overflow-y-auto bg-white text-black">
             <Box className="flex flex-col">
-              <Button
-                variant="tonal"
-                className="mb-4 w-max bg-black text-white hover:bg-gray-800"
-                size="sm"
-                onClick={() => handleOpenDialogChange(false)}
-                asChild
-              >
-                <LocalizedClientLink href="/categories/clothing">
-                  SHOP ALL
-                </LocalizedClientLink>
-              </Button>
               {renderMenuItems(navigation)}
             </Box>
           </DialogBody>
