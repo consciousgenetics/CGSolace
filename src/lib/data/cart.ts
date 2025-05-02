@@ -476,10 +476,15 @@ export async function placeOrder() {
     const countryCode =
       cartRes.order.shipping_address?.country_code?.toLowerCase()
     removeCartId()
-    redirect(`/${countryCode}/order/confirmed/${cartRes?.order.id}`)
+    // Instead of redirecting, return the order ID and country code
+    return {
+      success: true,
+      orderId: cartRes.order.id,
+      countryCode
+    }
   }
 
-  return cartRes.cart
+  return { success: false, cart: cartRes.cart }
 }
 
 /**

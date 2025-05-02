@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { isManual } from '@lib/constants'
 import { placeOrder } from '@lib/data/cart'
 import { HttpTypes } from '@medusajs/types'
@@ -16,6 +17,7 @@ const PaymentButton: React.FC<PaymentButtonProps> = ({
   cart,
   'data-testid': dataTestId,
 }) => {
+  const router = useRouter()
   const [submitting, setSubmitting] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
@@ -50,7 +52,38 @@ const PaymentButton: React.FC<PaymentButtonProps> = ({
     setErrorMessage(null)
 
     try {
-      await placeOrder()
+      // Use a try-catch inside a try-catch to handle potential NEXT_REDIRECT errors
+      try {
+        const result = await placeOrder()
+        
+        if (result.success && result.orderId) {
+          // Use client-side navigation to redirect to order confirmation
+          // Adding small delay to ensure server action completes before navigation
+          setTimeout(() => {
+            router.push(`/${result.countryCode}/order/confirmed/${result.orderId}`)
+          }, 100)
+          return
+        }
+        
+        // If we get here, something went wrong but without throwing an error
+        setErrorMessage('Unable to complete your order. Please try again.')
+      } catch (innerError: any) {
+        // Handle NEXT_REDIRECT error specifically (it's an internal Next.js error)
+        if (innerError.message && innerError.message.includes('NEXT_REDIRECT')) {
+          // Get the orderId and countryCode from the cart
+          const orderId = cart.id
+          const countryCode = cart.shipping_address?.country_code?.toLowerCase() || 'gb'
+          
+          // Navigate to a reasonable guess of where it was trying to redirect
+          setTimeout(() => {
+            router.push(`/${countryCode}/order/confirmed/${orderId}`)
+          }, 100)
+          return
+        }
+        
+        // Re-throw if it's not a NEXT_REDIRECT error
+        throw innerError
+      }
     } catch (err: any) {
       console.error('Error placing order:', err)
       
