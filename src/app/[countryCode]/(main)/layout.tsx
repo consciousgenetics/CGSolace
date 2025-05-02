@@ -8,16 +8,18 @@ export const metadata: Metadata = {
   metadataBase: new URL(getBaseURL()),
 }
 
-export default function PageLayout({
+export default async function PageLayout({
   children,
   params,
 }: {
   children: React.ReactNode
   params: { countryCode: string }
 }) {
+  const { countryCode } = params;
+  
   return (
     <>
-      <NavWrapper countryCode={params.countryCode} />
+      <NavWrapper countryCode={countryCode} />
       <Suspense>
         <main 
           id="content"

@@ -259,7 +259,7 @@ export function ProductTile({
               <div className="space-y-3">
                 {/* Category Badge - Only show in carousel */}
                 {isCarousel && (
-                  <span className={`inline-block px-3 py-1 text-xs font-bold rounded-full mt-3 mb-3 ${
+                  <span className={`inline-block px-2 py-1 text-xs xs:text-xs xs:px-3 small:text-xs font-bold rounded-full mt-2 mb-2 small:mt-3 small:mb-3 max-w-[95%] overflow-hidden text-ellipsis whitespace-nowrap ${
                     product.category?.title?.toLowerCase().includes('merch') || 
                     product.title?.toLowerCase().includes('merch') ||
                     getCategoryTag(product).includes("MEN'S") ||
@@ -274,7 +274,7 @@ export function ProductTile({
                 {/* Product Title */}
                 <Text
                   as="span"
-                  className="block text-base xs:text-lg small:text-lg medium:text-xl font-bold uppercase text-black line-clamp-1 small:line-clamp-2 tracking-wider font-anton px-1 small:px-2 min-h-[40px] small:min-h-[56px] flex items-center justify-center"
+                  className="block text-base xs:text-lg small:text-lg medium:text-xl font-bold uppercase text-black line-clamp-1 small:line-clamp-2 tracking-wider font-anton px-0 xs:px-1 small:px-2 min-h-[32px] xs:min-h-[36px] small:min-h-[56px] flex items-center justify-center"
                 >
                   {product.title}
                 </Text>

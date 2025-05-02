@@ -3,7 +3,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 
-import { addToCart } from '@lib/data/cart'
 import { useCartStore } from '@lib/store/useCartStore'
 import { HttpTypes } from '@medusajs/types'
 import ItemQtySelect from '@modules/cart/components/item-qty-select'
@@ -75,14 +74,27 @@ export default function ProductActions({
         variant: selectedVariant
       });
 
-      await addToCart({
-        variantId: selectedVariant.id,
-        quantity: qty,
-        countryCode,
+      const response = await fetch('/api/cart/add', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          variantId: selectedVariant.id,
+          quantity: qty,
+          countryCode,
+        }),
       });
       
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to add item to cart');
+      }
+      
+      const data = await response.json();
+      
       // Show toast notification
-      toast('success', 'Product was added to cart!');
+      toast('success', data.message || 'Product was added to cart!');
       
       // Signal that cart was updated so components can refresh
       setCartUpdated(true);

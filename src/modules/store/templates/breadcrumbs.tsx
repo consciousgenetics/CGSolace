@@ -17,7 +17,7 @@ export default function StoreBreadcrumbs({
 }) {
   return (
     <>
-      <Breadcrumbs className="text-basic-primary">
+      <Breadcrumbs className="text-basic-primary py-3 sm:py-4 mt-2 sm:mt-0">
         <BreadcrumbsList className="hidden small:flex">
           <BreadcrumbsItem>
             <BreadcrumbsLink href="/">Homepage</BreadcrumbsLink>
@@ -27,11 +27,11 @@ export default function StoreBreadcrumbs({
             <BreadcrumbsStatic>{breadcrumb ?? 'Shop'}</BreadcrumbsStatic>
           </BreadcrumbsItem>
         </BreadcrumbsList>
-        <BreadcrumbsList className="flex small:hidden">
+        <BreadcrumbsList className="flex small:hidden py-2">
           <BreadcrumbsItem>
             <BreadcrumbsLink
               href="/"
-              className="flex items-center gap-2 text-md"
+              className="flex items-center gap-2 text-md py-1"
             >
               <ArrowLeftIcon className="h-[18px] w-[18px]" />
               Back to Homepage

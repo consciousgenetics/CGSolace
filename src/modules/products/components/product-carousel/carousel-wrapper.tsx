@@ -84,7 +84,7 @@ export default function CarouselWrapper({
         <div className={cn(
           "w-full h-full",
           isMobile 
-            ? "grid grid-cols-2 gap-4 px-4" 
+            ? "grid grid-cols-2 gap-2 px-2" 
             : "flex justify-center gap-0 small:gap-0 pl-4 small:pl-6 -mx-2"
         )}>
           {children}

@@ -1,3 +1,5 @@
+'use client'
+
 import { Box } from '@modules/common/components/box'
 import CartButton from '@modules/layout/components/cart-button'
 import ProfileButton from '@modules/layout/components/profile-button'

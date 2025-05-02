@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-// Default timeout for fetch requests (ms)
-const FETCH_TIMEOUT = 5000;
+// Increase timeout for fetch requests (ms) - from 5s to 15s
+const FETCH_TIMEOUT = 15000;
 
 /**
  * Fetch with timeout to prevent hanging requests
@@ -11,11 +11,16 @@ async function fetchWithTimeout(url: string, options: RequestInit, timeout = FET
   const id = setTimeout(() => controller.abort(), timeout);
   
   try {
+    console.log(`Proxy attempting fetch to: ${url}`);
     const response = await fetch(url, {
       ...options,
       signal: controller.signal
     });
+    console.log(`Proxy response from ${url}: ${response.status}`);
     return response;
+  } catch (error) {
+    console.error(`Proxy fetch error for ${url}:`, error);
+    throw error;
   } finally {
     clearTimeout(id);
   }
@@ -35,6 +40,7 @@ export async function GET(request: NextRequest) {
   
   const medusaUrl = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL
   if (!medusaUrl) {
+    console.error('Medusa proxy error: NEXT_PUBLIC_MEDUSA_BACKEND_URL is not set');
     return NextResponse.json({ error: 'NEXT_PUBLIC_MEDUSA_BACKEND_URL is not set' }, { status: 500 })
   }
 
@@ -48,6 +54,8 @@ export async function GET(request: NextRequest) {
   if (apiKey && !headers.has('x-publishable-api-key')) {
     headers.set('x-publishable-api-key', apiKey)
   }
+  
+  console.log(`Proxying GET request to: ${medusaUrl}${path}`);
   
   try {
     // Forward the request to the Medusa server with timeout
@@ -73,10 +81,18 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     // Check if it's a timeout error
     if (error instanceof DOMException && error.name === 'AbortError') {
-      return NextResponse.json({ error: 'Request to Medusa timed out' }, { status: 504 })
+      console.error(`Proxy timeout error for ${path} after ${FETCH_TIMEOUT}ms`);
+      return NextResponse.json({ 
+        error: 'Request to Medusa timed out',
+        details: `Timeout after ${FETCH_TIMEOUT}ms`
+      }, { status: 504 })
     }
     
-    return NextResponse.json({ error: 'Failed to proxy request to Medusa' }, { status: 500 })
+    console.error(`Proxy error for ${path}:`, error);
+    return NextResponse.json({ 
+      error: 'Failed to proxy request to Medusa', 
+      details: error instanceof Error ? error.message : 'Unknown error'
+    }, { status: 500 })
   }
 }
 
@@ -89,7 +105,7 @@ export async function OPTIONS() {
     headers: {
       'Access-Control-Allow-Origin': '*',
       'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization, x-publishable-api-key',
     },
   })
 }
@@ -107,6 +123,7 @@ export async function POST(request: NextRequest) {
   
   const medusaUrl = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL
   if (!medusaUrl) {
+    console.error('Medusa proxy error: NEXT_PUBLIC_MEDUSA_BACKEND_URL is not set');
     return NextResponse.json({ error: 'NEXT_PUBLIC_MEDUSA_BACKEND_URL is not set' }, { status: 500 })
   }
 
@@ -120,6 +137,8 @@ export async function POST(request: NextRequest) {
   if (apiKey && !headers.has('x-publishable-api-key')) {
     headers.set('x-publishable-api-key', apiKey)
   }
+  
+  console.log(`Proxying POST request to: ${medusaUrl}${path}`);
   
   try {
     // Get the request body
@@ -143,15 +162,23 @@ export async function POST(request: NextRequest) {
         'Content-Type': response.headers.get('Content-Type') || 'application/json',
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+        'Access-Control-Allow-Headers': 'Content-Type, Authorization, x-publishable-api-key',
       },
     })
   } catch (error) {
     // Check if it's a timeout error
     if (error instanceof DOMException && error.name === 'AbortError') {
-      return NextResponse.json({ error: 'Request to Medusa timed out' }, { status: 504 })
+      console.error(`Proxy timeout error for ${path} after ${FETCH_TIMEOUT}ms`);
+      return NextResponse.json({ 
+        error: 'Request to Medusa timed out',
+        details: `Timeout after ${FETCH_TIMEOUT}ms`
+      }, { status: 504 })
     }
     
-    return NextResponse.json({ error: 'Failed to proxy request to Medusa' }, { status: 500 })
+    console.error(`Proxy error for ${path}:`, error);
+    return NextResponse.json({ 
+      error: 'Failed to proxy request to Medusa', 
+      details: error instanceof Error ? error.message : 'Unknown error'
+    }, { status: 500 })
   }
 } 

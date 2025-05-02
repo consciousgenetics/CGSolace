@@ -9,13 +9,16 @@ import { getRegion } from '@lib/data/regions'
 import { Banner } from '@modules/home/components/banner'
 import Collections from '@modules/home/components/collections'
 import Hero from '@modules/home/components/hero'
-import { ProductCarousel } from '@modules/products/components/product-carousel'
+import SeedLineCountdown from '@modules/home/components/seed-line-countdown'
+import ProductCarouselClientWrapper from '@modules/products/components/product-carousel/client-wrapper'
 import { ReviewSection } from '@modules/common/components/reviews'
 import SkeletonProductsCarousel from '@modules/skeletons/templates/skeleton-products-carousel'
 import { CollectionsData, HeroBannerData } from 'types/strapi'
-import SeedLineCountdown from '@modules/home/components/seed-line-countdown'
 import LocalizedClientLink from '@modules/common/components/localized-client-link'
 import { cache } from 'react'
+import { Container } from '@modules/common/components/container'
+import { FeaturedVideo } from '@modules/home/components/featured-video'
+import WhatsNew from '@modules/home/components/whats-new'
 
 // Set dynamic rendering to prevent build-time errors
 export const dynamic = 'force-dynamic'
@@ -43,7 +46,7 @@ export default async function Home(props: {
   params: { countryCode: string }
 }) {
   try {
-    const { countryCode } = props.params
+    const countryCode = props.params.countryCode
 
     let collectionsList = [];
     let seedProducts = [];
@@ -56,11 +59,29 @@ export default async function Home(props: {
       // Split the data fetching into separate try-catch blocks
       // to prevent one failure from affecting the entire page
       const collectionsResult = await getCollectionsList()
-        .catch(() => ({ collections: [] }));
+        .catch((err) => {
+          console.error("Failed to fetch collections list:", err);
+          return { collections: [] };
+        });
       collectionsList = collectionsResult?.collections || [];
       
       region = await getRegion(countryCode)
-        .catch(() => null);
+        .catch((err) => {
+          console.error("Failed to get region for country code:", countryCode, err);
+          return null;
+        });
+      
+      // If region is still null after getRegion (which should provide fallback),
+      // create a minimal fallback region to prevent rendering errors
+      if (!region) {
+        console.warn("Creating minimal fallback region for:", countryCode);
+        region = {
+          id: "reg_fallback",
+          name: "Fallback Region",
+          currency_code: "gbp",
+          countries: []
+        };
+      }
         
       if (region) {
         let allProducts = [];
@@ -172,11 +193,10 @@ export default async function Home(props: {
           <div className="w-full relative z-10">
             {seedProducts && seedProducts.length > 0 && region && (
               <Suspense fallback={<SkeletonProductsCarousel />}>
-                <ProductCarousel
+                <ProductCarouselClientWrapper
                   products={seedProducts}
                   regionId={region.id}
-                  title="Feminized Seeds"
-                  viewAll={{link: "/categories/seeds/feminized-seeds", text: "View all feminized"}}
+                  title="Seeds"
                   testId="seeds-section"
                 />
               </Suspense>
@@ -349,18 +369,10 @@ export default async function Home(props: {
             </div>
             {clothingProducts && clothingProducts.length > 0 && region && (
               <Suspense fallback={<SkeletonProductsCarousel />}>
-                <ProductCarousel
-                  products={clothingProducts.map(product => ({
-                    ...product,
-                    category: product.collection
-                  }))}
+                <ProductCarouselClientWrapper
+                  products={clothingProducts}
                   regionId={region.id}
-                  title="Clothing & Apparel"
-                  viewAll={{
-                    link: `/categories/mens`,
-                    text: 'Shop All',
-                    alternateLink: `/categories/womens-merch`
-                  }}
+                  title="Collections"
                   testId="clothing-section"
                 />
               </Suspense>

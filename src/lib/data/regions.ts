@@ -4,18 +4,66 @@ import { sdk } from '@lib/config'
 import medusaError from '@lib/util/medusa-error'
 import { HttpTypes } from '@medusajs/types'
 
+// Default region data as fallback when API fails - use type assertion with unknown
+const DEFAULT_REGION = {
+  id: "reg_01HM2V51G64Z8638702TKBVWHJ2",
+  name: "UK",
+  currency_code: "gbp",
+  currency: {
+    code: "gbp",
+    symbol: "£",
+    symbol_native: "£",
+    name: "British Pound"
+  },
+  countries: [
+    {
+      id: "826", // Changed to string to match BaseRegionCountry
+      iso_2: "gb",
+      iso_3: "gbr",
+      name: "United Kingdom",
+      display_name: "United Kingdom",
+      region_id: "reg_01HM2V51G64Z8638702TKBVWHJ2",
+      num_code: 826
+    }
+  ]
+} as unknown as HttpTypes.StoreRegion;
+
 export const listRegions = cache(async function () {
-  return sdk.store.region
-    .list({}, { next: { tags: ['regions'] } })
-    .then(({ regions }) => regions)
-    .catch(medusaError)
+  try {
+    console.log('listRegions: Fetching regions from API');
+    return sdk.store.region
+      .list({}, { next: { tags: ['regions'] } })
+      .then(({ regions }) => {
+        console.log(`listRegions: Successfully fetched ${regions.length} regions`);
+        return regions;
+      })
+      .catch(err => {
+        console.error('listRegions: Error fetching regions:', err);
+        return medusaError(err);
+      });
+  } catch (error) {
+    console.error('listRegions: Unexpected error:', error);
+    return [];
+  }
 })
 
 export const retrieveRegion = cache(async function (id: string) {
-  return sdk.store.region
-    .retrieve(id, {}, { next: { tags: ['regions'] } })
-    .then(({ region }) => region)
-    .catch(medusaError)
+  try {
+    console.log(`retrieveRegion: Fetching region with ID ${id}`);
+    return sdk.store.region
+      .retrieve(id, {}, { next: { tags: ['regions'] } })
+      .then(({ region }) => {
+        console.log(`retrieveRegion: Successfully fetched region ${id}`);
+        return region;
+      })
+      .catch(err => {
+        console.error(`retrieveRegion: Error fetching region ${id}:`, err);
+        return medusaError(err);
+      });
+  } catch (error) {
+    console.error(`retrieveRegion: Unexpected error for ${id}:`, error);
+    throw error;
+  }
 })
 
 const regionMap = new Map<string, HttpTypes.StoreRegion>()
@@ -23,15 +71,16 @@ const regionMap = new Map<string, HttpTypes.StoreRegion>()
 export const getRegion = cache(async function (countryCode: string) {
   try {
     console.log('getRegion: Processing request for country code:', countryCode);
-
-    // Convert 'gb' or 'dk' to 'uk'
-    if (countryCode.toLowerCase() === 'gb' || countryCode.toLowerCase() === 'dk') {
-      console.log('getRegion: Converting', countryCode, 'to uk');
-      countryCode = 'uk';
-    }
     
-    // Always try to get and use the GBP region for UK requests
-    const regions = await listRegions();
+    // Always try to get regions
+    let regions;
+    try {
+      regions = await listRegions();
+    } catch (error) {
+      console.error('getRegion: Failed to fetch regions, using fallback:', error);
+      // Use default region as fallback
+      return DEFAULT_REGION;
+    }
     
     // Find any real region to use
     let foundRegion = null;
@@ -43,30 +92,28 @@ export const getRegion = cache(async function (countryCode: string) {
       // First priority: Find a region with GBP currency
       const gbpRegion = regions.find(r => r.currency_code?.toLowerCase() === 'gbp');
       
-      // For UK requests, prioritize GBP region
-      if (countryCode.toLowerCase() === 'uk' && gbpRegion) {
-        console.log('getRegion: Using GBP region for UK:', {
+      // For GB requests, prioritize GBP region
+      if (countryCode.toLowerCase() === 'gb' && gbpRegion) {
+        console.log('getRegion: Using GBP region for GB:', {
           regionId: gbpRegion.id,
           currency: gbpRegion.currency_code
         });
-        regionMap.set('uk', gbpRegion);
+        regionMap.set('gb', gbpRegion);
         return gbpRegion;
       }
       
-      // Second priority: Find a region that has the UK as a country
-      const ukRegion = regions.find(r => 
-        r.countries?.some(c => 
-          c.iso_2?.toLowerCase() === 'uk' || 
-          c.iso_2?.toLowerCase() === 'gb'
-        )
+      // Second priority: Find a region that has the GB as a country
+      const gbRegion = regions.find(r => 
+        r.countries?.some(c => c.iso_2?.toLowerCase() === 'gb')
       );
       
-      if (ukRegion) {
-        console.log('getRegion: Found region containing UK:', ukRegion.id);
-        if (countryCode.toLowerCase() === 'uk') {
-          return ukRegion;
+      if (gbRegion) {
+        console.log('getRegion: Found region containing GB:', gbRegion.id);
+        regionMap.set('gb', gbRegion);
+        if (countryCode.toLowerCase() === 'gb') {
+          return gbRegion;
         }
-        foundRegion = ukRegion;
+        foundRegion = gbRegion;
       }
       
       // For all countries, populate the map
@@ -78,10 +125,10 @@ export const getRegion = cache(async function (countryCode: string) {
         });
       });
       
-      // If we have regions but no UK specified, use the first region for UK
-      if (!regionMap.has('uk') && regions.length > 0) {
-        console.log('getRegion: No UK-specific region found, using first region for UK');
-        regionMap.set('uk', regions[0]);
+      // If we have regions but no GB specified, use the first region for GB
+      if (!regionMap.has('gb') && regions.length > 0) {
+        console.log('getRegion: No GB-specific region found, using first region for GB');
+        regionMap.set('gb', regions[0]);
       }
       
       // Get the region for the requested country code
@@ -93,10 +140,10 @@ export const getRegion = cache(async function (countryCode: string) {
         return region;
       }
       
-      // If no specific region found for this country code but we have a UK region
-      if (regionMap.has('uk')) {
-        console.log('getRegion: No specific region for', countryCode, ', using UK region');
-        return regionMap.get('uk');
+      // If no specific region found for this country code but we have a GB region
+      if (regionMap.has('gb')) {
+        console.log('getRegion: No specific region for', countryCode, ', using GB region');
+        return regionMap.get('gb');
       }
       
       // Last resort: use the first region if available
@@ -107,10 +154,11 @@ export const getRegion = cache(async function (countryCode: string) {
     }
     
     // If we reached here, no regions were found from the API
-    console.warn('getRegion: No valid regions found from API, cannot continue');
-    return null;
+    console.warn('getRegion: No valid regions found from API, using default region');
+    return DEFAULT_REGION;
   } catch (error) {
     console.error('getRegion: Error:', error);
-    return null;
+    console.log('getRegion: Returning default region due to error');
+    return DEFAULT_REGION;
   }
 })

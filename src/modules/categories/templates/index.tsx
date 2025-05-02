@@ -23,6 +23,8 @@ import ClientSideSort from './client-side-sort'
 import { CountdownTimer } from '@modules/layout/components/countdown-timer'
 import DynamicCountdownWrapper from './dynamic-countdown-wrapper'
 import CategoryContent from './category-content'
+import RefinementList from '@modules/common/components/sort'
+import ProductCarouselClientWrapper from '@modules/products/components/product-carousel/client-wrapper'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 300 // 5 minutes instead of disabling revalidation

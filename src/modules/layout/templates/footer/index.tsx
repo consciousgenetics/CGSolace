@@ -17,30 +17,23 @@ import { NavigationItem } from '@modules/common/components/navigation-item'
 import { Text } from '@modules/common/components/text'
 import {
   ChevronDownIcon,
-  FacebookIcon,
-  LinkedinIcon,
-  SolaceLogo,
-  XLogoIcon,
+  InstagramIcon,
   ConsciousGeneticsLogo,
 } from '@modules/common/icons'
 
 function SocialMedia({ className }: { className?: string }) {
   return (
     <Box className={cn('flex gap-2', className)}>
-      <div className="flex h-12 w-12 cursor-pointer items-center justify-center rounded-full text-static">
-        <LocalizedClientLink href="#" data-testid="linkedin-link">
-          <LinkedinIcon />
-        </LocalizedClientLink>
-      </div>
-      <div className="flex h-12 w-12 cursor-pointer items-center justify-center rounded-full text-static">
-        <LocalizedClientLink href="#" data-testid="facebook-link">
-          <FacebookIcon />
-        </LocalizedClientLink>
-      </div>
-      <div className="flex h-12 w-12 cursor-pointer items-center justify-center rounded-full text-static">
-        <LocalizedClientLink href="#" data-testid="x-link">
-          <XLogoIcon />
-        </LocalizedClientLink>
+      <div className="flex h-12 w-12 cursor-pointer items-center justify-center rounded-full text-static hover:bg-white/10 transition-colors">
+        <a
+          href="https://www.instagram.com/conscious__genetics/"
+          target="_blank"
+          rel="noopener noreferrer"
+          data-testid="instagram-link"
+          aria-label="Instagram"
+        >
+          <InstagramIcon />
+        </a>
       </div>
     </Box>
   )

@@ -10,7 +10,7 @@ import { Box } from '@modules/common/components/box'
 import { Container } from '@modules/common/components/container'
 import RefinementList from '@modules/common/components/sort'
 import { Text } from '@modules/common/components/text'
-import { ProductCarousel } from '@modules/products/components/product-carousel'
+import ProductCarouselClientWrapper from '@modules/products/components/product-carousel/client-wrapper'
 import { search } from '@modules/search/actions'
 import SkeletonProductGrid from '@modules/skeletons/templates/skeleton-product-grid'
 import SkeletonProductsCarousel from '@modules/skeletons/templates/skeleton-products-carousel'
@@ -140,7 +140,7 @@ export default async function CollectionTemplate({
       </Container>
       {recommendedProducts && recommendedProducts.length > 0 && region && (
         <Suspense fallback={<SkeletonProductsCarousel />}>
-          <ProductCarousel
+          <ProductCarouselClientWrapper
             products={recommendedProducts.map(product => ({
               ...product,
               category: product.collection

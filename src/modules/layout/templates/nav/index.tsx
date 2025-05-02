@@ -8,6 +8,7 @@ import ClientCountdownTimer from '@modules/layout/components/countdown-timer/cli
 
 import NavActions from './nav-actions'
 import NavContent from './nav-content'
+import NavContentWrapper from './nav-content-wrapper'
 
 // Cache the navigation data to prevent repeated fetching
 const getNavData = cache(async (countryCode: string) => {
@@ -50,7 +51,7 @@ export default async function NavWrapper(props: any) {
         className="duration-300 h-16 xsmall:h-20 medium:h-24 mx-0 max-w-full border-b border-white/10 bg-black !py-0 transition-all ease-in-out medium:!px-14 backdrop-blur-lg"
       >
         <Container className="flex h-full items-center justify-between !p-0 text-white">
-          <NavContent
+          <NavContentWrapper 
             productCategories={productCategories}
             collections={collections}
             strapiCollections={strapiCollections}

@@ -12,7 +12,7 @@ import ProductInfo from '@modules/products/templates/product-info'
 import SkeletonProductActions from '@modules/skeletons/components/skeleton-product-actions'
 import SkeletonProductsCarousel from '@modules/skeletons/templates/skeleton-products-carousel'
 
-import { ProductCarousel } from '../components/product-carousel'
+import ProductCarouselClientWrapper from '../components/product-carousel/client-wrapper'
 import ProductBreadcrumbs from './breadcrumbs'
 import ProductActionsWrapper from './product-actions-wrapper'
 
@@ -80,13 +80,13 @@ const ProductTemplate: React.FC<ProductTemplateProps> = async ({
 
       {productsList.products.length > 0 && (
         <Suspense fallback={<SkeletonProductsCarousel />}>
-          <ProductCarousel
-            title="Recommended"
+          <ProductCarouselClientWrapper
             products={productsList.products.map(product => ({
               ...product,
               category: product.collection
             }))}
             regionId={region.id}
+            title="Recommended"
           />
         </Suspense>
       )}

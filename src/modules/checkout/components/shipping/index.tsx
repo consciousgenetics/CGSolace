@@ -196,6 +196,41 @@ const Shipping: React.FC<ShippingProps> = ({
 
   return (
     <Box className="bg-primary p-5">
+      <style jsx global>{`
+        /* Add styles to ensure the radio button selection is visible */
+        .radio-selected {
+          background-color: transparent !important;
+          border-color: #000 !important;
+        }
+        
+        /* Make the indicator more prominent */
+        [data-state="checked"] .h-5.w-5 {
+          border-width: 6px !important;
+          border-color: #000 !important;
+        }
+        
+        /* Style the RadioGroupIndicator */
+        [data-radix-ui-radio-group-item][data-state="checked"] {
+          border-color: #000 !important;
+        }
+        
+        /* Ensure the inner dot is visible */
+        [data-radix-ui-radio-group-indicator] {
+          display: flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+        }
+        
+        [data-radix-ui-radio-group-indicator][data-state="checked"]::after {
+          content: '';
+          display: block !important;
+          width: 7px !important;
+          height: 7px !important;
+          border-radius: 50% !important;
+          background-color: #000 !important;
+        }
+      `}</style>
+      
       {isTransitioning && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black">
           <div className="relative flex flex-col items-center">
@@ -302,7 +337,7 @@ const Shipping: React.FC<ShippingProps> = ({
                         className={cn(
                           'flex cursor-pointer flex-row items-center justify-between gap-1 border p-2 !pr-4 text-basic-primary transition-all duration-200',
                           {
-                            'border-action-primary':
+                            'border-action-primary border-2 bg-gray-50':
                               option.id === selectedMethods[profileId],
                           }
                         )}
@@ -312,9 +347,19 @@ const Shipping: React.FC<ShippingProps> = ({
                             <RadioGroupItem
                               id={option.id}
                               value={option.id}
-                              checked={option.id === selectedMethods[profileId]}
+                              className={cn({
+                                'radio-selected': option.id === selectedMethods[profileId]
+                              })}
                             >
-                              <RadioGroupIndicator />
+                              <RadioGroupIndicator className={cn({
+                                'opacity-100': option.id === selectedMethods[profileId],
+                                'opacity-0': option.id !== selectedMethods[profileId]
+                              })} />
+                              {option.id === selectedMethods[profileId] && (
+                                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                                  <div className="w-2.5 h-2.5 rounded-full bg-black" />
+                                </div>
+                              )}
                             </RadioGroupItem>
                           </RadioGroupRoot>
                           <Box className="flex w-full flex-col gap-1 small:flex-row small:items-center small:justify-between">

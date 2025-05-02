@@ -20,7 +20,7 @@ export default function ProductBreadcrumbs({
 }) {
   return (
     <>
-      <Breadcrumbs className="text-basic-primary pl-[20px] sm:pl-[20px] md:pl-[10px] lg:pl-0 xl:pl-0">
+      <Breadcrumbs className="text-basic-primary pl-[20px] sm:pl-[20px] md:pl-[10px] lg:pl-0 xl:pl-0 py-3 sm:py-4 mt-2 sm:mt-0">
         <BreadcrumbsList className="hidden small:flex">
           <BreadcrumbsItem>
             <BreadcrumbsLink href="/">Homepage</BreadcrumbsLink>
@@ -42,12 +42,12 @@ export default function ProductBreadcrumbs({
             <BreadcrumbsStatic>{product?.title}</BreadcrumbsStatic>
           </BreadcrumbsItem>
         </BreadcrumbsList>
-        <BreadcrumbsList className="flex small:hidden">
+        <BreadcrumbsList className="flex small:hidden py-2">
           <BreadcrumbsItem>
             {product?.categories?.length > 0 && (
               <BreadcrumbsLink
                 href={`/${countryCode}/categories/${product.categories[product.categories.length - 1].handle}`}
-                className="flex items-center gap-2 text-md"
+                className="flex items-center gap-2 text-md py-1"
               >
                 <ArrowLeftIcon className="h-[18px] w-[18px]" />
                 {product.categories[product.categories.length - 1].name}
@@ -56,7 +56,7 @@ export default function ProductBreadcrumbs({
             {product?.categories?.length === 0 && (
               <BreadcrumbsLink
                 href="/"
-                className="flex items-center gap-2 text-md"
+                className="flex items-center gap-2 text-md py-1"
               >
                 <ArrowLeftIcon className="h-[18px] w-[18px]" />
                 Back to Homepage

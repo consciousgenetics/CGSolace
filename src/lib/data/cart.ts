@@ -46,7 +46,9 @@ export async function getOrSetCart(countryCode: string) {
       authHeaders
     )
     cart = cartResp.cart
-    setCartId(cart.id)
+    
+    // Instead of directly setting the cart ID here, just revalidate the tag
+    // The cookie will be set via API in a client component
     revalidateTag('cart')
   }
 

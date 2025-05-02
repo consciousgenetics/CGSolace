@@ -3,7 +3,8 @@
 import { useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 
-import { addToCartCheapestVariant } from '@lib/data/cart'
+// Remove the direct import from server functions
+// import { addToCartCheapestVariant } from '@lib/data/cart'
 import { useCartStore } from '@lib/store/useCartStore'
 import { cn } from '@lib/util/cn'
 import { Button } from '@modules/common/components/button'
@@ -26,11 +27,25 @@ export function ProductActions({
     setIsAddingToCart(true)
 
     try {
-      const result = await addToCartCheapestVariant({
-        productHandle,
-        regionId,
-        countryCode,
-      })
+      // Use the API endpoint instead of direct server function call
+      const response = await fetch('/api/cart/add-cheapest', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          productHandle,
+          regionId,
+          countryCode,
+        }),
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to add item to cart');
+      }
+      
+      const result = await response.json();
 
       if (result.success) {
         toast('success', result.message)
@@ -41,7 +56,9 @@ export function ProductActions({
         toast('error', result.error)
       }
     } catch (error) {
-      toast('error', 'An unexpected error occurred')
+      console.error('Error adding to cart:', error);
+      const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred';
+      toast('error', errorMessage);
     } finally {
       setIsAddingToCart(false)
     }
