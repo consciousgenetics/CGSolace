@@ -510,16 +510,16 @@ export function ProductCarousel({
                 }`}
               >
                 {/* Title - Make it mobile optimized */}
-                <h2 className="text-2xl xs:text-3xl small:text-4xl font-bold text-center mb-2 font-anton">
+                <h2 className="text-xl xs:text-2xl sm:text-3xl small:text-4xl font-bold text-center mb-1 xs:mb-2 font-anton">
                   {displayTitle}
                 </h2>
                 
                 {testId === 'seeds-section' ? (
-                  <p className="text-base text-gray-600 text-center max-w-2xl mx-auto font-anton">
+                  <p className="text-sm xs:text-base text-gray-600 text-center max-w-2xl mx-auto font-anton">
                     Every genetic that we drop is a stable, trichome covered, terpene loaded gem!
                   </p>
                 ) : title === "Recommended" ? null : (
-                  <p className="text-sm text-gray-600 text-center max-w-2xl mx-auto font-latto">
+                  <p className="text-xs xs:text-sm text-gray-600 text-center max-w-2xl mx-auto font-latto">
                     {displaySubtitle}
                   </p>
                 )}

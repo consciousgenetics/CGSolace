@@ -8,7 +8,6 @@ import { Box } from '@modules/common/components/box'
 import { Container } from '@modules/common/components/container'
 import { Heading } from '@modules/common/components/heading'
 import StoreBreadcrumbs from '@modules/store/templates/breadcrumbs'
-import RedKachinaSignup from '@modules/common/components/red-kachina-signup'
 
 // Set dynamic rendering to prevent build-time errors
 export const dynamic = 'force-dynamic'
@@ -81,11 +80,9 @@ export default async function CategoryPageLayout(
     }
 
     const currentCategory = product_categories[product_categories.length - 1]
-    const isRedKachina = category.includes('red-kachina')
-
+    
     return (
       <div className="bg-white min-h-screen">
-        {isRedKachina && <RedKachinaSignup />}
         <Container className="flex flex-col gap-8 !py-8">
           <Box className="flex flex-col gap-4">
             <StoreBreadcrumbs breadcrumb={currentCategory.name} />

@@ -9,6 +9,7 @@ import OrderDetails from '@modules/order/components/order-details'
 import PaymentDetails from '@modules/order/components/payment-details'
 import ShippingDetails from '@modules/order/components/shipping-details'
 import PaymentInstructions from '@modules/order/components/payment-instructions'
+import PaymentTimer from '@modules/order/components/payment-timer'
 
 type OrderCompletedTemplateProps = {
   order: HttpTypes.StoreOrder & { status: string }
@@ -28,6 +29,10 @@ export default function OrderCompletedTemplate({
     }))
   }
   
+  // Check if payment is made already
+  const paymentStatus = order.payment_status
+  const isPaid = paymentStatus === "captured" || paymentStatus === "partially_captured"
+  
   return (
     <Box className="bg-secondary">
       <Container className="mx-auto py-8">
@@ -45,7 +50,18 @@ export default function OrderCompletedTemplate({
             <Text size="md" className="text-secondary">
               We have sent the order confirmation details to {order.email}.
             </Text>
+            
+            {/* Show payment timer for unpaid orders right after the heading for better visibility */}
+            {!isPaid && (
+              <Box className="w-full mt-4">
+                <PaymentTimer 
+                  orderId={order.id} 
+                  displayId={order.display_id || order.id}
+                />
+              </Box>
+            )}
           </Box>
+          
           <OrderDetails order={order} />
           <PaymentInstructions order={order} />
           <Items items={order.items} />

@@ -1,23 +1,23 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Dialog, Transition } from '@headlessui/react'
+import { Dialog } from '@headlessui/react'
 import { Button } from '../button'
-import Image from 'next/image'
 
 const AgeVerification = () => {
   const [mounted, setMounted] = useState(false)
-  const [isOpen, setIsOpen] = useState(false)  // Initialize as false to prevent hydration mismatch
+  const [isOpen, setIsOpen] = useState(false)
   const [day, setDay] = useState('')
   const [month, setMonth] = useState('')
   const [year, setYear] = useState('')
   const [error, setError] = useState('')
 
   useEffect(() => {
+    // Only run on client-side
     setMounted(true)
     const hasVerified = localStorage.getItem('age-verified')
     if (!hasVerified) {
-      setIsOpen(true)  // Only open if not verified
+      setIsOpen(true)
     }
   }, [])
 
@@ -88,13 +88,11 @@ const AgeVerification = () => {
 
       <div className="fixed inset-0 flex items-center justify-center p-4">
         <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-black p-6 text-left align-middle shadow-xl transition-all border-2 border-white">
-          <div className="relative w-full h-32 mb-6">
-            <Image
-              src="/logo.png"
-              alt="Logo"
-              fill
-              style={{ objectFit: 'contain' }}
-              priority
+          <div className="relative w-full h-44 mb-6 flex items-center justify-center">
+            <img
+              src="/conscious-genetics-logo.png"
+              alt="Conscious Genetics Logo"
+              className="max-h-full max-w-full object-contain"
             />
           </div>
 

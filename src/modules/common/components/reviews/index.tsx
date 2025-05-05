@@ -45,7 +45,7 @@ const ReviewCard = ({ name, review, location }: ReviewCardProps) => {
           <img 
             src={name === "MICHAEL FLETCHER" ? "/Zapplez.png" : 
                 name === "JACK WILSON" ? "/Pink-waflfles.png" : 
-                "/Chronic_kush.png"} 
+                "/ExodusFumes.png"} 
             alt={name}
             className="w-full h-full object-contain bg-white"
           />

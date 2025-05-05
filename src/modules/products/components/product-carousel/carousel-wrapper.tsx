@@ -22,6 +22,7 @@ export default function CarouselWrapper({
 }: CarouselWrapperProps) {
   const windowSize = useWindowSize()
   const isMobile = windowSize.width ? windowSize.width < 640 : false // 640px is the 'small' breakpoint
+  const isLargeMobile = windowSize.width ? windowSize.width >= 390 && windowSize.width < 640 : false // iPhone Pro Max range
 
   // Modify carousel options for mobile to show 2 items at once
   const [emblaRef, emblaApi] = useEmblaCarousel({
@@ -60,7 +61,7 @@ export default function CarouselWrapper({
     if (emblaApi) {
       emblaApi.reInit()
     }
-  }, [emblaApi, isMobile])
+  }, [emblaApi, isMobile, isLargeMobile])
   
   // Separate effect for product count changes to avoid dependency array size issues
   useEffect(() => {
@@ -73,7 +74,7 @@ export default function CarouselWrapper({
   const scrollNext = useCallback(() => emblaApi && emblaApi.scrollNext(), [emblaApi])
 
   // Keep consistent height regardless of screen size
-  const minHeight = '600px';
+  const minHeight = '580px';
 
   return (
     <div className="relative w-full" style={{ minHeight }}>
@@ -84,7 +85,9 @@ export default function CarouselWrapper({
         <div className={cn(
           "w-full h-full",
           isMobile 
-            ? "grid grid-cols-2 gap-2 px-2" 
+            ? isLargeMobile 
+              ? "grid grid-cols-2 gap-3 px-3" 
+              : "grid grid-cols-2 gap-2 px-2" 
             : "flex justify-center gap-0 small:gap-0 pl-4 small:pl-6 -mx-2"
         )}>
           {children}

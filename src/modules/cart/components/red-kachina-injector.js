@@ -44,7 +44,7 @@
           disclaimer.style.textAlign = 'center';
           
           // Add content
-          disclaimer.textContent = '⚠️ PREORDER: Will ship near seed drop date';
+          disclaimer.textContent = '⚠️ Will ship near seed drop date';
           
           // Insert after the product variant info
           const variantElement = titleContainer.querySelector('[data-testid="product-variant"]');

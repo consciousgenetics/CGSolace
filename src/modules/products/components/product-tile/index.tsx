@@ -227,7 +227,7 @@ export function ProductTile({
       className="group flex h-full flex-col pb-4"
       data-testid={formatNameForTestId(`${product.title}-product-tile`)}
     >
-      <div className="relative w-full max-w-[300px] mx-auto">
+      <div className="relative w-full max-w-[280px] xs:max-w-[300px] mx-auto">
         {/* Image container - on top */}
         <Box className="relative w-full aspect-square z-10">
           {isNew && (
@@ -254,12 +254,12 @@ export function ProductTile({
         {/* Product Card - peeking from bottom */}
         <Box className="w-full -mt-2">
           <LocalizedClientLink href={`/products/${product.handle}`} className="block">
-            <Box className="text-center px-5 py-3 pb-4 bg-white rounded-3xl shadow-lg relative hover:shadow-xl transition-all duration-300">
+            <Box className="text-center px-3 xs:px-5 py-3 pb-4 bg-white rounded-3xl shadow-lg relative hover:shadow-xl transition-all duration-300">
               {/* Product Info */}
-              <div className="space-y-3">
+              <div className="space-y-2 xs:space-y-3">
                 {/* Category Badge - Only show in carousel */}
                 {isCarousel && (
-                  <span className={`inline-block px-2 py-1 text-xs xs:text-xs xs:px-3 small:text-xs font-bold rounded-full mt-2 mb-2 small:mt-3 small:mb-3 max-w-[95%] overflow-hidden text-ellipsis whitespace-nowrap ${
+                  <span className={`inline-block px-2 py-1 text-xs xs:text-xs xs:px-3 small:text-xs font-bold rounded-full mt-2 mb-1 xs:mb-2 small:mt-3 small:mb-3 max-w-[90%] overflow-hidden text-ellipsis whitespace-nowrap ${
                     product.category?.title?.toLowerCase().includes('merch') || 
                     product.title?.toLowerCase().includes('merch') ||
                     getCategoryTag(product).includes("MEN'S") ||
@@ -274,7 +274,7 @@ export function ProductTile({
                 {/* Product Title */}
                 <Text
                   as="span"
-                  className="block text-base xs:text-lg small:text-lg medium:text-xl font-bold uppercase text-black line-clamp-1 small:line-clamp-2 tracking-wider font-anton px-0 xs:px-1 small:px-2 min-h-[32px] xs:min-h-[36px] small:min-h-[56px] flex items-center justify-center"
+                  className="block text-sm xs:text-base small:text-lg medium:text-xl font-bold uppercase text-black line-clamp-1 small:line-clamp-2 tracking-wider font-anton px-0 xs:px-1 small:px-2 min-h-[28px] xs:min-h-[32px] small:min-h-[56px] flex items-center justify-center"
                 >
                   {product.title}
                 </Text>
@@ -326,19 +326,12 @@ export function ProductTile({
                 )}
                 
                 {/* Buy Now and Price */}
-                <div className="flex items-center justify-center gap-2 mt-1">
-                  <span className="font-bold text-black text-base tracking-widest font-latto">
-                    {isRedKachinaPage || 
-                     product.category?.handle?.toLowerCase().includes('red-kachina') || 
-                     product.category?.title?.toLowerCase().includes('red kachina') ||
-                     product.category?.title?.toLowerCase().includes('red-kachina') ||
-                     product.handle?.toLowerCase().includes('red-kachina') || 
-                     product.title?.toLowerCase().includes('red kachina') ||
-                     product.title?.toLowerCase().includes('red-kachina') ? 
-                     'PREORDER' : 'BUY NOW'}
+                <div className="flex items-center justify-center gap-1 xs:gap-2 mt-1">
+                  <span className="font-bold text-black text-sm xs:text-base tracking-widest font-latto">
+                    {'BUY NOW'}
                   </span>
                   <div className="h-4 w-px bg-gray-200"></div>
-                  <span className={`font-medium text-base font-latto ${
+                  <span className={`font-medium text-sm xs:text-base font-latto ${
                     product.category?.title?.toLowerCase().includes('merch')
                       ? 'text-[#d67bef]'
                       : 'text-[#FDD729]'

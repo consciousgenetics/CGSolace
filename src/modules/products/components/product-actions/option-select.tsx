@@ -28,13 +28,73 @@ const OptionSelect: React.FC<OptionSelectProps> = ({
   disabled,
   productTitle,
 }) => {
+  const getSizeOrder = (value: string) => {
+    // Size ordering priority
+    const sizeOrder = {
+      'xxs': 0,
+      'xs': 1,
+      's': 2,
+      'small': 2,
+      'm': 3,
+      'medium': 3,
+      'l': 4,
+      'large': 4,
+      'xl': 5,
+      'extra large': 5,
+      'extra-large': 5,
+      'extralarge': 5,
+      'xxl': 6,
+      '2xl': 6,
+      '3xl': 7,
+      'xxxl': 7,
+      '4xl': 8
+    }
+    return sizeOrder[value.toLowerCase()] ?? 999 // Default high value for unknown sizes
+  }
+
   const filteredOptions = option.values
-    ?.sort((a, b) => a.value.localeCompare(b.value))
+    ?.sort((a, b) => {
+      if (title.toLowerCase() === 'size') {
+        // Custom sort for sizes
+        return getSizeOrder(a.value) - getSizeOrder(b.value)
+      }
+      // Default alphabetical sort for other options
+      return a.value.localeCompare(b.value)
+    })
     .map((v) => v.value)
 
   const getDisplayText = (value: string, title: string) => {
-    // For size options, show first letter
+    // For size options, handle specific sizes
     if (title.toLowerCase() === 'size') {
+      // Display 'XL' for Extra Large variants
+      if (value.toLowerCase() === 'extra large' || 
+          value.toLowerCase() === 'extralarge' || 
+          value.toLowerCase() === 'extra-large' || 
+          value.toLowerCase() === 'xl') {
+        return 'XL'
+      }
+      
+      // Special case for Large
+      if (value.toLowerCase() === 'large') {
+        return 'L'
+      }
+      
+      // Special case for Medium
+      if (value.toLowerCase() === 'medium') {
+        return 'M'
+      }
+      
+      // Special case for Small
+      if (value.toLowerCase() === 'small') {
+        return 'S'
+      }
+      
+      // For Extra Large that might not match the conditions above
+      if (value.toLowerCase().includes('extra') && value.toLowerCase().includes('large')) {
+        return 'XL'
+      }
+      
+      // For other sizes, just use the first letter
       return value.charAt(0).toUpperCase()
     }
     // For other options (like seed types), show full name
