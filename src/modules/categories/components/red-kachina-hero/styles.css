@@ -1,0 +1,100 @@
+/* Remove gap between header and menu bar for Red Kachina pages */
+.red-kachina-header-fix {
+  margin-top: -16px;
+  padding-top: 0 !important;
+}
+
+/* Fix spacing around the hero banner */
+.red-kachina-hero-banner {
+  margin-bottom: 0;
+  padding-bottom: 40;
+  margin-top: -44px !important; /* Stronger negative margin to pull it up */
+  position: relative;
+  background: linear-gradient(90deg, #ebc120, #FDD729, #ebc120);
+  background-size: 200% 100%;
+  animation: gradientShift 10s ease infinite;
+  border-bottom: 3px solid rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 12px -5px rgba(0, 0, 0, 0.15);
+}
+
+/* Gradient animation */
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* Add text shadow */
+.text-shadow {
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* Target the menu bar specifically */
+nav, 
+header > div:last-child,
+header ~ div:first-of-type {
+  margin-bottom: 0 !important;
+  padding-bottom: 0 !important;
+}
+
+/* Adjust container spacing below the hero */
+.red-kachina-content-container {
+  padding-top: 24px !important;
+}
+
+/* Make sure the menu sticks to the hero */
+.red-kachina-page header + div {
+  margin-top: 0 !important;
+  padding-top: 0 !important;
+}
+
+/* Target any wrapper divs that might be causing spacing */
+div[class*="layout"], 
+div[class*="header"], 
+div[class*="nav"],
+div[class*="container"] {
+  margin-bottom: 0 !important;
+}
+
+/* Enhanced styling for the banner */
+.banner-inner {
+  box-shadow: 
+    0 15px 35px rgba(0, 0, 0, 0.3),
+    0 8px 15px rgba(0, 0, 0, 0.22),
+    inset 0 0 0 2px rgba(253, 215, 41, 0.3);
+  position: relative;
+  overflow: hidden;
+  transform: translateZ(0);
+}
+
+/* Add subtle pattern to yellow bottom */
+.yellow-bottom {
+  background-color: #FDD729;
+  background-image: radial-gradient(rgba(0,0,0,0.03) 1px, transparent 1px);
+  background-size: 20px 20px;
+  position: relative;
+}
+
+/* Add shine effect to button */
+.shop-button {
+  transition: all 0.3s;
+  position: relative;
+  overflow: hidden;
+  transform: translateZ(0);
+}
+
+.shop-button:before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(
+    to bottom right,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.1) 100%
+  );
+  transform: rotate(30deg);
+  pointer-events: none;
+} 

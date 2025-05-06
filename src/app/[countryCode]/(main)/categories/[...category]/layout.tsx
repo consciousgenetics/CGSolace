@@ -1,5 +1,6 @@
 import { Metadata } from 'next'
 import { notFound } from 'next/navigation'
+import RedKachinaHeroWrapper from '@modules/categories/components/red-kachina-hero-wrapper'
 
 import { getCategoryByHandle, listCategories } from '@lib/data/categories'
 import { listRegions } from '@lib/data/regions'
@@ -17,6 +18,14 @@ interface CategoryPageLayoutProps {
   params: { category: string[]; countryCode: string }
 }
 
+// Define category data type
+interface CategoryData {
+  product_categories: StoreProductCategory[]
+}
+
+// Create a fallback for empty category data
+const emptyCategoryData: CategoryData = { product_categories: [] }
+
 // Skip static params completely for now to ensure build succeeds
 export async function generateStaticParams() {
   // Simply return an empty array to avoid build-time data fetching
@@ -28,10 +37,10 @@ export async function generateMetadata(
 ): Promise<Metadata> {
   try {
     const params = props.params
-    const categoryData = await getCategoryByHandle(params.category)
-      .catch(() => ({ product_categories: [] }))
+    const categoryData: CategoryData = await getCategoryByHandle(params.category)
+      .catch(() => emptyCategoryData)
     
-    const { product_categories } = categoryData || { product_categories: [] }
+    const { product_categories } = categoryData
 
     if (!product_categories || product_categories.length === 0) {
       return {
@@ -72,18 +81,24 @@ export default async function CategoryPageLayout(
     const { category } = params
     const { children } = props
 
-    const { product_categories } = await getCategoryByHandle(category)
-      .catch(() => ({ product_categories: [] }))
+    const categoryData: CategoryData = await getCategoryByHandle(category)
+      .catch(() => emptyCategoryData)
+    
+    const { product_categories } = categoryData
 
     if (!product_categories || product_categories.length === 0) {
       return notFound()
     }
 
     const currentCategory = product_categories[product_categories.length - 1]
+    const isRedKachina = category.includes('red-kachina')
     
     return (
       <div className="bg-white min-h-screen">
-        <Container className="flex flex-col gap-8 !py-8">
+        {/* Red Kachina Hero Banner above header and breadcrumbs */}
+        {isRedKachina && <RedKachinaHeroWrapper />}
+        
+        <Container className={`flex flex-col ${isRedKachina ? 'gap-4 !pt-4 !pb-8 red-kachina-content-container' : 'gap-8 !py-8'}`}>
           <Box className="flex flex-col gap-4">
             <StoreBreadcrumbs breadcrumb={currentCategory.name} />
             <Heading
