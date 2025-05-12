@@ -83,6 +83,9 @@ const PaymentInstructions = ({ order }: PaymentInstructionsProps) => {
         <Text className="font-semibold text-yellow-800">
           Your order will be processed once payment is confirmed.
         </Text>
+        <Text className="mt-3 text-red-600 font-medium bg-red-50 p-2 rounded-md border border-red-200">
+          ⚠️ IMPORTANT: If you are sending payment from outside the UK, please use the IBAN number when making your transfer.
+        </Text>
       </Box>
     </Box>
   )

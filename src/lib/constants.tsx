@@ -169,19 +169,19 @@ export const createNavigation = (
       handle: '/categories/feminized-seeds',
       category_children: [
         {
-          name: 'Zapplez',
+          name: 'Zapplez Line',
           type: 'category',
           handle: '/categories/zapplez',
           category_children: [],
         },
         {
-          name: 'Pink Waferz',
+          name: 'Pink Waferz Line',
           type: 'category',
           handle: '/categories/pink-waferz',
           category_children: [],
         },
         {
-          name: 'Red Kachina',
+          name: 'Red Kachina Line',
           type: 'category',
           handle: '/categories/red-kachina',
           category_children: [],
@@ -193,7 +193,7 @@ export const createNavigation = (
       handle: '/categories/seeds',
       category_children: [
         {
-          name: "Chronic's Kush",
+          name: "Chronic's Kush Line",
           type: 'category',
           handle: '/categories/chronics-kush',
           category_children: [],
@@ -215,12 +215,18 @@ export const createNavigation = (
           type: 'category',
           handle: '/categories/womens-merch',
           category_children: [],
+        },
+        {
+          name: 'Accessories',
+          type: 'category',
+          handle: '/categories/accessories',
+          category_children: [],
         }
       ],
     },
     {
-      name: 'ACCESSORIES',
-      handle: '/categories/accessories',
+      name: 'STOCKIST',
+      handle: '/stockist',
       category_children: null,
     },
     {
@@ -240,11 +246,11 @@ export const createFooterNavigation = (
         header: 'SHOP',
         links: [
           {
-            title: 'Feminized Seeds',
+            title: 'Feminized Seeds Line',
             href: '/categories/feminized-seeds',
       },
       {
-            title: 'Regular Seeds',
+            title: 'Regular Seeds Line',
             href: '/categories/seeds',
           },
           {

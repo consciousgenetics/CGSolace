@@ -92,7 +92,7 @@ const Hero = ({ data }: { data: HeroBannerData }) => {
               width: 100% !important;
               height: 100% !important;
             }
-            .coming-soon-container {
+            .promo-container {
               background: transparent !important;
             }
           }
@@ -122,7 +122,7 @@ const Hero = ({ data }: { data: HeroBannerData }) => {
             }
           }
           
-          .coming-soon-text {
+          .promo-text {
             letter-spacing: 4px;
             animation: textPulse 4s ease-in-out infinite;
           }
@@ -152,7 +152,7 @@ const Hero = ({ data }: { data: HeroBannerData }) => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: "easeOut", delay: 0.2 }}
             className="absolute w-full flex flex-col items-center"
-            style={{ bottom: '48%' }}
+            style={{ bottom: '40%' }}
           >
             <motion.div 
               initial={{ scale: 0.9 }}
@@ -160,7 +160,9 @@ const Hero = ({ data }: { data: HeroBannerData }) => {
               transition={{ duration: 0.5, ease: "easeOut", delay: 0.4 }}
               className="px-12 py-6 sm:px-16 sm:py-8 md:px-20 md:py-10"
             >
-              <h2 className="text-white text-4xl sm:text-5xl md:text-7xl lg:text-8xl font-bold coming-soon-text font-latto whitespace-nowrap">COMING SOON</h2>
+              <h2 className="text-white text-4xl sm:text-5xl md:text-7xl lg:text-8xl font-bold promo-text font-latto text-center">
+                Buy 2 Seed Packs<br />Get One Free
+              </h2>
             </motion.div>
           </motion.div>
           
@@ -170,7 +172,7 @@ const Hero = ({ data }: { data: HeroBannerData }) => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: "easeOut", delay: 0.6 }}
             className="absolute w-full flex justify-center"
-            style={{ bottom: '35%' }}
+            style={{ bottom: '25%' }}
           >
             <motion.div
               whileHover={{ scale: 1.05 }}
