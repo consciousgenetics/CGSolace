@@ -11,6 +11,7 @@ import { useState, useCallback, useEffect, useRef, useMemo } from 'react'
 import { Heading } from '@modules/common/components/heading'
 import { motion, useInView } from 'framer-motion'
 import { useWindowSize } from '@lib/hooks/use-window-size'
+import { useParams } from 'next/navigation'
 
 import { ProductTile } from '../product-tile'
 import CarouselWrapper from './carousel-wrapper'
@@ -59,39 +60,12 @@ interface ProductTileProduct {
   thumbnail: string | null
   calculatedPrice: string
   salePrice: string
+  priceNumber?: number
+  salePriceNumber?: number
+  currencyCode?: string
   category?: StoreProductCategory
   description?: string | null
   variants?: any[]
-}
-
-// Process product data for display
-const processProduct = (product: StoreProduct): ProductTileProduct => {
-  console.log('Processing product:', {
-    title: product.title,
-    thumbnail: product.thumbnail,
-    handle: product.handle,
-    images: product.images?.length || 0
-  })
-
-  // Get the price data
-  const priceInfo = getProductPrice({ product })
-  const cheapestPrice = priceInfo.cheapestPrice()
-
-  // Use the first image as thumbnail if no thumbnail is set
-  const thumbnail = product.thumbnail || (product.images && product.images[0]?.url)
-
-  return {
-    id: product.id,
-    created_at: product.created_at,
-    title: product.title,
-    handle: product.handle,
-    thumbnail: thumbnail,
-    calculatedPrice: cheapestPrice.price.calculated_price,
-    salePrice: cheapestPrice.price.original_price,
-    category: product.categories?.[0],
-    description: product.description,
-    variants: product.variants
-  }
 }
 
 export function ProductCarousel({
@@ -103,6 +77,7 @@ export function ProductCarousel({
   testId,
   hideToggleButtons = false,
 }: ProductCarouselProps) {
+  const { countryCode } = useParams();
   const [clothingType, setClothingType] = useState<'mens' | 'womens'>('mens')
   const [seedType, setSeedType] = useState<'feminized' | 'regular'>('feminized')
   const [isTransitioning, setIsTransitioning] = useState(false)
@@ -167,15 +142,26 @@ export function ProductCarousel({
 
     // Then process the filtered products
     return filteredProducts.map(product => {
-      const priceInfo = getProductPrice({ product });
+      const priceInfo = getProductPrice({ 
+        product,
+        countryCode: countryCode as string
+      });
+      const cheapestPrice = priceInfo.cheapestPrice;
+      
+      // Use the first image as thumbnail if no thumbnail is set
+      const thumbnail = product.thumbnail || (product.images && product.images[0]?.url);
       
       return {
         ...product,
-        calculatedPrice: priceInfo.cheapestPrice.calculated_price,
-        salePrice: priceInfo.cheapestPrice.original_price
+        thumbnail,
+        calculatedPrice: cheapestPrice?.calculated_price || 'Price unavailable',
+        salePrice: cheapestPrice?.original_price || 'Price unavailable',
+        priceNumber: cheapestPrice?.calculated_price_number,
+        salePriceNumber: cheapestPrice?.original_price_number,
+        currencyCode: cheapestPrice?.currency_code || 'GBP'
       };
     });
-  }, [products, testId, clothingType, seedType]);
+  }, [products, testId, clothingType, seedType, countryCode]);
 
   // Get displayed products based on showAllProducts state
   const displayedProducts = useMemo(() => {
@@ -542,6 +528,7 @@ export function ProductCarousel({
                     // Get the cheapest price using the utility function
                     const { cheapestPrice } = getProductPrice({
                       product: item,
+                      countryCode: countryCode as string
                     })
 
                     // Better handling of potentially invalid price values
@@ -597,6 +584,7 @@ export function ProductCarousel({
                       // Get the cheapest price using the utility function
                       const { cheapestPrice } = getProductPrice({
                         product: item,
+                        countryCode: countryCode as string
                       })
 
                       // Better handling of potentially invalid price values

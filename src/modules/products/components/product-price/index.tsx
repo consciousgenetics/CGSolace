@@ -1,6 +1,7 @@
 import React from 'react'
+import { useParams } from 'next/navigation'
 
-import { getProductPrice } from '@lib/util/get-product-price'
+import { getProductPrice, getCurrencyFromCountry } from '@lib/util/get-product-price'
 import { HttpTypes } from '@medusajs/types'
 import { convertToLocale } from '@lib/util/money'
 
@@ -11,84 +12,21 @@ export default function ProductPrice({
   product: HttpTypes.StoreProduct
   variant?: HttpTypes.StoreProductVariant
 }) {
+  // Get country code from URL params
+  const { countryCode } = useParams();
+  
   try {
-    // Special debug logging for the problematic product
-    const isStoner = product.title?.includes('Conscious Stoner Jumper');
-    if (isStoner) {
-      console.log('Debug Conscious Stoner Jumper:', {
-        title: product.title,
-        handle: product.handle,
-        context: 'Before price calculation',
-        productId: product.id,
-        variantId: variant?.id
-      });
-    }
-
+    // Get the currency for the current country
+    const targetCurrency = getCurrencyFromCountry(countryCode as string);
+    
     const { cheapestPrice, variantPrice } = getProductPrice({
       product,
       variantId: variant?.id,
+      countryCode: countryCode as string
     })
 
     // Use variant price if available, otherwise use cheapest price
     const selectedPrice = variant ? variantPrice : cheapestPrice
-    
-    // Debug log for the problematic product after price calc
-    if (isStoner) {
-      console.log('Debug Stoner Price details:', {
-        selectedPrice,
-        currency: selectedPrice?.currency_code,
-        calculated_price: selectedPrice?.calculated_price,
-        amount: selectedPrice?.calculated_price_number,
-        rawHtml: selectedPrice?.calculated_price ? `<span>${selectedPrice.calculated_price}</span>` : 'No price'
-      });
-    }
-    
-    // Force all prices to be shown in GBP regardless of the product
-    if (selectedPrice?.currency_code?.toUpperCase() !== 'GBP') {
-      console.log('Converting price to GBP for product:', {
-        product: product.title,
-        variant: variant?.title || 'Default variant',
-        originalCurrency: selectedPrice?.currency_code
-      });
-      
-      // Force GBP for this product
-      if (selectedPrice?.calculated_price_number) {
-        selectedPrice.calculated_price = convertToLocale({
-          amount: selectedPrice.calculated_price_number,
-          currency_code: 'GBP',
-          productTitle: product.title
-        });
-      }
-      
-      if (selectedPrice?.original_price_number) {
-        selectedPrice.original_price = convertToLocale({
-          amount: selectedPrice.original_price_number,
-          currency_code: 'GBP',
-          productTitle: product.title
-        });
-      }
-      
-      if (selectedPrice) {
-        selectedPrice.currency_code = 'GBP';
-      }
-    } else if (isStoner) {
-      // Even if the currency is already GBP, reformat for the Stoner product
-      if (selectedPrice?.calculated_price_number) {
-        selectedPrice.calculated_price = convertToLocale({
-          amount: selectedPrice.calculated_price_number,
-          currency_code: 'GBP',
-          productTitle: product.title
-        });
-      }
-      
-      if (selectedPrice?.original_price_number) {
-        selectedPrice.original_price = convertToLocale({
-          amount: selectedPrice.original_price_number,
-          currency_code: 'GBP',
-          productTitle: product.title
-        });
-      }
-    }
     
     // If no price data is available, show a formatted message
     if (!selectedPrice || 
@@ -96,7 +34,6 @@ export default function ProductPrice({
         selectedPrice.calculated_price_number === null || 
         isNaN(selectedPrice.calculated_price_number)) {
       
-      console.log('Missing or invalid price data for product:', product.title)
       return (
         <div className="flex items-center gap-x-2">
           <span className="text-2xl text-black">
@@ -112,13 +49,17 @@ export default function ProductPrice({
       )
     }
 
-    // Final debug check for the Stoner Jumper
-    if (isStoner) {
-      console.log('Final Stoner price display:', {
-        calculatedPrice: selectedPrice.calculated_price,
-        currencyCode: selectedPrice.currency_code
-      });
-    }
+    // Format prices with the appropriate currency
+    const calculatedPrice = convertToLocale({
+      amount: selectedPrice.calculated_price_number,
+      currency_code: selectedPrice.currency_code || targetCurrency
+    });
+    
+    const originalPrice = selectedPrice.original_price_number ? 
+      convertToLocale({
+        amount: selectedPrice.original_price_number,
+        currency_code: selectedPrice.currency_code || targetCurrency
+      }) : calculatedPrice;
 
     // Standard price display for valid prices
     return (
@@ -130,7 +71,7 @@ export default function ProductPrice({
             data-value={selectedPrice.calculated_price_number}
             className="text-black"
           >
-            {selectedPrice.calculated_price}
+            {calculatedPrice}
           </span>
         </span>
         {selectedPrice.price_type === 'sale' && (
@@ -141,7 +82,7 @@ export default function ProductPrice({
                 data-testid="original-product-price"
                 data-value={selectedPrice.original_price_number}
               >
-                {selectedPrice.original_price}
+                {originalPrice}
               </span>
             </p>
           </>

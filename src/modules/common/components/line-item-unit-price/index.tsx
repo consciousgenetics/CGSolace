@@ -1,4 +1,5 @@
-import { getPricesForVariant } from '@lib/util/get-product-price'
+import { useParams } from 'next/navigation'
+import { getPricesForVariant, getCurrencyFromCountry } from '@lib/util/get-product-price'
 import { HttpTypes } from '@medusajs/types'
 import { clx } from '@medusajs/ui'
 import { convertToLocale } from '@lib/util/money'
@@ -23,8 +24,12 @@ const LineItemUnitPrice = ({
   item,
   style = 'default',
 }: LineItemUnitPriceProps) => {
+  // Get country code from URL params
+  const { countryCode } = useParams();
+  const targetCurrency = getCurrencyFromCountry(countryCode as string);
+  
   // Get prices with a type assertion to unknown first to avoid type errors
-  const priceData = getPricesForVariant(item.variant) as unknown as PriceValues | null;
+  const priceData = getPricesForVariant(item.variant, countryCode as string) as unknown as PriceValues | null;
   
   // Special handling for Pink Zeez product - force GBP display
   const isPinkZeez = item.title?.includes('Pink Zeez');
@@ -55,11 +60,23 @@ const LineItemUnitPrice = ({
   }
   
   // Use safe default values
-  const original_price = priceData?.original_price ?? 'N/A';
-  const calculated_price = priceData?.calculated_price ?? 'N/A';
   const original_price_number = priceData?.original_price_number ?? 0;
   const calculated_price_number = priceData?.calculated_price_number ?? 0;
   const percentage_diff = priceData?.percentage_diff ?? 0;
+  const sourceCurrency = priceData?.currency_code ?? targetCurrency;
+  
+  // Format prices with the appropriate currency
+  const calculated_price = calculated_price_number ? 
+    convertToLocale({
+      amount: calculated_price_number,
+      currency_code: sourceCurrency
+    }) : 'N/A';
+  
+  const original_price = original_price_number ? 
+    convertToLocale({
+      amount: original_price_number,
+      currency_code: sourceCurrency
+    }) : calculated_price;
   
   // Only check if price data is completely missing, not if it's zero
   const hasNoPrice = priceData === null || calculated_price === 'N/A';
