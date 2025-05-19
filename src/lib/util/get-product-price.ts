@@ -9,160 +9,98 @@ import { convertToLocale } from './money'
 // Cache product prices to prevent recalculation for the same variant
 const priceCache = new Map()
 
+// Map country codes to currency codes
+const countryCurrencyMap = {
+  'gb': 'GBP',
+  'us': 'USD',
+  'dk': 'EUR',
+};
+
+// Get currency code from country code
+export const getCurrencyFromCountry = (countryCode?: string) => {
+  if (!countryCode) return 'GBP';
+  return countryCurrencyMap[countryCode.toLowerCase()] || 'GBP';
+};
+
 // Clear cache entry for specific product
 export const clearPriceCache = (variantId: string) => {
   if (priceCache.has(variantId)) {
     priceCache.delete(variantId)
-    console.log(`Cleared price cache for variant: ${variantId}`)
     return true
   }
   return false
 }
 
-export const getPricesForVariant = (variant: any, productInfo?: any) => {
+export const getPricesForVariant = (variant: any, countryCode?: string) => {
   if (!variant) {
     return null
   }
 
-  // Special handling for the problematic product
-  const isStoner = productInfo?.title?.includes('Conscious Stoner Jumper');
-  
-  if (isStoner) {
-    console.log('Conscious Stoner Jumper variant detected:', {
-      variantId: variant.id,
-      sku: variant.sku || 'No SKU',
-      title: variant.title
-    });
-    
-    // Clear cache for this variant to ensure we get fresh data
-    clearPriceCache(variant.id);
-  }
+  // Determine target currency based on country code
+  const targetCurrency = getCurrencyFromCountry(countryCode);
 
-  // Check cache first
-  const cacheKey = variant.id
-  if (cacheKey && priceCache.has(cacheKey) && !isStoner) {
+  // Create a cache key that includes the country code
+  const cacheKey = countryCode ? `${variant.id}_${countryCode}` : variant.id;
+  
+  if (cacheKey && priceCache.has(cacheKey)) {
     return priceCache.get(cacheKey)
   }
 
-  // Minimal logging to reduce overhead
-  // console.log('Processing variant:', variant.id)
-
-  // If we have prices array, try to find GBP price first
+  // If we have prices array, find the right price for this country
   if (variant.prices && variant.prices.length > 0) {
-    // Debug log prices for Stoner Jumper
-    if (isStoner) {
-      console.log('Stoner Jumper variant prices:', variant.prices.map(p => ({
-        currency: p.currency_code,
-        amount: p.amount
-      })));
-    }
+    // Find a price matching the target currency
+    const price = variant.prices.find(p => 
+      p.currency_code?.toUpperCase() === targetCurrency
+    );
     
-    // Handle the specific case of Conscious Stoner Jumper with multiple GBP prices
-    let gbpPrice;
-    
-    if (isStoner) {
-      // For Conscious Stoner Jumper, we specifically want the 34.99 GBP price
-      gbpPrice = variant.prices.find(p => 
-        p.currency_code?.toUpperCase() === 'GBP' && 
-        p.amount === 34.99
-      );
-      
-      // If the specific price isn't found (maybe it was changed), find any GBP price
-      if (!gbpPrice) {
-        // Get all GBP prices
-        const gbpPrices = variant.prices.filter(p => 
-          p.currency_code?.toUpperCase() === 'GBP'
-        );
-        
-        // If we have multiple GBP prices, use the lowest (valid) one
-        if (gbpPrices.length > 1) {
-          gbpPrice = gbpPrices.reduce((lowest, current) => {
-            if (!lowest || (current.amount < lowest.amount && current.amount > 0)) {
-              return current;
-            }
-            return lowest;
-          }, null);
-        } else if (gbpPrices.length === 1) {
-          gbpPrice = gbpPrices[0];
-        }
-      }
-    } else {
-      // For other products, find the first GBP price
-      gbpPrice = variant.prices.find(p => 
-        p.currency_code?.toUpperCase() === 'GBP'
-      );
-    }
-    
-    if (gbpPrice) {
-      // Be more permissive - accept any numeric amount, even if it's very small
-      if (typeof gbpPrice.amount === 'number' && !isNaN(gbpPrice.amount)) {
-        const result = {
-          calculated_price_number: gbpPrice.amount,
-          calculated_price: convertToLocale({
-            amount: gbpPrice.amount,
-            currency_code: 'GBP',
-            locale: 'en-GB'
-          }),
-          original_price_number: gbpPrice.amount,
-          original_price: convertToLocale({
-            amount: gbpPrice.amount,
-            currency_code: 'GBP',
-            locale: 'en-GB'
-          }),
-          currency_code: 'GBP',
-          price_type: null,
-          percentage_diff: 0
-        }
-        
-        // Cache the result unless it's the Stoner product
-        if (cacheKey && !isStoner) priceCache.set(cacheKey, result)
-        
-        if (isStoner) {
-          console.log('Using GBP price for Stoner:', result);
-        }
-        
-        return result
-      }
-    }
-
-    // If no GBP price, then use any other price but convert to GBP
-    const price = variant.prices[0]
-    
-    // Debug log for non-GBP prices
-    if (price && price.currency_code && price.currency_code.toUpperCase() !== 'GBP') {
-      console.log('Converting non-GBP price to GBP for:', {
-        variantId: variant.id,
-        productTitle: productInfo?.title || 'Unknown product',
-        sku: variant.sku || 'No SKU',
-        originalCurrency: price.currency_code
-      });
-    }
-
-    // Validate the price has a valid amount
+    // Use the matching price if found
     if (price && typeof price.amount === 'number' && !isNaN(price.amount)) {
-      // Force GBP for all prices to fix currency inconsistency
       const result = {
         calculated_price_number: price.amount,
         calculated_price: convertToLocale({
           amount: price.amount,
-          currency_code: 'GBP' // Always use GBP instead of original currency
+          currency_code: price.currency_code
         }),
         original_price_number: price.amount,
         original_price: convertToLocale({
           amount: price.amount,
-          currency_code: 'GBP' // Always use GBP instead of original currency
+          currency_code: price.currency_code
         }),
-        currency_code: 'GBP', // Force GBP for consistency
+        currency_code: price.currency_code,
         price_type: null,
         percentage_diff: 0
       }
       
-      // Cache the result unless it's the Stoner product
-      if (cacheKey && !isStoner) priceCache.set(cacheKey, result)
+      // Cache the result
+      if (cacheKey) priceCache.set(cacheKey, result)
       
-      if (isStoner) {
-        console.log('Converted price for Stoner:', result);
+      return result
+    }
+    
+    // If no matching currency found, use the first price
+    // but log a warning
+    const fallbackPrice = variant.prices[0];
+    if (fallbackPrice && typeof fallbackPrice.amount === 'number' && !isNaN(fallbackPrice.amount)) {
+      console.warn(`No price found for currency ${targetCurrency}, using fallback currency ${fallbackPrice.currency_code}`);
+      
+      const result = {
+        calculated_price_number: fallbackPrice.amount,
+        calculated_price: convertToLocale({
+          amount: fallbackPrice.amount,
+          currency_code: fallbackPrice.currency_code
+        }),
+        original_price_number: fallbackPrice.amount,
+        original_price: convertToLocale({
+          amount: fallbackPrice.amount,
+          currency_code: fallbackPrice.currency_code
+        }),
+        currency_code: fallbackPrice.currency_code,
+        price_type: null,
+        percentage_diff: 0
       }
+      
+      // Cache the result
+      if (cacheKey) priceCache.set(cacheKey, result)
       
       return result
     }
@@ -170,26 +108,9 @@ export const getPricesForVariant = (variant: any, productInfo?: any) => {
 
   // Try calculated price as last resort
   if (variant.calculated_price) {
-    if (isStoner) {
-      console.log('Stoner Jumper calculated price:', variant.calculated_price);
-    }
-    
     const calculatedAmount = variant.calculated_price.calculated_amount
     const originalAmount = variant.calculated_price.original_amount ?? calculatedAmount
-    const originalCurrencyCode = variant.calculated_price.currency_code ?? 'GBP'
-
-    // Always use GBP for currency, regardless of original currency
-    const currencyCode = 'GBP';
-
-    // Log non-GBP calculated prices
-    if (originalCurrencyCode.toUpperCase() !== 'GBP') {
-      console.log('Converting calculated price from non-GBP to GBP:', {
-        variantId: variant.id,
-        productTitle: productInfo?.title || 'Unknown product',
-        sku: variant.sku || 'No SKU',
-        originalCurrency: originalCurrencyCode
-      });
-    }
+    const currencyCode = variant.calculated_price.currency_code ?? targetCurrency
 
     // Ensure amounts are valid numbers - be more permissive
     const validCalculatedAmount = typeof calculatedAmount === 'number' && !isNaN(calculatedAmount) ? 
@@ -214,135 +135,97 @@ export const getPricesForVariant = (variant: any, productInfo?: any) => {
         percentage_diff: getPercentageDiff(validOriginalAmount || 0, validCalculatedAmount),
       }
       
-      // Cache the result unless it's the Stoner product
-      if (cacheKey && !isStoner) priceCache.set(cacheKey, result)
-      
-      if (isStoner) {
-        console.log('Used calculated price for Stoner:', result);
-      }
+      // Cache the result
+      if (cacheKey) priceCache.set(cacheKey, result)
       
       return result
     }
   }
 
-  // Log when no price is found
-  console.log('No price found for variant:', {
-    variantId: variant.id,
-    sku: variant.sku || 'No SKU',
-    title: variant.title || 'No title',
-    productTitle: productInfo?.title || 'Unknown product'
-  });
-
-  // Return null when no price is available - this will ensure we don't use hardcoded defaults
+  // Return null when no price is available
   return null;
 }
 
 export function getProductPrice({
   product,
   variantId,
+  countryCode,
 }: {
   product: HttpTypes.StoreProduct
   variantId?: string
+  countryCode?: string
 }) {
   if (!product || !product.id) {
     throw new Error('No product provided')
   }
-  
-  // Check if this is our problematic product
-  const isStoner = product.title?.includes('Conscious Stoner Jumper');
-  if (isStoner) {
-    console.log('Getting price for Conscious Stoner Jumper', {
-      productId: product.id,
-      title: product.title,
-      variantId
-    });
-  }
 
   const cheapestPrice = () => {
-    if (!product.variants?.length) {
-      return null;
+    // If no variants, return null
+    if (!product.variants || !product.variants.length) {
+      return null
     }
 
-    // Get prices for all variants (using cache where possible)
-    const variantsWithPrices = product.variants
-      .map(v => {
-        const priceData = getPricesForVariant(v, product)
+    // Get prices for all variants
+    const prices = product.variants
+      .map((v) => {
+        const price = getPricesForVariant(v, countryCode)
+        if (!price) return null
         return {
-          variant: v,
-          priceData
+          ...price,
+          variant_id: v.id,
         }
       })
-      .filter(v => v.priceData !== null)
+      .filter(Boolean)
 
-    if (variantsWithPrices.length === 0) {
-      return null;
+    // If no prices, return null
+    if (!prices.length) {
+      return null
     }
 
-    // Sort by price and take the cheapest - simplified to improve performance
-    const sorted = [...variantsWithPrices].sort(
-      (a, b) => {
-        const aPrice = a.priceData?.calculated_price_number ?? Infinity
-        const bPrice = b.priceData?.calculated_price_number ?? Infinity
-        return aPrice - bPrice
+    // Find the cheapest price
+    const cheapest = prices.reduce((acc, curr) => {
+      if (
+        acc.calculated_price_number === undefined ||
+        curr.calculated_price_number < acc.calculated_price_number
+      ) {
+        return curr
       }
-    )
-    
-    return {
-      variantId: sorted[0].variant.id,
-      price: sorted[0].priceData,
-    }
+      return acc
+    })
+
+    return cheapest
   }
 
-  // Find cheapest price across all variants
-  const cheapest = cheapestPrice()
-
-  // Find price for specific variant if variantId is provided
   const variantPriceData = () => {
-    if (!variantId) {
-      return cheapest?.price || null
+    // If no variants or no variantId, return null
+    if (!product.variants || !product.variants.length || !variantId) {
+      return null
     }
 
+    // Find the variant
     const variant = product.variants.find((v) => v.id === variantId)
-
     if (!variant) {
-      return cheapest?.price || null
+      return null
     }
 
-    const price = getPricesForVariant(variant, product)
-
+    // Get price for the variant
+    const price = getPricesForVariant(variant, countryCode)
     if (!price) {
-      return cheapest?.price || null
+      return null
     }
 
-    if (isStoner) {
-      console.log('Stoner variant price result:', {
-        price,
-        currencyCode: price.currency_code,
-        calculatedPrice: price.calculated_price
-      });
+    return {
+      ...price,
+      variant_id: variant.id,
     }
-
-    return price
   }
 
-  const result = {
-    product,
-    cheapestPrice: cheapest?.price || null,
-    variantPrice: variantPriceData(),
+  // Get the cheapest price and the variant price
+  const cheapest = cheapestPrice()
+  const variant = variantPriceData()
+
+  return {
+    cheapestPrice: cheapest,
+    variantPrice: variant,
   }
-  
-  if (isStoner) {
-    console.log('Final price result for Stoner:', {
-      cheapestPrice: result.cheapestPrice ? {
-        currency: result.cheapestPrice.currency_code,
-        price: result.cheapestPrice.calculated_price
-      } : null,
-      variantPrice: result.variantPrice ? {
-        currency: result.variantPrice.currency_code,
-        price: result.variantPrice.calculated_price
-      } : null
-    });
-  }
-  
-  return result
 }

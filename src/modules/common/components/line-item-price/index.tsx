@@ -1,8 +1,10 @@
+"use client"
 import React from 'react'
+import { useParams } from 'next/navigation'
 
 import { cn } from '@lib/util/cn'
 import { getPercentageDiff } from '@lib/util/get-precentage-diff'
-import { getPricesForVariant } from '@lib/util/get-product-price'
+import { getPricesForVariant, getCurrencyFromCountry } from '@lib/util/get-product-price'
 import { convertToLocale } from '@lib/util/money'
 import { HttpTypes } from '@medusajs/types'
 
@@ -26,8 +28,13 @@ const LineItemPrice = ({
   className,
   style = 'default',
 }: LineItemPriceProps) => {
+  // Get country code from URL params
+  const { countryCode } = useParams();
+  const targetCurrency = getCurrencyFromCountry(countryCode as string);
+
+  
   // Try to get prices from variant first
-  const prices = getPricesForVariant(item.variant) as PriceValues | null;
+  const prices = getPricesForVariant(item.variant, countryCode as string) as PriceValues | null;
   
   // Check for direct unit_price from enrichLineItems
   const hasValidUnitPrice = typeof item.unit_price === 'number' && 
@@ -54,7 +61,7 @@ const LineItemPrice = ({
   }
   
   // Use optional chaining and nullish coalescing for safer access with fallbacks
-  const currency_code = prices?.currency_code ?? 'GBP';
+  const currency_code = prices?.currency_code ?? targetCurrency;
   const calculated_price_number = hasValidVariantPrice ? prices.calculated_price_number : 
                                  (hasValidUnitPrice ? item.unit_price : 0);
   const original_price_number = prices?.original_price_number ?? calculated_price_number;
@@ -89,7 +96,7 @@ const LineItemPrice = ({
             >
               {convertToLocale({
                 amount: originalPrice,
-                currency_code,
+                currency_code
               })}
             </Text>
           </div>
@@ -103,7 +110,7 @@ const LineItemPrice = ({
       <span className="text-lg text-black" data-testid="product-price">
         {convertToLocale({
           amount: currentPrice,
-          currency_code,
+          currency_code
         })}
       </span>
     </div>

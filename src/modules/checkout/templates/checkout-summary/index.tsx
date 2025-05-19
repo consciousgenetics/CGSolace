@@ -1,5 +1,6 @@
 'use client'
 
+import { Label, Textarea } from '@medusajs/ui'
 import ItemsPreviewTemplate from '@modules/cart/templates/preview'
 import DiscountCode from '@modules/checkout/components/discount-code'
 import PaymentButton from '@modules/checkout/components/payment-button'
@@ -7,7 +8,7 @@ import { Box } from '@modules/common/components/box'
 import CartTotals from '@modules/common/components/cart-totals'
 import LocalizedClientLink from '@modules/common/components/localized-client-link'
 import { Text } from '@modules/common/components/text'
-import { useEffect, useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
 const CheckoutSummary = ({
   cart,
@@ -16,6 +17,7 @@ const CheckoutSummary = ({
   cart: any
   searchParams: { step?: string }
 }) => {
+    const [comment, setComment] = useState<string>('');
   // Check if all required shipping profiles have methods selected
   const allShippingProfilesSatisfied = useMemo(() => {
     if (!cart || !cart.items || cart.items.length === 0) return false
@@ -98,6 +100,14 @@ const CheckoutSummary = ({
       <Box className="sticky top-8 flex flex-col gap-y-4">
         <ItemsPreviewTemplate items={cart?.items} />
         <DiscountCode cart={cart} />
+         {
+            showPaymentButton && (
+              <Box className='flex flex-col gap-1 p-2 bg-white'>
+                <Label className="text-primary">Add a comment</Label>
+                  <Textarea value={comment} onChange={(e) => setComment(e.target.value)} placeholder="Your comment here.." className="w-full bg-white p-2" />
+              </Box>
+            )
+          }
         <Box className="flex flex-col gap-5 bg-primary p-5">
           <CartTotals totals={cart} />
           {!showPaymentButton && cart?.shipping_methods && cart.shipping_methods.length > 0 && !allShippingProfilesSatisfied && (
@@ -108,9 +118,10 @@ const CheckoutSummary = ({
               </Text>
             </div>
           )}
+         
           {showPaymentButton && (
             <Box className="flex flex-col gap-5">
-              <PaymentButton cart={cart} data-testid="submit-order-button" />
+              <PaymentButton cart={cart} data-testid="submit-order-button" comment={comment} />
               <Box className="flex w-full">
                 <Text className="text-center text-sm text-secondary">
                   By clicking the Place order button, you confirm that you have

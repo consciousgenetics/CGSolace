@@ -11,11 +11,13 @@ import ErrorMessage from '../error-message'
 type PaymentButtonProps = {
   cart: HttpTypes.StoreCart
   'data-testid': string
+  comment?: string
 }
 
 const PaymentButton: React.FC<PaymentButtonProps> = ({
   cart,
   'data-testid': dataTestId,
+  comment
 }) => {
   const router = useRouter()
   const [submitting, setSubmitting] = useState(false)
@@ -54,7 +56,7 @@ const PaymentButton: React.FC<PaymentButtonProps> = ({
     try {
       // Use a try-catch inside a try-catch to handle potential NEXT_REDIRECT errors
       try {
-        const result = await placeOrder()
+        const result = await placeOrder(comment)
         
         if (result.success && result.orderId) {
           // Use client-side navigation to redirect to order confirmation

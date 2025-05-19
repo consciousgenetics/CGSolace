@@ -1,9 +1,11 @@
 'use client'
 
 import React from 'react'
+import { useParams } from 'next/navigation'
 
 import { Box } from '@modules/common/components/box'
 import { convertToLocale } from '@lib/util/money'
+import { getCurrencyFromCountry } from '@lib/util/get-product-price'
 import { HttpTypes } from '@medusajs/types'
 import { Text } from '@modules/common/components/text'
 
@@ -12,6 +14,10 @@ type CartTotalsProps = {
 }
 
 const CartTotals: React.FC<CartTotalsProps> = ({ totals }) => {
+  // Get country code from URL params
+  const { countryCode } = useParams();
+  const currency = getCurrencyFromCountry(countryCode as string);
+
   const {
     total,
     tax_total,
@@ -103,7 +109,10 @@ const CartTotals: React.FC<CartTotalsProps> = ({ totals }) => {
             data-value={gbpSubtotal}
             className="text-lg text-black"
           >
-            {convertToLocale({ amount: gbpSubtotal, currency_code: 'gbp' })}
+            {convertToLocale({ 
+              amount: gbpSubtotal, 
+              currency_code: currency
+            })}
           </span>
         </Box>
         {!!discount_total && (
@@ -115,7 +124,10 @@ const CartTotals: React.FC<CartTotalsProps> = ({ totals }) => {
               data-value={discount_total}
             >
               -{' '}
-              {convertToLocale({ amount: discount_total || 0, currency_code: 'gbp' })}
+              {convertToLocale({ 
+                amount: discount_total || 0, 
+                currency_code: currency
+              })}
             </span>
           </Box>
         )}
@@ -125,7 +137,10 @@ const CartTotals: React.FC<CartTotalsProps> = ({ totals }) => {
             className="text-lg text-black"
             data-value={shipping_total}
           >
-            {convertToLocale({ amount: shipping_total || 0, currency_code: 'gbp' })}
+            {convertToLocale({ 
+              amount: shipping_total || 0, 
+              currency_code: currency
+            })}
           </span>
         </Box>
         <Box className="flex items-center justify-between">
@@ -134,7 +149,10 @@ const CartTotals: React.FC<CartTotalsProps> = ({ totals }) => {
             data-value={tax_total}
             className="text-lg text-black"
           >
-            {convertToLocale({ amount: tax_total || 0, currency_code: 'gbp' })}
+            {convertToLocale({ 
+              amount: tax_total || 0, 
+              currency_code: currency
+            })}
           </span>
         </Box>
       </Box>
@@ -142,7 +160,10 @@ const CartTotals: React.FC<CartTotalsProps> = ({ totals }) => {
       <Box className="flex items-center justify-between text-lg text-black">
         <span>Total</span>
         <span data-value={gbpTotal}>
-          {convertToLocale({ amount: gbpTotal, currency_code: 'gbp' })}
+          {convertToLocale({ 
+            amount: gbpTotal, 
+            currency_code: currency
+          })}
         </span>
       </Box>
     </Box>

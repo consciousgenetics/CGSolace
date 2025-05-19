@@ -175,6 +175,9 @@ export function ProductTile({
     thumbnail: string
     calculatedPrice: string
     salePrice: string
+    priceNumber?: number
+    salePriceNumber?: number
+    currencyCode?: string
     category?: ProductCategory
     description?: string | null
     variants?: any[]
@@ -331,13 +334,13 @@ export function ProductTile({
                     {'BUY NOW'}
                   </span>
                   <div className="h-4 w-px bg-gray-200"></div>
-                  <span className={`font-medium text-sm xs:text-base font-latto ${
-                    product.category?.title?.toLowerCase().includes('merch')
-                      ? 'text-[#d67bef]'
-                      : 'text-[#FDD729]'
-                  }`}>
-                    {product.calculatedPrice}
-                  </span>
+                  <ProductPrice 
+                    calculatedPrice={product.calculatedPrice}
+                    salePrice={product.salePrice}
+                    priceNumber={product.priceNumber}
+                    salePriceNumber={product.salePriceNumber}
+                    currencyCode={product.currencyCode}
+                  />
                 </div>
               </div>
             </Box>

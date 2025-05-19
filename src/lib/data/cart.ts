@@ -456,13 +456,17 @@ export async function setAddresses(currentState: unknown, formData: FormData) {
   )
 }
 
-export async function placeOrder() {
+export async function placeOrder(comment: any) {
   const cartId = await getCartId()
   if (!cartId) {
     throw new Error('No existing cart found when placing an order')
   }
 
   const authHeaders = await getAuthHeaders()
+
+
+    await updateCart({ metadata: {comment} })
+
 
   const cartRes = await sdk.store.cart
     .complete(cartId, {}, authHeaders)
