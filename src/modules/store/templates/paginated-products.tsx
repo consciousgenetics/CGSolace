@@ -163,9 +163,10 @@ export default function PaginatedProducts({
               );
             }
 
-            // Otherwise calculate the price
+            // Otherwise calculate the price - Now passing the countryCode parameter
             const { cheapestPrice } = getProductPrice({
               product: p,
+              countryCode: countryCode
             });
 
             console.log('Calculated new price:', {

@@ -104,7 +104,12 @@ const CheckoutSummary = ({
             showPaymentButton && (
               <Box className='flex flex-col gap-1 p-2 bg-white'>
                 <Label className="text-primary">Add a comment</Label>
-                  <Textarea value={comment} onChange={(e) => setComment(e.target.value)} placeholder="Your comment here.." className="w-full bg-white p-2" />
+                  <Textarea 
+                    value={comment} 
+                    onChange={(e) => setComment(e.target.value)} 
+                    placeholder="Your comment here.." 
+                    className="w-full bg-white p-2 text-black" 
+                  />
               </Box>
             )
           }
