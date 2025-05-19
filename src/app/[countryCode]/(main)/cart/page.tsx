@@ -11,9 +11,9 @@ export const metadata: Metadata = {
   description: 'View your cart',
 }
 
-const fetchCart = async () => {
-  // Always use UK region
-  const cart = await getOrSetCart('uk')
+const fetchCart = async (countryCode: string) => {
+  // Use the country code from URL params
+  const cart = await getOrSetCart(countryCode)
 
   if (!cart) {
     return null
@@ -31,10 +31,11 @@ export default async function Cart(props: {
   params: Promise<{ countryCode: string }>
 }) {
   const params = await props.params
-  const cart = await fetchCart()
+  const { countryCode } = params
+  const cart = await fetchCart(countryCode)
   
-  // Always use UK region
-  const region = await getRegion('uk')
+  // Use the country code from URL params
+  const region = await getRegion(countryCode)
 
   return (
     <Container className="max-w-full bg-secondary !p-0">

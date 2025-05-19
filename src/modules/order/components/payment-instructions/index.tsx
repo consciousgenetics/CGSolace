@@ -2,18 +2,25 @@ import { HttpTypes } from '@medusajs/types'
 import { Box } from '@modules/common/components/box'
 import { Heading } from '@modules/common/components/heading'
 import { Text } from '@modules/common/components/text'
+import { convertToLocale } from '@lib/util/money'
+import { getCurrencyFromCountry } from '@lib/util/get-product-price'
 
 type PaymentInstructionsProps = {
   order: HttpTypes.StoreOrder & { status: string }
 }
 
 const PaymentInstructions = ({ order }: PaymentInstructionsProps) => {
+  // Get the currency code from the region or order
+  const currencyCode = order.currency_code || 'GBP'
+  
   // Format the total amount with currency
   const formatAmount = (amount: number | null | undefined) => {
     if (amount === null || amount === undefined) return "N/A"
     
-    // Don't divide by 100 - display the full amount
-    return `£${amount.toFixed(2)}`
+    return convertToLocale({
+      amount: amount,
+      currency_code: currencyCode
+    })
   }
 
   const formattedAmount = formatAmount(order.total)
