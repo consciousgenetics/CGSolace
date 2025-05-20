@@ -3,6 +3,7 @@ import type { Metadata } from 'next'
 import { Suspense } from 'react'
 import { getBaseURL } from '@lib/util/env'
 import NavWrapper from '@modules/layout/templates/nav'
+import { CartInitializer } from '@modules/cart/components/cart-initializer'
 
 export const metadata: Metadata = {
   metadataBase: new URL(getBaseURL()),
@@ -20,6 +21,10 @@ export default async function PageLayout({
   return (
     <>
       <NavWrapper countryCode={countryCode} />
+      {/* Client component to initialize cart if needed */}
+      <Suspense fallback={null}>
+        <CartInitializer />
+      </Suspense>
       <Suspense>
         <main 
           id="content"

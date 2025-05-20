@@ -91,19 +91,32 @@ export const getProductsList = async function ({
   const region = await getRegion(countryCode);
 
   if (!region) {
+    console.error(`getProductsList: No region found for country code ${countryCode}`);
     return {
       response: { products: [], count: 0 },
       nextPage: null,
       queryParams,
     };
   }
+  
+  console.log(`getProductsList: Fetching products for country ${countryCode}, region ID ${region.id}, currency ${region.currency_code || 'unknown'}`);
+
+  // Explicitly specify detailed field list to ensure we get all the data we need
+  const fieldsString = 
+    '*images,*thumbnail,' +
+    '*variants.calculated_price,' +
+    '+variants.inventory_quantity,' +
+    '*variants,' +
+    '*variants.prices,' + // Explicitly include price data
+    '*categories,' +
+    '+metadata';
 
   return sdk.store.product
     .list({
       limit: queryParams?.limit || 12,
       offset: pageParam,
       region_id: region.id,
-      fields: '*images,*thumbnail,*variants.calculated_price,+variants.inventory_quantity,*variants,*variants.prices,*categories,+metadata',
+      fields: fieldsString,
       ...(queryParams || {}),
     }, {
       next: { tags: ['products'] }
@@ -116,6 +129,42 @@ export const getProductsList = async function ({
         thumbnail: p.thumbnail,
         imageCount: p.images?.length || 0
       })));
+      
+      // Debug prices for specific products
+      const productsWithPricingIssues = products.filter(p => 
+        p.title && p.title.includes('Red Kachina')
+      );
+      
+      if (productsWithPricingIssues.length > 0) {
+        console.log(`Found ${productsWithPricingIssues.length} products that might have pricing issues:`, 
+          productsWithPricingIssues.map(p => p.title).join(', '));
+          
+        productsWithPricingIssues.forEach(p => {
+          console.log(`Price debug for ${p.title}:`);
+          if (p.variants) {
+            p.variants.forEach((v, i) => {
+              console.log(`Variant ${i+1} (${v.id}):`);
+              
+              // Check for calculated price
+              if (v.calculated_price) {
+                console.log(`- Calculated price: ${v.calculated_price.calculated_amount} ${v.calculated_price.currency_code}`);
+              } else {
+                console.log(`- No calculated price`);
+              }
+              
+              // Check for price array
+              const variantAny = v as any; // Type assertion to access prices
+              if (variantAny.prices && variantAny.prices.length > 0) {
+                console.log(`- Prices: `, variantAny.prices.map((price: any) => 
+                  `${price.amount} ${price.currency_code}`
+                ));
+              } else {
+                console.log(`- No prices array`);
+              }
+            });
+          }
+        });
+      }
 
       return {
         response: {

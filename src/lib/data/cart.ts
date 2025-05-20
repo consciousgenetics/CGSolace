@@ -47,9 +47,9 @@ export async function getOrSetCart(countryCode: string) {
     )
     cart = cartResp.cart
     
-    // Instead of directly setting the cart ID here, just revalidate the tag
-    // The cookie will be set via API in a client component
-    revalidateTag('cart')
+    // Save the cart ID to cookies instead of revalidating here
+    await setCartId(cart.id)
+    // Don't call revalidateTag during rendering
   }
 
   if (cart && cart?.region_id !== region.id) {
@@ -61,7 +61,7 @@ export async function getOrSetCart(countryCode: string) {
       {},
       authHeaders
     )
-    revalidateTag('cart')
+    // Don't call revalidateTag during rendering
   }
 
   return cart
@@ -456,13 +456,71 @@ export async function setAddresses(currentState: unknown, formData: FormData) {
   )
 }
 
-export async function placeOrder() {
+export async function placeOrder(comment: any) {
   const cartId = await getCartId()
   if (!cartId) {
     throw new Error('No existing cart found when placing an order')
   }
 
   const authHeaders = await getAuthHeaders()
+
+  // Get the cart first to validate shipping methods
+  const cartResponse = await sdk.store.cart.retrieve(cartId, {}, authHeaders)
+    .catch(medusaError);
+    
+  const cart = cartResponse.cart;
+  
+  // Validate that all required shipping profiles have shipping methods assigned
+  if (cart.items && cart.items.length > 0) {
+    // Extract required profile IDs from cart items
+    const requiredProfileIds = new Set(
+      cart.items
+        .filter((item: any) => item.variant?.product?.shipping_profile_id)
+        .map((item: any) => item.variant.product.shipping_profile_id)
+    );
+    
+    // If there are required profiles, check if they have shipping methods
+    if (requiredProfileIds.size > 0) {
+      // Get shipping profile IDs covered by selected shipping methods
+      const selectedProfileIds = new Set();
+      
+      // For each shipping method, try to find which profile it covers
+      (cart.shipping_methods || []).forEach((method: any) => {
+        // For each item with a shipping profile
+        cart.items.forEach((item: any) => {
+          if (item.variant?.product?.shipping_profile_id) {
+            // If this item's shipping methods include the current method
+            if (item.shipping_methods && item.shipping_methods.some(
+              (sm: any) => sm.shipping_option_id === method.shipping_option_id
+            )) {
+              selectedProfileIds.add(item.variant.product.shipping_profile_id);
+            }
+          }
+        });
+      });
+      
+      // Debug information
+      console.log('Shipping profile validation:', {
+        required: Array.from(requiredProfileIds),
+        selected: Array.from(selectedProfileIds)
+      });
+      
+      // Check if any required profiles are missing shipping methods
+      const missingProfiles = Array.from(requiredProfileIds)
+        .filter(id => !selectedProfileIds.has(id));
+        
+      if (missingProfiles.length > 0) {
+        throw new Error(
+          'The cart items require shipping profiles that are not satisfied by the current shipping methods'
+        );
+      }
+    }
+  }
+
+  // Add comment to cart metadata if provided
+  if (comment) {
+    await updateCart({ metadata: {comment} })
+  }
 
   const cartRes = await sdk.store.cart
     .complete(cartId, {}, authHeaders)
@@ -509,4 +567,10 @@ export async function updateRegion(countryCode: string, currentPath: string) {
   revalidateTag('products')
 
   redirect(`/${countryCode}${currentPath}`)
+}
+
+// Create a separate action function for revalidation
+export async function refreshCartCache() {
+  'use server'
+  revalidateTag('cart')
 }

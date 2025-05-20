@@ -11,11 +11,13 @@ import ErrorMessage from '../error-message'
 type PaymentButtonProps = {
   cart: HttpTypes.StoreCart
   'data-testid': string
+  comment?: string
 }
 
 const PaymentButton: React.FC<PaymentButtonProps> = ({
   cart,
   'data-testid': dataTestId,
+  comment
 }) => {
   const router = useRouter()
   const [submitting, setSubmitting] = useState(false)
@@ -54,7 +56,7 @@ const PaymentButton: React.FC<PaymentButtonProps> = ({
     try {
       // Use a try-catch inside a try-catch to handle potential NEXT_REDIRECT errors
       try {
-        const result = await placeOrder()
+        const result = await placeOrder(comment)
         
         if (result.success && result.orderId) {
           // Use client-side navigation to redirect to order confirmation
@@ -89,7 +91,10 @@ const PaymentButton: React.FC<PaymentButtonProps> = ({
       
       // Provide more user-friendly error messages
       if (err.message && err.message.includes('shipping profiles')) {
-        setErrorMessage('Some items in your cart require different shipping methods. Please go back to the delivery step and select all required shipping methods.')
+        setErrorMessage(
+          'Your cart contains different types of products that require separate shipping methods. ' +
+          'Please go back to the delivery step and make sure you select a shipping option for each product type.'
+        )
       } else {
         setErrorMessage(err.message || 'An error occurred while placing your order. Please try again.')
       }

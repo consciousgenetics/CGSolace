@@ -43,8 +43,14 @@
           disclaimer.style.fontWeight = 'bold';
           disclaimer.style.textAlign = 'center';
           
-          // Add content
-          disclaimer.textContent = '⚠️ Will ship near seed drop date';
+          // Add content - removed the shipping warning
+          disclaimer.textContent = '';
+          
+          // Don't add empty disclaimer
+          if (disclaimer.textContent.trim() === '') {
+            console.log("No disclaimer text, skipping");
+            return;
+          }
           
           // Insert after the product variant info
           const variantElement = titleContainer.querySelector('[data-testid="product-variant"]');

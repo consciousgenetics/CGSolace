@@ -1,6 +1,7 @@
 import { Metadata } from 'next'
+import { unstable_noStore as noStore } from 'next/cache'
 
-import { enrichLineItems, retrieveCart, getOrSetCart } from '@lib/data/cart'
+import { enrichLineItems, retrieveCart } from '@lib/data/cart'
 import { getRegion } from '@lib/data/regions'
 import CartTemplate from '@modules/cart/templates'
 import { Container } from '@modules/common/components/container'
@@ -11,20 +12,31 @@ export const metadata: Metadata = {
   description: 'View your cart',
 }
 
-const fetchCart = async () => {
-  // Always use UK region
-  const cart = await getOrSetCart('uk')
+// Make sure this page is dynamically rendered
+export const dynamic = 'force-dynamic'
 
-  if (!cart) {
+const fetchCart = async () => {
+  // Mark this component as uncacheable
+  noStore()
+  
+  try {
+    // Use retrieveCart instead of getOrSetCart to avoid revalidation during render
+    const cart = await retrieveCart()
+
+    if (!cart) {
+      return null
+    }
+
+    if (cart?.items?.length) {
+      const enrichedItems = await enrichLineItems(cart?.items, cart?.region_id)
+      cart.items = enrichedItems as HttpTypes.StoreCartLineItem[]
+    }
+
+    return cart
+  } catch (error) {
+    console.error("Error fetching cart:", error)
     return null
   }
-
-  if (cart?.items?.length) {
-    const enrichedItems = await enrichLineItems(cart?.items, cart?.region_id)
-    cart.items = enrichedItems as HttpTypes.StoreCartLineItem[]
-  }
-
-  return cart
 }
 
 export default async function Cart(props: {

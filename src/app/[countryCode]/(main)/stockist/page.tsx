@@ -21,7 +21,7 @@ export default function StockistPage() {
             </Heading>
             
             <Text className="mb-10 text-lg text-center text-gray-300">
-              Lawz to share them - Our authorized distributors across Europe and Asia
+              
             </Text>
 
             <style jsx global>{`

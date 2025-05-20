@@ -75,26 +75,26 @@ const Shipping: React.FC<ShippingProps> = ({
       }
     })
 
-    // Also add profile IDs from existing shipping methods
-    cart.shipping_methods?.forEach(method => {
-      const option = availableShippingMethods?.find(
-        opt => opt.id === method.shipping_option_id
-      )
-      if (option?.shipping_profile_id) {
-        profiles.add(option.shipping_profile_id)
-      }
-    })
-    
     // If there are shipping options but no profiles detected,
     // add at least one profile from the options to ensure something is selected
     if (profiles.size === 0 && availableShippingMethods && availableShippingMethods.length > 0) {
-      // Find a default shipping profile to use
-      const defaultProfile = availableShippingMethods[0].shipping_profile_id
-      profiles.add(defaultProfile)
+      // Find all unique profile IDs from available shipping options
+      const availableProfiles = new Set<string>()
+      availableShippingMethods.forEach(method => {
+        if (method.shipping_profile_id) {
+          availableProfiles.add(method.shipping_profile_id)
+        }
+      })
+      
+      // Add all available profiles to required profiles
+      availableProfiles.forEach(profileId => profiles.add(profileId))
+      
+      console.log(`No profiles detected from items, using ${profiles.size} profiles from available options:`, 
+        Array.from(profiles))
     }
     
     return profiles
-  }, [cart?.items, cart.shipping_methods, availableShippingMethods])
+  }, [cart?.items, availableShippingMethods])
 
   // Initialize selected methods from cart - more efficiently
   useEffect(() => {

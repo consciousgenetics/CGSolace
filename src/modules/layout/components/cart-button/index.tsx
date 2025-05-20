@@ -10,12 +10,14 @@ import { useCartStore } from '@lib/store/useCartStore'
 export default function CartButton() {
   const [totalItems, setTotalItems] = useState(0)
   const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const { isCartUpdated, setCartUpdated } = useCartStore()
 
   useEffect(() => {
     const fetchCartData = async () => {
       try {
         setIsLoading(true)
+        setError(null)
         
         // Get the cart ID from the cookie via API
         const cartId = await getCartIdFromCookie()
@@ -42,14 +44,15 @@ export default function CartButton() {
         setCartUpdated(false)
       } catch (error) {
         console.error('Error fetching cart:', error)
-        setTotalItems(0)
+        setError(error instanceof Error ? error.message : 'Unknown error fetching cart')
+        // Keep previous total if there was an error
       } finally {
         setIsLoading(false)
       }
     }
 
     // Helper function to fetch cart details using cartId
-    const fetchCartDetails = async (cartId) => {
+    const fetchCartDetails = async (cartId: string, retryCount = 0) => {
       if (!cartId) return null
       
       try {
@@ -61,14 +64,32 @@ export default function CartButton() {
         })
         
         if (!response.ok) {
-          throw new Error('Failed to fetch cart details')
+          const errorData = await response.json().catch(() => ({}))
+          console.error('Cart details response not OK:', response.status, errorData)
+          
+          // If server error and we haven't tried too many times, retry
+          if (response.status >= 500 && retryCount < 2) {
+            console.log(`Retrying cart details fetch (attempt ${retryCount + 1})`)
+            await new Promise(resolve => setTimeout(resolve, 1000)) // Wait 1 second
+            return fetchCartDetails(cartId, retryCount + 1)
+          }
+          
+          throw new Error(errorData.error || `Failed to fetch cart details: ${response.status}`)
         }
         
         const data = await response.json()
         return data.cart
       } catch (error) {
         console.error('Error fetching cart details:', error)
-        return null
+        
+        // If network error and we haven't tried too many times, retry
+        if (error instanceof TypeError && retryCount < 2) {
+          console.log(`Retrying cart details fetch after network error (attempt ${retryCount + 1})`)
+          await new Promise(resolve => setTimeout(resolve, 1000)) // Wait 1 second
+          return fetchCartDetails(cartId, retryCount + 1)
+        }
+        
+        throw error
       }
     }
 

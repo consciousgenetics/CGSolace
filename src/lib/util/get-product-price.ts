@@ -31,6 +31,41 @@ export const clearPriceCache = (variantId: string) => {
   return false
 }
 
+// Helper function to normalize currency codes for case-insensitive comparison
+export const normalizeCurrency = (currency: string): string => {
+  return (currency || '').toUpperCase();
+};
+
+// Currency conversion rates for fallback scenarios
+// These rates should be updated regularly in a production environment
+const conversionRates = {
+  'EUR_GBP': 0.85,
+  'USD_GBP': 0.77,
+  'GBP_EUR': 1.18,
+  'USD_EUR': 0.91,
+  'GBP_USD': 1.30,
+  'EUR_USD': 1.10
+};
+
+// Helper to convert amount between currencies
+const convertCurrency = (amount: number, fromCurrency: string, toCurrency: string): number => {
+  // Normalize currency codes to uppercase
+  const fromCurrencyNormalized = normalizeCurrency(fromCurrency);
+  const toCurrencyNormalized = normalizeCurrency(toCurrency);
+  
+  if (fromCurrencyNormalized === toCurrencyNormalized) return amount;
+  
+  const rateKey = `${fromCurrencyNormalized}_${toCurrencyNormalized}`;
+  const rate = conversionRates[rateKey];
+  
+  if (!rate) {
+    console.warn(`No conversion rate found for ${rateKey}, using 1:1 ratio`);
+    return amount;
+  }
+  
+  return amount * rate;
+};
+
 export const getPricesForVariant = (variant: any, countryCode?: string) => {
   if (!variant) {
     return null
@@ -42,31 +77,101 @@ export const getPricesForVariant = (variant: any, countryCode?: string) => {
   // Create a cache key that includes the country code
   const cacheKey = countryCode ? `${variant.id}_${countryCode}` : variant.id;
   
+  // Debug logging for price issues
+  const debugVariant = variant.id.startsWith('variant_') && variant.id.length > 15;
+  
+  if (debugVariant) {
+    console.log(`Price debug for variant ${variant.id} with country ${countryCode}:`);
+    console.log(`- Target currency: ${targetCurrency}`);
+    if (variant.prices) {
+      console.log(`- Available prices: ${JSON.stringify(variant.prices.map((p: any) => ({ 
+        currency: p.currency_code, 
+        amount: p.amount 
+      })))}`);
+    }
+  }
+  
   if (cacheKey && priceCache.has(cacheKey)) {
+    if (debugVariant) console.log(`- Using cached price for ${cacheKey}`);
     return priceCache.get(cacheKey)
   }
 
   // If we have prices array, find the right price for this country
   if (variant.prices && variant.prices.length > 0) {
-    // Find a price matching the target currency
-    const price = variant.prices.find(p => 
-      p.currency_code?.toUpperCase() === targetCurrency
-    );
+    // For GB locale (GBP), first try to find an exact GBP price before anything else
+    if (normalizeCurrency(targetCurrency) === 'GBP') {
+      // Find ALL GBP prices and pick the lowest one
+      const gbpPrices = variant.prices
+        .filter((p: any) => normalizeCurrency(p.currency_code) === 'GBP')
+        .filter((p: any) => typeof p.amount === 'number' && !isNaN(p.amount));
+      
+      if (gbpPrices.length > 0) {
+        // Sort by amount and take the lowest
+        const lowestGbpPrice = gbpPrices.sort((a: any, b: any) => a.amount - b.amount)[0];
+        
+        if (debugVariant) {
+          if (gbpPrices.length > 1) {
+            console.log(`- Found ${gbpPrices.length} GBP prices, using lowest: ${lowestGbpPrice.amount}`);
+          } else {
+            console.log(`- Found GBP price: ${lowestGbpPrice.amount}`);
+          }
+        }
+        
+        const result = {
+          calculated_price_number: lowestGbpPrice.amount,
+          calculated_price: convertToLocale({
+            amount: lowestGbpPrice.amount,
+            currency_code: 'GBP'
+          }),
+          original_price_number: lowestGbpPrice.amount,
+          original_price: convertToLocale({
+            amount: lowestGbpPrice.amount,
+            currency_code: 'GBP'
+          }),
+          currency_code: 'GBP',
+          price_type: null,
+          percentage_diff: 0
+        }
+        
+        // Cache the result
+        if (cacheKey) priceCache.set(cacheKey, result)
+        
+        return result
+      }
+      
+      if (debugVariant) console.log(`- No GBP price found, will try fallbacks`);
+    }
+    
+    // Find all prices matching the target currency (case insensitive)
+    const matchingPrices = variant.prices
+      .filter((p: any) => normalizeCurrency(p.currency_code) === normalizeCurrency(targetCurrency))
+      .filter((p: any) => typeof p.amount === 'number' && !isNaN(p.amount));
     
     // Use the matching price if found
-    if (price && typeof price.amount === 'number' && !isNaN(price.amount)) {
+    if (matchingPrices.length > 0) {
+      // Sort by amount and take the lowest price
+      const lowestPrice = matchingPrices.sort((a: any, b: any) => a.amount - b.amount)[0];
+      
+      if (debugVariant) {
+        if (matchingPrices.length > 1) {
+          console.log(`- Found ${matchingPrices.length} ${targetCurrency} prices, using lowest: ${lowestPrice.amount}`);
+        } else {
+          console.log(`- Found matching price in ${lowestPrice.currency_code}: ${lowestPrice.amount}`);
+        }
+      }
+      
       const result = {
-        calculated_price_number: price.amount,
+        calculated_price_number: lowestPrice.amount,
         calculated_price: convertToLocale({
-          amount: price.amount,
-          currency_code: price.currency_code
+          amount: lowestPrice.amount,
+          currency_code: targetCurrency
         }),
-        original_price_number: price.amount,
+        original_price_number: lowestPrice.amount,
         original_price: convertToLocale({
-          amount: price.amount,
-          currency_code: price.currency_code
+          amount: lowestPrice.amount,
+          currency_code: targetCurrency
         }),
-        currency_code: price.currency_code,
+        currency_code: targetCurrency,
         price_type: null,
         percentage_diff: 0
       }
@@ -77,24 +182,37 @@ export const getPricesForVariant = (variant: any, countryCode?: string) => {
       return result
     }
     
-    // If no matching currency found, use the first price
-    // but log a warning
+    // If no matching currency found, use the first available price
+    // but CONVERT THE AMOUNT to the target currency
     const fallbackPrice = variant.prices[0];
     if (fallbackPrice && typeof fallbackPrice.amount === 'number' && !isNaN(fallbackPrice.amount)) {
-      console.warn(`No price found for currency ${targetCurrency}, using fallback currency ${fallbackPrice.currency_code}`);
+      if (debugVariant) {
+        console.log(`- No exact price match for currency ${targetCurrency}, converting from ${fallbackPrice.currency_code}`);
+      }
+      
+      // Convert the amount from the fallback currency to the target currency
+      const convertedAmount = convertCurrency(
+        fallbackPrice.amount, 
+        fallbackPrice.currency_code, 
+        targetCurrency
+      );
+      
+      if (debugVariant) {
+        console.log(`- Converted ${fallbackPrice.amount} ${fallbackPrice.currency_code} to ${convertedAmount} ${targetCurrency}`);
+      }
       
       const result = {
-        calculated_price_number: fallbackPrice.amount,
+        calculated_price_number: convertedAmount,
         calculated_price: convertToLocale({
-          amount: fallbackPrice.amount,
-          currency_code: fallbackPrice.currency_code
+          amount: convertedAmount,
+          currency_code: targetCurrency
         }),
-        original_price_number: fallbackPrice.amount,
+        original_price_number: convertedAmount,
         original_price: convertToLocale({
-          amount: fallbackPrice.amount,
-          currency_code: fallbackPrice.currency_code
+          amount: convertedAmount,
+          currency_code: targetCurrency
         }),
-        currency_code: fallbackPrice.currency_code,
+        currency_code: targetCurrency,
         price_type: null,
         percentage_diff: 0
       }
@@ -108,10 +226,12 @@ export const getPricesForVariant = (variant: any, countryCode?: string) => {
 
   // Try calculated price as last resort
   if (variant.calculated_price) {
+    if (debugVariant) console.log(`- Using calculated_price as fallback`);
+    
     const calculatedAmount = variant.calculated_price.calculated_amount
     const originalAmount = variant.calculated_price.original_amount ?? calculatedAmount
-    const currencyCode = variant.calculated_price.currency_code ?? targetCurrency
-
+    const srcCurrencyCode = variant.calculated_price.currency_code
+    
     // Ensure amounts are valid numbers - be more permissive
     const validCalculatedAmount = typeof calculatedAmount === 'number' && !isNaN(calculatedAmount) ? 
       calculatedAmount : null
@@ -119,20 +239,42 @@ export const getPricesForVariant = (variant: any, countryCode?: string) => {
       originalAmount : validCalculatedAmount
 
     if (validCalculatedAmount !== null) {
+      // If source currency is different from target, convert the amount
+      let finalCalculatedAmount = validCalculatedAmount;
+      let finalOriginalAmount = validOriginalAmount || validCalculatedAmount;
+      
+      if (srcCurrencyCode && normalizeCurrency(srcCurrencyCode) !== normalizeCurrency(targetCurrency)) {
+        if (debugVariant) {
+          console.log(`- Converting calculated price from ${srcCurrencyCode} to ${targetCurrency}`);
+        }
+        
+        finalCalculatedAmount = convertCurrency(
+          validCalculatedAmount, 
+          srcCurrencyCode, 
+          targetCurrency
+        );
+        
+        finalOriginalAmount = convertCurrency(
+          validOriginalAmount || validCalculatedAmount,
+          srcCurrencyCode,
+          targetCurrency
+        );
+      }
+      
       const result = {
-        calculated_price_number: validCalculatedAmount,
+        calculated_price_number: finalCalculatedAmount,
         calculated_price: convertToLocale({
-          amount: validCalculatedAmount,
-          currency_code: currencyCode,
+          amount: finalCalculatedAmount,
+          currency_code: targetCurrency,
         }),
-        original_price_number: validOriginalAmount || validCalculatedAmount,
+        original_price_number: finalOriginalAmount,
         original_price: convertToLocale({
-          amount: validOriginalAmount || validCalculatedAmount,
-          currency_code: currencyCode,
+          amount: finalOriginalAmount,
+          currency_code: targetCurrency,
         }),
-        currency_code: currencyCode,
+        currency_code: targetCurrency,
         price_type: variant.calculated_price.price_list_type ?? null,
-        percentage_diff: getPercentageDiff(validOriginalAmount || 0, validCalculatedAmount),
+        percentage_diff: getPercentageDiff(finalOriginalAmount || 0, finalCalculatedAmount),
       }
       
       // Cache the result
@@ -143,6 +285,7 @@ export const getPricesForVariant = (variant: any, countryCode?: string) => {
   }
 
   // Return null when no price is available
+  if (debugVariant) console.log(`- No price available for variant ${variant.id}`);
   return null;
 }
 
@@ -182,7 +325,7 @@ export function getProductPrice({
       return null
     }
 
-    // Find the cheapest price
+    // Find the cheapest price among all prices
     const cheapest = prices.reduce((acc, curr) => {
       if (
         acc.calculated_price_number === undefined ||

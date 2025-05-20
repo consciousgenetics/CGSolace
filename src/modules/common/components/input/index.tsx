@@ -16,11 +16,14 @@ type InputProps = Omit<React.InputHTMLAttributes<HTMLInputElement>, 'size'> & {
 }
 
 export const Input = forwardRef<HTMLInputElement, InputProps>(
-  ({ type, name, label, touched, required, ...props }, ref) => {
+  ({ type, name, label, touched, required, value, ...props }, ref) => {
     const localRef = useRef<HTMLInputElement>(null)
     const [showPassword, setShowPassword] = useState(false)
     const [inputType, setInputType] = useState(type)
 
+    // Convert null values to empty string to avoid React warning
+    const safeValue = value === null ? '' : value
+    
     const handleClick = () => {
       localRef.current?.focus()
     }
@@ -67,6 +70,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             id={name}
             ref={mergeRefs(localRef, ref)}
             placeholder={props.placeholder}
+            value={safeValue}
             className="w-full touch-none !bg-transparent text-lg text-basic-primary outline-none placeholder:text-secondary focus-visible:ring-0 focus-visible:ring-offset-0 medium:text-md [.dark_&]:placeholder:text-static"
             {...props}
           />

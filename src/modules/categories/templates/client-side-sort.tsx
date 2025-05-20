@@ -1,7 +1,7 @@
 'use client'
 
 import { Suspense, useEffect, useState } from 'react'
-import { SearchedProduct } from 'types/global'
+import type { SearchedProduct } from 'types/global'
 
 import { Box } from '@modules/common/components/box'
 import { Text } from '@modules/common/components/text'
@@ -12,7 +12,7 @@ import ActiveProductFilters from '@modules/store/components/filters/active-filte
 import ProductFiltersDrawer from '@modules/store/components/filters/filters-drawer'
 import PaginatedProducts from '@modules/store/templates/paginated-products'
 
-interface ClientSideSortProps {
+type ClientSideSortProps = {
   initialProducts: {
     results: SearchedProduct[]
     count: number
@@ -45,6 +45,20 @@ export default function ClientSideSort({
       setCount(initialProducts.count);
     }
   }, [initialProducts, products])
+  
+  // Log region info for debugging price issues
+  useEffect(() => {
+    console.log(`ClientSideSort: Country: ${countryCode}, Region:`, {
+      id: region?.id,
+      currency: region?.currency_code
+    });
+    
+    // Check if region currency matches expected country currency
+    const expectedCurrency = countryCode === 'gb' ? 'GBP' : countryCode === 'us' ? 'USD' : 'EUR';
+    if (region?.currency_code && region.currency_code.toUpperCase() !== expectedCurrency) {
+      console.warn(`Currency mismatch: Region has ${region.currency_code} but expected ${expectedCurrency} for ${countryCode}`);
+    }
+  }, [countryCode, region]);
 
   return (
     <>

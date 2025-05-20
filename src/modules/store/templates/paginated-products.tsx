@@ -5,7 +5,7 @@ import { ProductTile } from '@modules/products/components/product-tile'
 import { PRODUCT_LIMIT } from '@modules/search/actions'
 import { Pagination } from '@modules/store/components/pagination'
 import { SearchedProduct } from 'types/global'
-import { getProductPrice } from '@lib/util/get-product-price'
+import { getProductPrice, getCurrencyFromCountry, clearPriceCache, normalizeCurrency } from '@lib/util/get-product-price'
 
 // Store region data in a global cache to prevent repeated fetches
 const regionCache = new Map();
@@ -53,6 +53,26 @@ function ensureValidProductData(product: any, currencyCode: string): any {
   return validatedProduct
 }
 
+// Helper to check if a product might have price issues
+function hasEuroPriceOnly(product: any): boolean {
+  if (!product || !product.variants) return false;
+  
+  // Check if the product has any GBP prices
+  const hasGbpPrice = product.variants.some((variant: any) => {
+    if (!variant.prices || !Array.isArray(variant.prices)) return false;
+    return variant.prices.some((price: any) => normalizeCurrency(price.currency_code) === 'GBP');
+  });
+  
+  // Check if the product has any EUR prices
+  const hasEurPrice = product.variants.some((variant: any) => {
+    if (!variant.prices || !Array.isArray(variant.prices)) return false;
+    return variant.prices.some((price: any) => normalizeCurrency(price.currency_code) === 'EUR');
+  });
+  
+  // Return true if the product has EUR prices but no GBP prices
+  return hasEurPrice && !hasGbpPrice;
+}
+
 export default function PaginatedProducts({
   products,
   total,
@@ -69,7 +89,31 @@ export default function PaginatedProducts({
   // Check cache first before setting initial state
   const cachedRegion = regionCache.get(countryCode);
   const [region, setRegion] = useState(regionData || cachedRegion);
+  const [previousCountryCode, setPreviousCountryCode] = useState(countryCode);
   const totalPages = Math.ceil(total / PRODUCT_LIMIT)
+  
+  // Clear price cache when country changes to force recalculation
+  useEffect(() => {
+    if (previousCountryCode !== countryCode) {
+      console.log(`Country changed from ${previousCountryCode} to ${countryCode}, clearing price cache`);
+      
+      // Clear any cached prices from previous country
+      products.forEach(product => {
+        if (product.variants) {
+          product.variants.forEach((variant: any) => {
+            if (variant && variant.id) {
+              // Clear cache for both formats of cache key
+              clearPriceCache(variant.id);
+              clearPriceCache(`${variant.id}_${previousCountryCode}`);
+              clearPriceCache(`${variant.id}_${countryCode}`);
+            }
+          });
+        }
+      });
+      
+      setPreviousCountryCode(countryCode);
+    }
+  }, [countryCode, previousCountryCode, products]);
   
   // If region data wasn't passed in, we can fetch it on the client side
   useEffect(() => {
@@ -96,9 +140,10 @@ export default function PaginatedProducts({
         })
         .catch(error => {
           if (error.name === 'AbortError') {
-            console.warn('Region fetch timed out, using default GBP');
-            // Use a default region to avoid leaving products in loading state
-            const defaultRegion = { currency_code: 'GBP', id: 'default' };
+            console.warn('Region fetch timed out, using default currency for', countryCode);
+            // Use a default region with the correct currency based on country code
+            const currency = countryCode === 'us' ? 'USD' : countryCode === 'dk' ? 'EUR' : 'GBP';
+            const defaultRegion = { currency_code: currency, id: 'default' };
             regionCache.set(countryCode, defaultRegion);
             setRegion(defaultRegion);
           } else {
@@ -116,10 +161,24 @@ export default function PaginatedProducts({
     return <div className="animate-pulse">Loading...</div>
   }
 
+  // Get the appropriate currency based on current country code
+  const expectedCurrency = getCurrencyFromCountry(countryCode);
+  console.log(`PaginatedProducts: Country code ${countryCode}, using currency ${expectedCurrency}`);
+
+  // Check for products that might have euro prices only when in GB locale
+  if (countryCode === 'gb') {
+    const euroPriceOnlyProducts = products.filter(p => hasEuroPriceOnly(p));
+    if (euroPriceOnlyProducts.length > 0) {
+      console.warn(`Found ${euroPriceOnlyProducts.length} products with EUR prices but no GBP prices:`, 
+        euroPriceOnlyProducts.map(p => p.title).join(', '));
+    }
+  }
+
   // Ensure all products have valid variants and prices - do this once
   const validatedProducts = useMemo(() => {
-    return products.map(p => ensureValidProductData(p, region.currency_code || 'GBP'));
-  }, [products, region.currency_code]);
+    // Use the expected currency based on country code, don't fall back to region.currency_code
+    return products.map(p => ensureValidProductData(p, expectedCurrency));
+  }, [products, countryCode, expectedCurrency]);
   
   return (
     <>
@@ -130,21 +189,8 @@ export default function PaginatedProducts({
         {validatedProducts.map((p) => {
           // Get the cheapest price using the getProductPrice utility function
           try {
-            console.log('PaginatedProducts - Processing product:', {
-              id: p.id,
-              title: p.title,
-              variants: p.variants,
-              calculatedPrice: p.calculatedPrice
-            });
-
             // If we already have a calculated price from the parent component, use it
             if (p.calculatedPrice && p.calculatedPrice !== "0" && p.calculatedPrice !== "Price unavailable") {
-              console.log('Using pre-calculated price:', {
-                id: p.id,
-                calculatedPrice: p.calculatedPrice,
-                salePrice: p.salePrice
-              });
-              
               return (
                 <li key={p.id}>
                   <ProductTile
@@ -163,16 +209,46 @@ export default function PaginatedProducts({
               );
             }
 
+            // For debugging problematic products
+            const debugProduct = p.title && (
+              p.title.includes('Red Kachina') || 
+              hasEuroPriceOnly(p)
+            );
+
+            if (debugProduct && countryCode === 'gb') {
+              console.log(`Debugging price for product "${p.title}" in ${countryCode}:`);
+              
+              // Log all available prices across variants
+              if (p.variants) {
+                p.variants.forEach((v: any, i: number) => {
+                  if (v.prices) {
+                    console.log(`Variant ${i+1} prices:`, v.prices.map((price: any) => 
+                      `${price.amount} ${price.currency_code}`
+                    ));
+                  }
+                });
+              }
+            }
+
             // Otherwise calculate the price
             const { cheapestPrice } = getProductPrice({
               product: p,
+              countryCode: countryCode
             });
 
-            console.log('Calculated new price:', {
-              id: p.id,
-              cheapestPrice,
-              currency: cheapestPrice?.currency_code
-            });
+            // Log price calculation details for debugging
+            if (cheapestPrice) {
+              if (debugProduct) {
+                console.log(`Product ${p.title}: price in ${cheapestPrice.currency_code}, amount: ${cheapestPrice.calculated_price_number}`);
+              }
+              
+              // Extra check - if currency doesn't match expected, log warning
+              if (normalizeCurrency(cheapestPrice.currency_code) !== normalizeCurrency(expectedCurrency)) {
+                console.warn(`Currency mismatch for ${p.title}: got ${cheapestPrice.currency_code}, expected ${expectedCurrency}`);
+              }
+            } else if (debugProduct) {
+              console.warn(`No cheapest price found for ${p.title}`);
+            }
 
             // Better handling of potentially invalid price values
             const calculated = cheapestPrice?.calculated_price_number;
@@ -216,6 +292,7 @@ export default function PaginatedProducts({
               </li>
             )
           } catch (error) {
+            console.error(`Error processing product ${p.title}:`, error);
             // Provide a fallback in case of error - match ProductCarousel
             return (
               <li key={p.id}>
