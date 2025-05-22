@@ -10,6 +10,36 @@ import LocalizedClientLink from '@modules/common/components/localized-client-lin
 import { Text } from '@modules/common/components/text'
 import { useEffect, useMemo, useState } from 'react'
 
+// Add this function at the top to check for valid pricing
+const validateCartPricing = (cart: any) => {
+  if (!cart || !cart.items) return { isValid: true, message: '' };
+  
+  // Check if any variants are missing prices
+  const itemsWithoutPrices = cart.items.filter((item: any) => {
+    // Check if the item has a valid unit price
+    const validUnitPrice = typeof item.unit_price === 'number' && 
+                          !isNaN(item.unit_price) && 
+                          item.unit_price > 0;
+                          
+    // Check if variant has calculated price
+    const validCalculatedPrice = item.variant?.calculated_price?.calculated_amount &&
+                               typeof item.variant.calculated_price.calculated_amount === 'number' &&
+                               !isNaN(item.variant.calculated_price.calculated_amount);
+                               
+    return !validUnitPrice && !validCalculatedPrice;
+  });
+  
+  if (itemsWithoutPrices.length > 0) {
+    const itemTitles = itemsWithoutPrices.map((item: any) => item.title).join(', ');
+    return {
+      isValid: false,
+      message: `The following items don't have valid prices: ${itemTitles}. Please contact customer service.`
+    };
+  }
+  
+  return { isValid: true, message: '' };
+};
+
 const CheckoutSummary = ({
   cart,
   searchParams,
@@ -18,6 +48,7 @@ const CheckoutSummary = ({
   searchParams: { step?: string }
 }) => {
     const [comment, setComment] = useState<string>('');
+    const [pricingError, setPricingError] = useState<string>('');
   // Check if all required shipping profiles have methods selected
   const allShippingProfilesSatisfied = useMemo(() => {
     if (!cart || !cart.items || cart.items.length === 0) return false
@@ -95,6 +126,14 @@ const CheckoutSummary = ({
     });
   }, [searchParams, cart, allShippingProfilesSatisfied, showPaymentButton]);
 
+  // Validate pricing on component mount and when cart changes
+  useEffect(() => {
+    if (cart) {
+      const { isValid, message } = validateCartPricing(cart);
+      setPricingError(message);
+    }
+  }, [cart]);
+
   return (
     <Box className="relative">
       <Box className="sticky top-8 flex flex-col gap-y-4">
@@ -123,9 +162,18 @@ const CheckoutSummary = ({
             </div>
           )}
          
+          {pricingError && (
+            <Box className="p-4 mb-4 bg-red-50 border border-red-200 rounded-lg">
+              <Text className="text-red-600">{pricingError}</Text>
+              <Text className="mt-2 text-sm text-red-500">
+                This error may occur if the product doesn't have pricing for your region.
+              </Text>
+            </Box>
+          )}
+         
           {showPaymentButton && (
             <Box className="flex flex-col gap-5">
-              <PaymentButton cart={cart} data-testid="submit-order-button" comment={comment} />
+              {!pricingError && <PaymentButton cart={cart} data-testid="submit-order-button" comment={comment} />}
               <Box className="flex w-full">
                 <Text className="text-center text-sm text-secondary">
                   By clicking the Place order button, you confirm that you have

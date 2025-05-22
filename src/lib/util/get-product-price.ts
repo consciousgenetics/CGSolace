@@ -59,8 +59,25 @@ const convertCurrency = (amount: number, fromCurrency: string, toCurrency: strin
   const rate = conversionRates[rateKey];
   
   if (!rate) {
-    console.warn(`No conversion rate found for ${rateKey}, using 1:1 ratio`);
-    return amount;
+    console.warn(`No conversion rate found for ${rateKey}, using fallback conversion`);
+    
+    // Add fallback logic for common currency pairs
+    if (fromCurrencyNormalized === 'GBP' && toCurrencyNormalized === 'USD') {
+      return amount * 1.30; // GBP to USD fallback rate
+    } 
+    else if (fromCurrencyNormalized === 'USD' && toCurrencyNormalized === 'GBP') {
+      return amount * 0.77; // USD to GBP fallback rate
+    }
+    else if (toCurrencyNormalized === 'USD') {
+      // For any currency to USD, use a reasonable fallback
+      return amount * 1.2;
+    }
+    else if (toCurrencyNormalized === 'GBP') {
+      // For any currency to GBP, use a reasonable fallback
+      return amount * 0.8;
+    }
+    
+    return amount; // Last resort, return unchanged amount
   }
   
   return amount * rate;
