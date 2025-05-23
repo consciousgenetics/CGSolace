@@ -30,10 +30,10 @@ const validateCartPricing = (cart: any) => {
   });
   
   if (itemsWithoutPrices.length > 0) {
-    const itemTitles = itemsWithoutPrices.map((item: any) => item.title || 'Unknown item').join(', ');
+    const itemTitles = itemsWithoutPrices.map((item: any) => item.title).join(', ');
     return {
       isValid: false,
-      message: `Unable to place order: Missing price information for ${itemTitles}. This product may not be available for purchase in your selected region.`
+      message: `The following items don't have valid prices: ${itemTitles}. Please contact customer service.`
     };
   }
   
@@ -164,10 +164,9 @@ const CheckoutSummary = ({
          
           {pricingError && (
             <Box className="p-4 mb-4 bg-red-50 border border-red-200 rounded-lg">
-              <Text className="text-red-600 font-medium">Price Information Error</Text>
-              <Text className="mt-2 text-red-600">{pricingError}</Text>
+              <Text className="text-red-600">{pricingError}</Text>
               <Text className="mt-2 text-sm text-red-500">
-                Please try changing your region, or contact customer service for assistance.
+                This error may occur if the product doesn't have pricing for your region.
               </Text>
             </Box>
           )}
