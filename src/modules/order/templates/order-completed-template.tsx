@@ -1,3 +1,5 @@
+'use client'
+
 import { HttpTypes } from '@medusajs/types'
 import { Heading } from '@medusajs/ui'
 import { Box } from '@modules/common/components/box'
@@ -10,6 +12,7 @@ import PaymentDetails from '@modules/order/components/payment-details'
 import ShippingDetails from '@modules/order/components/shipping-details'
 import PaymentInstructions from '@modules/order/components/payment-instructions'
 import PaymentTimer from '@modules/order/components/payment-timer'
+import { useParams } from 'next/navigation'
 
 type OrderCompletedTemplateProps = {
   order: HttpTypes.StoreOrder & { status: string }
@@ -18,6 +21,9 @@ type OrderCompletedTemplateProps = {
 export default function OrderCompletedTemplate({
   order,
 }: OrderCompletedTemplateProps) {
+  // Get the country code from URL params for correct currency display
+  const { countryCode } = useParams();
+  
   // Adapt the order to match the expected StoreCart type for CartTotals
   const cartLikeOrder = {
     ...order,
@@ -26,7 +32,9 @@ export default function OrderCompletedTemplate({
       ...item,
       cart_id: order.id,
       cart: { id: order.id } as any
-    }))
+    })),
+    // Add countryCode for currency handling
+    countryCode
   }
   
   // Check if payment is made already

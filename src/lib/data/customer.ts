@@ -9,12 +9,40 @@ import { sdk } from '@lib/config'
 import { getAuthHeaders, removeAuthToken, setAuthToken } from './cookies'
 
 export async function getCustomer() {
-  const authHeaders = await getAuthHeaders()
-
-  return await sdk.store.customer
-    .retrieve({}, { next: { tags: ['customer'] }, ...authHeaders })
-    .then(({ customer }) => customer)
-    .catch(() => null)
+  try {
+    const authHeaders = await getAuthHeaders()
+    
+    // If there are no auth headers, don't bother making the API call
+    if (!authHeaders || !Object.keys(authHeaders).length) {
+      return null
+    }
+    
+    // Create abort controller for timeout
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000);
+    
+    // Use try-catch with an AbortController
+    try {
+      const response = await sdk.store.customer.retrieve(
+        {}, 
+        { 
+          next: { tags: ['customer'] }, 
+          ...authHeaders 
+        }
+      );
+      
+      clearTimeout(timeoutId);
+      return response.customer;
+    } catch (err: any) {
+      console.warn("Error retrieving customer:", err?.message || "Unknown error");
+      return null;
+    } finally {
+      clearTimeout(timeoutId);
+    }
+  } catch (error) {
+    console.error("Exception in getCustomer:", error);
+    return null;
+  }
 }
 
 export const updateCustomer = cache(async function (

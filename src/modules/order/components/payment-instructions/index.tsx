@@ -1,19 +1,38 @@
+'use client'
+
 import { HttpTypes } from '@medusajs/types'
 import { Box } from '@modules/common/components/box'
 import { Heading } from '@modules/common/components/heading'
 import { Text } from '@modules/common/components/text'
+import { convertToLocale } from '@lib/util/money'
+import { useParams } from 'next/navigation'
+import { getCurrencyFromCountry } from '@lib/util/get-product-price'
+import { noDivisionCurrencies } from '@lib/constants'
 
 type PaymentInstructionsProps = {
   order: HttpTypes.StoreOrder & { status: string }
 }
 
 const PaymentInstructions = ({ order }: PaymentInstructionsProps) => {
+  // Get country code from URL params
+  const { countryCode } = useParams() as { countryCode: string };
+  const currency = order.currency_code || getCurrencyFromCountry(countryCode);
+
   // Format the total amount with currency
   const formatAmount = (amount: number | null | undefined) => {
     if (amount === null || amount === undefined) return "N/A"
     
-    // Don't divide by 100 - display the full amount
-    return `£${amount.toFixed(2)}`
+    // Check if we need to divide by 100 for this currency
+    // In Medusa, some currencies store amounts in cents and need division
+    const normalizedAmount = noDivisionCurrencies.includes(currency.toLowerCase())
+      ? amount  // For currencies that don't need division
+      : amount; // For currencies that might need division if amount is stored as cents
+    
+    // Use the order's currency code and convertToLocale helper
+    return convertToLocale({
+      amount: normalizedAmount,
+      currency_code: currency
+    })
   }
 
   const formattedAmount = formatAmount(order.total)
