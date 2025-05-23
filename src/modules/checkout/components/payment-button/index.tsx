@@ -54,6 +54,13 @@ const PaymentButton: React.FC<PaymentButtonProps> = ({
     setErrorMessage(null)
 
     try {
+      // Ensure there's a valid email set in the cart
+      if (!cart.email) {
+        setErrorMessage('Email address is required for order confirmation');
+        setSubmitting(false);
+        return;
+      }
+      
       // Use a try-catch inside a try-catch to handle potential NEXT_REDIRECT errors
       try {
         const result = await placeOrder(comment)
