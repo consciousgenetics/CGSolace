@@ -5,6 +5,13 @@ const BACKEND_URL = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL
 const PUBLISHABLE_API_KEY = process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY
 const DEFAULT_REGION = process.env.NEXT_PUBLIC_DEFAULT_REGION || 'us'
 
+// Additional fallback data to ensure we always have region data
+const FALLBACK_REGIONS = [
+  { id: 'us-region', countries: [{ iso_2: 'us', display_name: 'United States' }] },
+  { id: 'gb-region', countries: [{ iso_2: 'gb', display_name: 'United Kingdom' }] },
+  { id: 'eu-region', countries: [{ iso_2: 'dk', display_name: 'Denmark' }] }
+] as HttpTypes.StoreRegion[]
+
 // Global cache with longer TTL to reduce API calls
 let regionMapCache: {
   regionMap: Map<string, HttpTypes.StoreRegion>
@@ -28,22 +35,49 @@ async function fetchRegionsWithTimeout() {
   })
   
   try {
+    // Ensure we have a valid backend URL
+    if (!BACKEND_URL) {
+      console.warn('No BACKEND_URL provided, using fallback regions')
+      return FALLBACK_REGIONS
+    }
+    
     const fetchPromise = fetch(`${BACKEND_URL}/store/regions`, {
         headers: {
-          'x-publishable-api-key': PUBLISHABLE_API_KEY!,
+          ...(PUBLISHABLE_API_KEY ? { 'x-publishable-api-key': PUBLISHABLE_API_KEY } : {}),
         },
         next: {
-        revalidate: regionMapCache.ttl / 1000, // Convert ms to seconds
+          revalidate: regionMapCache.ttl / 1000, // Convert ms to seconds
           tags: ['regions'],
         },
-      }).then((res) => res.json())
+      })
+      .then(async (res) => {
+        if (!res.ok) {
+          throw new Error(`Failed to fetch regions: ${res.status} ${res.statusText}`)
+        }
+        return res.json()
+      })
+      .catch(error => {
+        console.error('Error in fetchRegionsWithTimeout response:', error)
+        return { regions: FALLBACK_REGIONS }
+      })
 
     // Race between fetch and timeout
-    const { regions } = await Promise.race([fetchPromise, timeout])
-    return regions || []
+    const data = await Promise.race([fetchPromise, timeout])
+      .catch(() => ({ regions: FALLBACK_REGIONS }))
+    
+    const regions = data.regions || FALLBACK_REGIONS
+    
+    // Verify we have valid region data
+    if (!Array.isArray(regions) || regions.length === 0) {
+      console.warn('Invalid region data received, using fallback regions')
+      return FALLBACK_REGIONS
+    }
+    
+    return regions
   } catch (error) {
     console.error('Error fetching regions with timeout:', error)
-    return []
+    // Return fallback data in case of any error
+    return FALLBACK_REGIONS
   }
 }
 
@@ -130,7 +164,7 @@ function getCountryCode(
 
     const urlCountryCode = request.nextUrl.pathname.split('/')[1]?.toLowerCase()
 
-    // Priority order: URL code > Vercel geo > Default > First available
+    // Check if the URL already contains a valid country code
     if (urlCountryCode && regionMap.has(urlCountryCode)) {
       return urlCountryCode
     } 
@@ -180,12 +214,12 @@ export async function middleware(request: NextRequest) {
   }
 
   try {
-  const searchParams = request.nextUrl.searchParams
-  const isOnboarding = searchParams.get('onboarding') === 'true'
-  const cartId = searchParams.get('cart_id')
-  const checkoutStep = searchParams.get('step')
-  const onboardingCookie = request.cookies.get('_medusa_onboarding')
-  const cartIdCookie = request.cookies.get('_medusa_cart_id')
+    const searchParams = request.nextUrl.searchParams
+    const isOnboarding = searchParams.get('onboarding') === 'true'
+    const cartId = searchParams.get('cart_id')
+    const checkoutStep = searchParams.get('step')
+    const onboardingCookie = request.cookies.get('_medusa_onboarding')
+    const cartIdCookie = request.cookies.get('_medusa_cart_id')
 
     // Use Promise.race to set an overall timeout for the middleware
     const timeoutPromise = new Promise<Map<string, HttpTypes.StoreRegion>>((_, reject) => {
@@ -210,50 +244,64 @@ export async function middleware(request: NextRequest) {
     }
 
     const urlPathParts = request.nextUrl.pathname.split('/')
-    const urlHasCountryCode = urlPathParts[1]?.toLowerCase() === countryCode.toLowerCase()
+    const urlCountryCode = urlPathParts[1]?.toLowerCase()
+    
+    // Check if URL already has a valid country code
+    const hasValidCountryCode = urlCountryCode && regionMap.has(urlCountryCode)
+    
+    // Check if we're trying to navigate to a path that already has a country code in it
+    // This prevents /gb/us issue by checking if the second part is also a country code
+    if (urlPathParts.length > 2) {
+      const secondPathPart = urlPathParts[2]?.toLowerCase()
+      if (secondPathPart && regionMap.has(secondPathPart)) {
+        // Redirect to just the requested country code to fix /gb/us -> /us
+        const newPath = `/${secondPathPart}${urlPathParts.slice(3).join('/')}`
+        return NextResponse.redirect(`${request.nextUrl.origin}${newPath}${request.nextUrl.search}`, 307)
+      }
+    }
 
     // Check if we need to do any redirect
-  if (
-    urlHasCountryCode &&
-    (!isOnboarding || onboardingCookie) &&
-    (!cartId || cartIdCookie)
-  ) {
-    return NextResponse.next()
-  }
+    if (
+      hasValidCountryCode &&
+      (!isOnboarding || onboardingCookie) &&
+      (!cartId || cartIdCookie)
+    ) {
+      return NextResponse.next()
+    }
 
-  const redirectPath =
-    request.nextUrl.pathname === '/' ? '' : request.nextUrl.pathname
+    const redirectPath =
+      request.nextUrl.pathname === '/' ? '' : request.nextUrl.pathname
 
-  const queryString = request.nextUrl.search ? request.nextUrl.search : ''
+    const queryString = request.nextUrl.search ? request.nextUrl.search : ''
 
-  let redirectUrl = request.nextUrl.href
-  let response = NextResponse.redirect(redirectUrl, 307)
+    let redirectUrl = request.nextUrl.href
+    let response = NextResponse.redirect(redirectUrl, 307)
 
-  // If no country code is set, we redirect to the relevant region.
-  if (!urlHasCountryCode && countryCode) {
-    redirectUrl = `${request.nextUrl.origin}/${countryCode}${redirectPath}${queryString}`
-    response = NextResponse.redirect(`${redirectUrl}`, 307)
-  }
-
-  // If a cart_id is in the params, we set it as a cookie and redirect to the address step.
-  if (cartId && !checkoutStep) {
-    response.cookies.set('_medusa_cart_id', cartId, { maxAge: 60 * 60 * 24 })
-    
-    // Only add step=address if we're on a checkout page
-    if (request.nextUrl.pathname.includes('/checkout')) {
-      redirectUrl = `${redirectUrl}&step=address`
+    // If no country code is set, we redirect to the relevant region.
+    if (!hasValidCountryCode && countryCode) {
+      redirectUrl = `${request.nextUrl.origin}/${countryCode}${redirectPath}${queryString}`
       response = NextResponse.redirect(`${redirectUrl}`, 307)
     }
-  }
 
-  // Set a cookie to indicate that we're onboarding. This is used to show the onboarding flow.
-  if (isOnboarding) {
-    response.cookies.set('_medusa_onboarding', 'true', {
-      maxAge: 60 * 60 * 24,
-    })
-  }
+    // If a cart_id is in the params, we set it as a cookie and redirect to the address step.
+    if (cartId && !checkoutStep) {
+      response.cookies.set('_medusa_cart_id', cartId, { maxAge: 60 * 60 * 24 })
+      
+      // Only add step=address if we're on a checkout page
+      if (request.nextUrl.pathname.includes('/checkout')) {
+        redirectUrl = `${redirectUrl}&step=address`
+        response = NextResponse.redirect(`${redirectUrl}`, 307)
+      }
+    }
 
-  return response
+    // Set a cookie to indicate that we're onboarding. This is used to show the onboarding flow.
+    if (isOnboarding) {
+      response.cookies.set('_medusa_onboarding', 'true', {
+        maxAge: 60 * 60 * 24,
+      })
+    }
+
+    return response
   } catch (error) {
     // Fail gracefully - allow request to continue
     console.error('Middleware error:', error)
