@@ -470,28 +470,6 @@ export async function placeOrder(comment: any) {
     
   const cart = cartResponse.cart;
   
-  // If user is logged in but cart doesn't have customer_id, associate the cart with the customer
-  if (authHeaders && Object.keys(authHeaders).length > 0 && !cart.customer_id) {
-    try {
-      // Get current customer
-      const customerResponse = await sdk.store.customer.retrieve({}, authHeaders);
-      
-      if (customerResponse.customer && customerResponse.customer.email) {
-        console.log("Setting customer email on cart before checkout");
-        // Update cart with customer's email to ensure association
-        await sdk.store.cart.update(
-          cartId, 
-          { email: customerResponse.customer.email },
-          {},
-          authHeaders
-        );
-      }
-    } catch (error) {
-      console.warn("Failed to associate cart with customer:", error);
-      // Continue with checkout even if association fails
-    }
-  }
-  
   // Validate that all required shipping profiles have shipping methods assigned
   if (cart.items && cart.items.length > 0) {
     // Extract required profile IDs from cart items

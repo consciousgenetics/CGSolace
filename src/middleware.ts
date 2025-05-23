@@ -29,15 +29,15 @@ async function fetchRegionsWithTimeout() {
   
   try {
     const fetchPromise = fetch(`${BACKEND_URL}/store/regions`, {
-      headers: {
-        'x-publishable-api-key': PUBLISHABLE_API_KEY!,
-      },
-      next: {
+        headers: {
+          'x-publishable-api-key': PUBLISHABLE_API_KEY!,
+        },
+        next: {
         revalidate: regionMapCache.ttl / 1000, // Convert ms to seconds
-        tags: ['regions'],
-      },
-    }).then((res) => res.json())
-    
+          tags: ['regions'],
+        },
+      }).then((res) => res.json())
+
     // Race between fetch and timeout
     const { regions } = await Promise.race([fetchPromise, timeout])
     return regions || []
@@ -66,8 +66,8 @@ async function getRegionMap() {
       // If the existing promise fails, continue to try a new fetch
       regionMapCache.fetchPromise = null
     }
-  }
-  
+      }
+
   // Create a new fetch promise
   regionMapCache.fetchPromise = (async () => {
     try {
@@ -82,8 +82,8 @@ async function getRegionMap() {
       if (regions?.length) {
         const newMap = new Map<string, HttpTypes.StoreRegion>()
         
-        regions.forEach((region: HttpTypes.StoreRegion) => {
-          region.countries?.forEach((c) => {
+      regions.forEach((region: HttpTypes.StoreRegion) => {
+        region.countries?.forEach((c) => {
             if (c.iso_2) {
               newMap.set(c.iso_2.toLowerCase(), region)
             }
@@ -94,10 +94,10 @@ async function getRegionMap() {
         if (newMap.size > 0) {
           regionMapCache.regionMap = newMap
           regionMapCache.regionMapUpdated = now
-        }
-      }
-      
-      return regionMapCache.regionMap
+    }
+  }
+
+  return regionMapCache.regionMap
     } catch (error) {
       console.error('Region fetch failed:', error)
       // Return existing cache on error
@@ -123,7 +123,7 @@ function getCountryCode(
     if (regionMap.size === 0) {
       return DEFAULT_REGION
     }
-    
+
     const vercelCountryCode = request.headers
       .get('x-vercel-ip-country')
       ?.toLowerCase()
@@ -180,12 +180,12 @@ export async function middleware(request: NextRequest) {
   }
 
   try {
-    const searchParams = request.nextUrl.searchParams
-    const isOnboarding = searchParams.get('onboarding') === 'true'
-    const cartId = searchParams.get('cart_id')
-    const checkoutStep = searchParams.get('step')
-    const onboardingCookie = request.cookies.get('_medusa_onboarding')
-    const cartIdCookie = request.cookies.get('_medusa_cart_id')
+  const searchParams = request.nextUrl.searchParams
+  const isOnboarding = searchParams.get('onboarding') === 'true'
+  const cartId = searchParams.get('cart_id')
+  const checkoutStep = searchParams.get('step')
+  const onboardingCookie = request.cookies.get('_medusa_onboarding')
+  const cartIdCookie = request.cookies.get('_medusa_cart_id')
 
     // Use Promise.race to set an overall timeout for the middleware
     const timeoutPromise = new Promise<Map<string, HttpTypes.StoreRegion>>((_, reject) => {
@@ -213,47 +213,47 @@ export async function middleware(request: NextRequest) {
     const urlHasCountryCode = urlPathParts[1]?.toLowerCase() === countryCode.toLowerCase()
 
     // Check if we need to do any redirect
-    if (
-      urlHasCountryCode &&
-      (!isOnboarding || onboardingCookie) &&
-      (!cartId || cartIdCookie)
-    ) {
-      return NextResponse.next()
-    }
+  if (
+    urlHasCountryCode &&
+    (!isOnboarding || onboardingCookie) &&
+    (!cartId || cartIdCookie)
+  ) {
+    return NextResponse.next()
+  }
 
-    const redirectPath =
-      request.nextUrl.pathname === '/' ? '' : request.nextUrl.pathname
+  const redirectPath =
+    request.nextUrl.pathname === '/' ? '' : request.nextUrl.pathname
 
-    const queryString = request.nextUrl.search ? request.nextUrl.search : ''
+  const queryString = request.nextUrl.search ? request.nextUrl.search : ''
 
-    let redirectUrl = request.nextUrl.href
-    let response = NextResponse.redirect(redirectUrl, 307)
+  let redirectUrl = request.nextUrl.href
+  let response = NextResponse.redirect(redirectUrl, 307)
 
-    // If no country code is set, we redirect to the relevant region.
-    if (!urlHasCountryCode && countryCode) {
-      redirectUrl = `${request.nextUrl.origin}/${countryCode}${redirectPath}${queryString}`
+  // If no country code is set, we redirect to the relevant region.
+  if (!urlHasCountryCode && countryCode) {
+    redirectUrl = `${request.nextUrl.origin}/${countryCode}${redirectPath}${queryString}`
+    response = NextResponse.redirect(`${redirectUrl}`, 307)
+  }
+
+  // If a cart_id is in the params, we set it as a cookie and redirect to the address step.
+  if (cartId && !checkoutStep) {
+    response.cookies.set('_medusa_cart_id', cartId, { maxAge: 60 * 60 * 24 })
+    
+    // Only add step=address if we're on a checkout page
+    if (request.nextUrl.pathname.includes('/checkout')) {
+      redirectUrl = `${redirectUrl}&step=address`
       response = NextResponse.redirect(`${redirectUrl}`, 307)
     }
+  }
 
-    // If a cart_id is in the params, we set it as a cookie and redirect to the address step.
-    if (cartId && !checkoutStep) {
-      response.cookies.set('_medusa_cart_id', cartId, { maxAge: 60 * 60 * 24 })
-      
-      // Only add step=address if we're on a checkout page
-      if (request.nextUrl.pathname.includes('/checkout')) {
-        redirectUrl = `${redirectUrl}&step=address`
-        response = NextResponse.redirect(`${redirectUrl}`, 307)
-      }
-    }
+  // Set a cookie to indicate that we're onboarding. This is used to show the onboarding flow.
+  if (isOnboarding) {
+    response.cookies.set('_medusa_onboarding', 'true', {
+      maxAge: 60 * 60 * 24,
+    })
+  }
 
-    // Set a cookie to indicate that we're onboarding. This is used to show the onboarding flow.
-    if (isOnboarding) {
-      response.cookies.set('_medusa_onboarding', 'true', {
-        maxAge: 60 * 60 * 24,
-      })
-    }
-
-    return response
+  return response
   } catch (error) {
     // Fail gracefully - allow request to continue
     console.error('Middleware error:', error)
