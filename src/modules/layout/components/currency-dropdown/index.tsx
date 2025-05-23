@@ -34,12 +34,23 @@ export default function CurrencyDropdown() {
   const handleCurrencyChange = (currency: Currency) => {
     setIsOpen(false)
     
-    // Get the current path without the country code
+    // Get the current path without the current country code
     const pathParts = pathname.split('/')
-    const pathWithoutCountry = pathParts.length > 2 ? pathParts.slice(2).join('/') : ''
     
-    // Navigate to the new URL with the selected country code
-    router.push(`/${currency.countryCode}/${pathWithoutCountry}`)
+    // If we have a valid path structure with country code
+    if (pathParts.length >= 2) {
+      // Remove the country code part (index 1) and take the rest of the path
+      // If there's nothing after the country code, use an empty string
+      const pathWithoutCountry = pathParts.length > 2 ? 
+        '/' + pathParts.slice(2).join('/') : 
+        ''
+      
+      // Navigate to the new URL with the selected country code
+      router.push(`/${currency.countryCode}${pathWithoutCountry}`)
+    } else {
+      // Fallback for unexpected URL structure
+      router.push(`/${currency.countryCode}`)
+    }
   }
 
   return (
