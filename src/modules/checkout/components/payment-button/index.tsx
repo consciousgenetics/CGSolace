@@ -23,12 +23,32 @@ const PaymentButton: React.FC<PaymentButtonProps> = ({
   const [submitting, setSubmitting] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
+  // Check if any cart items are missing prices
+  const hasMissingPrices = cart.items?.some(item => {
+    const validUnitPrice = typeof item.unit_price === 'number' && !isNaN(item.unit_price) && item.unit_price > 0;
+    const validVariantPrice = item.variant?.calculated_price?.calculated_amount && 
+                            typeof item.variant.calculated_price.calculated_amount === 'number' &&
+                            !isNaN(item.variant.calculated_price.calculated_amount);
+    return !validUnitPrice && !validVariantPrice;
+  });
+
   // Only require essential fields for checkout
   const notReady =
     !cart ||
     !cart.shipping_address ||  // Need shipping address
     !cart.email ||            // Need email for order confirmation
-    (cart.shipping_methods?.length ?? 0) < 1  // Need shipping method
+    (cart.shipping_methods?.length ?? 0) < 1 ||  // Need shipping method
+    hasMissingPrices;         // Need valid prices for all items
+  
+  // Get the specific reason for being disabled
+  const getDisabledReason = () => {
+    if (!cart) return "Cart is missing";
+    if (!cart.shipping_address) return "Shipping address required";
+    if (!cart.email) return "Email address required";
+    if ((cart.shipping_methods?.length ?? 0) < 1) return "Shipping method required";
+    if (hasMissingPrices) return "Price information missing";
+    return "";
+  };
 
   // If guest checkout, use shipping address as billing address
   if (!cart.billing_address && cart.shipping_address) {
@@ -110,9 +130,15 @@ const PaymentButton: React.FC<PaymentButtonProps> = ({
         isLoading={submitting}
         disabled={notReady}
         data-testid={dataTestId}
+        title={notReady ? getDisabledReason() : "Place your order"}
       >
         Place order
       </Button>
+      {notReady && (
+        <div className="text-sm text-red-500 mt-2">
+          {getDisabledReason()}
+        </div>
+      )}
       <ErrorMessage error={errorMessage} data-testid="manual-payment-error-message" />
     </>
   )
