@@ -5,7 +5,7 @@ import { useParams } from 'next/navigation'
 
 import { Box } from '@modules/common/components/box'
 import { convertToLocale } from '@lib/util/money'
-import { getCurrencyFromCountry } from '@lib/util/get-product-price'
+import { getCurrencyFromCountry, getPricesForVariant } from '@lib/util/get-product-price'
 import { HttpTypes } from '@medusajs/types'
 import { Text } from '@modules/common/components/text'
 
@@ -28,61 +28,62 @@ const CartTotals: React.FC<CartTotalsProps> = ({ totals }) => {
     region
   } = totals
 
-  // Calculate GBP totals from items
-  const gbpSubtotal = items?.reduce((acc, item) => {
-    // Only use price if it's a valid positive number
-    // Check unit_price or variant calculated_price
-    const variantPrice = item.variant?.calculated_price?.calculated_amount;
+  // Calculate totals using the appropriate currency for the region
+  const calculatedSubtotal = items?.reduce((acc, item) => {
+    // Get the price for this variant in the correct currency
+    const variantPrices = getPricesForVariant(item.variant, countryCode as string);
     
-    // Validate we have a proper price before using it
-    const hasValidUnitPrice = typeof item.unit_price === 'number' && 
-                              !isNaN(item.unit_price) && 
-                              item.unit_price > 0;
-                              
-    const hasValidVariantPrice = typeof variantPrice === 'number' && 
-                                !isNaN(variantPrice) && 
-                                variantPrice > 0;
-    
-    // Use the first valid price we find
-    let price = 0;
-    if (hasValidUnitPrice) {
-      price = item.unit_price;
-    } else if (hasValidVariantPrice) {
-      price = variantPrice;
+    // If we have a calculated price from variant, use that
+    if (variantPrices && 
+        typeof variantPrices.calculated_price_number === 'number' && 
+        !isNaN(variantPrices.calculated_price_number)) {
+      return acc + (variantPrices.calculated_price_number * (item.quantity || 0));
     }
     
-    return acc + (price * (item.quantity || 0));
+    // Fallback to unit_price if available
+    const hasValidUnitPrice = typeof item.unit_price === 'number' && 
+                             !isNaN(item.unit_price) && 
+                             item.unit_price > 0;
+    
+    if (hasValidUnitPrice) {
+      return acc + (item.unit_price * (item.quantity || 0));
+    }
+    
+    // Return acc unchanged if no valid price found
+    return acc;
   }, 0) || 0;
 
-  // Calculate other totals in GBP
-  const gbpTotal = gbpSubtotal + (shipping_total || 0) + (tax_total || 0) - (discount_total || 0)
+  // Calculate other totals based on the calculated subtotal
+  const calculatedTotal = calculatedSubtotal + (shipping_total || 0) + (tax_total || 0) - (discount_total || 0)
 
-  console.log('CartTotals: Using GBP amounts:', {
-    subtotal: gbpSubtotal,
-    total: gbpTotal,
-    items: items?.map(item => ({
-      title: item.title,
-      unitPrice: item.unit_price,
-      variantPrice: item.variant?.calculated_price?.calculated_amount,
-      quantity: item.quantity,
-      itemTotal: (
-        (typeof item.unit_price === 'number' && !isNaN(item.unit_price) && item.unit_price > 0) 
-          ? item.unit_price * item.quantity 
-          : 'price unavailable'
-      )
-    }))
-  })
+  console.log('CartTotals: Using correct currency amounts:', {
+    currency,
+    subtotal: calculatedSubtotal,
+    total: calculatedTotal,
+    items: items?.map(item => {
+      const variantPrices = getPricesForVariant(item.variant, countryCode as string);
+      return {
+        title: item.title,
+        unitPrice: item.unit_price,
+        variantPrice: variantPrices?.calculated_price_number,
+        quantity: item.quantity,
+        currency: variantPrices?.currency_code || currency
+      };
+    })
+  });
 
   // Only show warning when there are items but no price data at all
   const hasNoItemsWithPrice = items?.length > 0 && 
     !items.some(item => {
+      const variantPrices = getPricesForVariant(item.variant, countryCode as string);
+      
       const hasValidUnitPrice = typeof item.unit_price === 'number' && 
                               !isNaN(item.unit_price) && 
                               item.unit_price > 0;
                               
-      const hasValidVariantPrice = typeof item.variant?.calculated_price?.calculated_amount === 'number' && 
-                                !isNaN(item.variant?.calculated_price?.calculated_amount) && 
-                                item.variant?.calculated_price?.calculated_amount > 0;
+      const hasValidVariantPrice = typeof variantPrices?.calculated_price_number === 'number' && 
+                                !isNaN(variantPrices?.calculated_price_number) && 
+                                variantPrices?.calculated_price_number > 0;
                                 
       return hasValidUnitPrice || hasValidVariantPrice;
     });
@@ -106,11 +107,11 @@ const CartTotals: React.FC<CartTotalsProps> = ({ totals }) => {
             Subtotal (excl. shipping and taxes)
           </span>
           <span
-            data-value={gbpSubtotal}
+            data-value={calculatedSubtotal}
             className="text-lg text-black"
           >
             {convertToLocale({ 
-              amount: gbpSubtotal, 
+              amount: calculatedSubtotal, 
               currency_code: currency
             })}
           </span>
@@ -159,9 +160,9 @@ const CartTotals: React.FC<CartTotalsProps> = ({ totals }) => {
       <Box className="h-px w-full border-b border-gray-200" />
       <Box className="flex items-center justify-between text-lg text-black">
         <span>Total</span>
-        <span data-value={gbpTotal}>
+        <span data-value={calculatedTotal}>
           {convertToLocale({ 
-            amount: gbpTotal, 
+            amount: calculatedTotal, 
             currency_code: currency
           })}
         </span>

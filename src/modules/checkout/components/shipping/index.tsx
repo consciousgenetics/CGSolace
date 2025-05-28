@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState, useMemo, startTransition, useActionState } from 'react'
-import { usePathname, useRouter, useSearchParams } from 'next/navigation'
+import { usePathname, useRouter, useSearchParams, useParams } from 'next/navigation'
 import Image from 'next/image'
 import { motion } from 'framer-motion'
 
@@ -9,6 +9,7 @@ import { RadioGroup } from '@headlessui/react'
 import { setShippingMethod } from '@lib/data/cart'
 import { cn } from '@lib/util/cn'
 import { convertToLocale } from '@lib/util/money'
+import { getCurrencyFromCountry } from '@lib/util/get-product-price'
 import { HttpTypes } from '@medusajs/types'
 import ErrorMessage from '@modules/checkout/components/error-message'
 import { Box } from '@modules/common/components/box'
@@ -41,14 +42,56 @@ const Shipping: React.FC<ShippingProps> = ({
   const searchParams = useSearchParams()
   const router = useRouter()
   const pathname = usePathname()
+  const { countryCode } = useParams() as { countryCode: string }
+  
+  // Get currency based on country code
+  const currency = getCurrencyFromCountry(countryCode)
 
   const isOpen = searchParams.get('step') === 'delivery'
 
+  // Filter shipping options based on country code
+  const filteredShippingMethods = useMemo(() => {
+    if (!availableShippingMethods) return null
+    
+    // Convert country code to uppercase for comparison
+    const country = countryCode.toUpperCase()
+    
+    // Filter shipping options by country
+    return availableShippingMethods.filter(method => {
+      const methodName = method.name.toLowerCase()
+      
+      // For US/international shipping
+      if (country === 'US') {
+        // Only show international or US specific options
+        return methodName.includes('international') || 
+               methodName.includes('usa') || 
+               methodName.includes('us ') || 
+               methodName.includes('united states')
+      }
+      
+      // For UK/GB shipping
+      if (country === 'GB') {
+        // Only show UK options or options without international/US in the name
+        return methodName.includes('uk') || 
+               methodName.includes('united kingdom') || 
+               methodName.includes('standard') || 
+               method.name === 'Royal Mail 1st Class' || 
+               method.name === 'Royal Mail 2nd Class' || 
+               (!methodName.includes('international') && 
+                !methodName.includes('usa') && 
+                !methodName.includes('us '))
+      }
+      
+      // For other countries, only show international options
+      return methodName.includes('international')
+    })
+  }, [availableShippingMethods, countryCode])
+
   // Group shipping options by shipping profile
   const shippingOptionsByProfile = useMemo(() => {
-    if (!availableShippingMethods) return {}
+    if (!filteredShippingMethods) return {}
     
-    const grouped = availableShippingMethods.reduce((acc, method) => {
+    const grouped = filteredShippingMethods.reduce((acc, method) => {
       const profileId = method.shipping_profile_id
       if (!acc[profileId]) {
         acc[profileId] = []
@@ -58,7 +101,7 @@ const Shipping: React.FC<ShippingProps> = ({
     }, {} as Record<string, HttpTypes.StoreCartShippingOption[]>)
 
     return grouped
-  }, [availableShippingMethods])
+  }, [filteredShippingMethods])
 
   // Get required shipping profiles from cart items
   const requiredShippingProfiles = useMemo(() => {
@@ -75,32 +118,32 @@ const Shipping: React.FC<ShippingProps> = ({
       }
     })
 
+    // Also add profile IDs from existing shipping methods
+    cart.shipping_methods?.forEach(method => {
+      const option = filteredShippingMethods?.find(
+        opt => opt.id === method.shipping_option_id
+      )
+      if (option?.shipping_profile_id) {
+        profiles.add(option.shipping_profile_id)
+      }
+    })
+    
     // If there are shipping options but no profiles detected,
     // add at least one profile from the options to ensure something is selected
-    if (profiles.size === 0 && availableShippingMethods && availableShippingMethods.length > 0) {
-      // Find all unique profile IDs from available shipping options
-      const availableProfiles = new Set<string>()
-      availableShippingMethods.forEach(method => {
-        if (method.shipping_profile_id) {
-          availableProfiles.add(method.shipping_profile_id)
-        }
-      })
-      
-      // Add all available profiles to required profiles
-      availableProfiles.forEach(profileId => profiles.add(profileId))
-      
-      console.log(`No profiles detected from items, using ${profiles.size} profiles from available options:`, 
-        Array.from(profiles))
+    if (profiles.size === 0 && filteredShippingMethods && filteredShippingMethods.length > 0) {
+      // Find a default shipping profile to use
+      const defaultProfile = filteredShippingMethods[0].shipping_profile_id
+      profiles.add(defaultProfile)
     }
     
     return profiles
-  }, [cart?.items, availableShippingMethods])
+  }, [cart?.items, cart.shipping_methods, filteredShippingMethods])
 
   // Initialize selected methods from cart - more efficiently
   useEffect(() => {
     if (cart.shipping_methods && cart.shipping_methods.length > 0) {
       setSelectedMethods(cart.shipping_methods.reduce((acc, method) => {
-        const option = availableShippingMethods?.find(
+        const option = filteredShippingMethods?.find(
           opt => opt.id === method.shipping_option_id
         )
         if (option) {
@@ -109,7 +152,7 @@ const Shipping: React.FC<ShippingProps> = ({
         return acc
       }, {} as Record<string, string>))
     }
-  }, [cart.shipping_methods, availableShippingMethods])
+  }, [cart.shipping_methods, filteredShippingMethods])
 
   const handleEdit = () => {
     router.push(pathname + '?step=delivery', { scroll: false })
@@ -367,7 +410,7 @@ const Shipping: React.FC<ShippingProps> = ({
                             <span className="justify-self-end text-md">
                               {convertToLocale({
                                 amount: option.amount,
-                                currency_code: 'GBP',
+                                currency_code: currency,
                               })}
                             </span>
                           </Box>
@@ -416,7 +459,7 @@ const Shipping: React.FC<ShippingProps> = ({
                     {getProfileName(option.shipping_profile_id)}: {option.name},{' '}
                     {convertToLocale({
                       amount: option.amount,
-                      currency_code: 'GBP',
+                      currency_code: currency,
                     })}
                   </Text>
                 ) : null

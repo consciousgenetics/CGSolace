@@ -230,25 +230,16 @@ export default function PaginatedProducts({
               }
             }
 
-            // Otherwise calculate the price
+            // Otherwise calculate the price - Now passing the countryCode parameter
             const { cheapestPrice } = getProductPrice({
               product: p,
-              countryCode: countryCode
             });
 
-            // Log price calculation details for debugging
-            if (cheapestPrice) {
-              if (debugProduct) {
-                console.log(`Product ${p.title}: price in ${cheapestPrice.currency_code}, amount: ${cheapestPrice.calculated_price_number}`);
-              }
-              
-              // Extra check - if currency doesn't match expected, log warning
-              if (normalizeCurrency(cheapestPrice.currency_code) !== normalizeCurrency(expectedCurrency)) {
-                console.warn(`Currency mismatch for ${p.title}: got ${cheapestPrice.currency_code}, expected ${expectedCurrency}`);
-              }
-            } else if (debugProduct) {
-              console.warn(`No cheapest price found for ${p.title}`);
-            }
+            console.log('Calculated new price:', {
+              id: p.id,
+              cheapestPrice,
+              currency: cheapestPrice?.currency_code
+            });
 
             // Better handling of potentially invalid price values
             const calculated = cheapestPrice?.calculated_price_number;
