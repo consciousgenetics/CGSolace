@@ -1,22 +1,12 @@
 'use client'
 
-import React, { Fragment, useMemo, useState } from 'react'
+import React, { Fragment, useMemo, useState, useEffect } from 'react'
 import Image from 'next/image'
 
 import { createNavigation } from '@lib/constants'
 import { StoreCollection, StoreProductCategory } from '@medusajs/types'
 import { Box } from '@modules/common/components/box'
 import { Button } from '@modules/common/components/button'
-import {
-  Dialog,
-  DialogBody,
-  DialogContent,
-  DialogHeader,
-  DialogOverlay,
-  DialogPortal,
-  DialogTitle,
-  DialogTrigger,
-} from '@modules/common/components/dialog'
 import Divider from '@modules/common/components/divider'
 import { Heading } from '@modules/common/components/heading'
 import LocalizedClientLink from '@modules/common/components/localized-client-link'
@@ -26,8 +16,24 @@ import {
   ChevronRightIcon,
   XIcon,
 } from '@modules/common/icons'
-import * as VisuallyHidden from '@radix-ui/react-visually-hidden'
 import { CollectionsData } from 'types/strapi'
+
+// Import currency dropdown functionality
+import { usePathname, useRouter } from 'next/navigation'
+import { ChevronDown } from 'lucide-react'
+
+type Currency = {
+  code: string
+  symbol: string
+  name: string
+  countryCode: string
+}
+
+const currencies: Currency[] = [
+  { code: 'GBP', symbol: '£', name: 'British Pound', countryCode: 'gb' },
+  { code: 'USD', symbol: '$', name: 'US Dollar', countryCode: 'us' },
+  { code: 'EUR', symbol: '€', name: 'Euro', countryCode: 'dk' },
+]
 
 interface CategoryItem {
   name: string
@@ -43,40 +49,96 @@ const SideMenu = ({
   collections: StoreCollection[]
   strapiCollections: CollectionsData
 }) => {
-  // No longer need categoryStack, but keeping it for now for backward compatibility
+  const router = useRouter()
+  const pathname = usePathname()
   const [categoryStack, setCategoryStack] = useState<CategoryItem[]>([])
   const [isOpen, setIsOpen] = useState(false)
-  // Track expanded categories for accordion-style dropdowns
   const [expandedCategories, setExpandedCategories] = useState<string[]>([])
+  const [selectedCurrency, setSelectedCurrency] = useState<Currency>(currencies[0])
+  const [isCurrencyOpen, setIsCurrencyOpen] = useState(false)
 
   const navigation = useMemo(
     () => createNavigation(productCategories, collections),
     [productCategories, collections]
   )
 
+  // Determine the current currency based on the URL path
+  useEffect(() => {
+    const countryCode = pathname.split('/')[1]?.toLowerCase()
+    const currency = currencies.find(c => c.countryCode === countryCode) || currencies[0]
+    setSelectedCurrency(currency)
+  }, [pathname])
+
+  // Handle currency change
+  const handleCurrencyChange = (currency: Currency) => {
+    setIsCurrencyOpen(false)
+    
+    // Get the current path without the current country code
+    const pathParts = pathname.split('/')
+    
+    // If we have a valid path structure with country code
+    if (pathParts.length >= 2) {
+      // Remove the country code part (index 1) and take the rest of the path
+      // If there's nothing after the country code, use an empty string
+      const pathWithoutCountry = pathParts.length > 2 ? 
+        '/' + pathParts.slice(2).join('/') : 
+        ''
+      
+      // Navigate to the new URL with the selected country code
+      router.push(`/${currency.countryCode}${pathWithoutCountry}`)
+    } else {
+      // Fallback for unexpected URL structure
+      router.push(`/${currency.countryCode}`)
+    }
+    
+    // Close the sidebar after currency change
+    handleCloseSidebar()
+  }
+
   // Handle category click - just expand/collapse, no navigation
   const handleCategoryClick = (category: CategoryItem, hasChildren: boolean) => {
     if (hasChildren) {
-      // If category has children, toggle its expanded state
       setExpandedCategories(prev => {
-        // If already expanded, collapse it
         if (prev.includes(category.name)) {
           return prev.filter(name => name !== category.name);
         }
-        // Otherwise expand it
         return [...prev, category.name];
       });
     }
   }
 
-  const handleOpenDialogChange = (open: boolean) => {
-    setIsOpen(open)
-
-    if (!open) {
-      setCategoryStack([])
-      setExpandedCategories([]) // Reset expanded categories when closing the menu
-    }
+  const handleToggleSidebar = () => {
+    console.log('Toggle sidebar called, current isOpen:', isOpen)
+    setIsOpen(!isOpen)
   }
+
+  const handleCloseSidebar = () => {
+    console.log('Close sidebar called')
+    setIsOpen(false)
+    setCategoryStack([])
+    setExpandedCategories([])
+  }
+
+  // Close sidebar on escape key
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isOpen) {
+        handleCloseSidebar()
+      }
+    }
+    
+    if (isOpen) {
+      document.addEventListener('keydown', handleEscape)
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = 'unset'
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleEscape)
+      document.body.style.overflow = 'unset'
+    }
+  }, [isOpen])
 
   // We'll render a recursive menu structure
   const renderMenuItems = (items: any[], level = 0) => {
@@ -97,7 +159,7 @@ const SideMenu = ({
             key={`${level}-${index}`}
             href={item.handle}
             className="relative mb-2 block"
-            onClick={() => handleOpenDialogChange(false)}
+            onClick={handleCloseSidebar}
           >
             <Image
               src={strapiCollection.Image.url}
@@ -118,7 +180,6 @@ const SideMenu = ({
       // Render category or subcategory
       return (
         <div key={`${level}-${index}`} className={`w-full`}>
-          {/* Category header */}
           <div className={`${level > 0 ? "pl-4" : ""}`}>
             {hasChildren ? (
               <Button
@@ -141,7 +202,7 @@ const SideMenu = ({
               <Button
                 variant="ghost"
                 className={`w-full justify-between py-3 text-black ${isSeedItem ? 'font-semibold' : ''} font-anton hover:bg-gray-100`}
-                onClick={() => handleOpenDialogChange(false)}
+                onClick={handleCloseSidebar}
                 asChild
               >
                 <LocalizedClientLink href={item.handle}>
@@ -172,46 +233,79 @@ const SideMenu = ({
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={handleOpenDialogChange}>
-      <DialogTrigger asChild>
-        <Button
-          variant="icon"
-          withIcon
-          className="flex h-auto !p-2 xsmall:!p-3.5 large:hidden text-white"
-        >
-          <BarsIcon color="white" />
-        </Button>
-      </DialogTrigger>
-      <DialogPortal>
-        <DialogOverlay />
-        <DialogContent
-          className="!max-h-full !rounded-none !max-w-full overflow-hidden bg-white text-black"
-          aria-describedby={undefined}
-        >
-          <DialogHeader className="flex items-center gap-4 !p-4 text-xl small:text-2xl font-bold border-b border-gray-200 bg-white text-black">
-            MENU
-            <Button
-              onClick={() => handleOpenDialogChange(false)}
-              variant="icon"
-              withIcon
-              size="sm"
-              className="ml-auto p-2 text-black"
-            >
-              <XIcon />
-            </Button>
-          </DialogHeader>
-          <VisuallyHidden.Root>
-            <DialogTitle>Menu modal</DialogTitle>
-          </VisuallyHidden.Root>
-          
-          <DialogBody className="p-4 small:p-5 overflow-y-auto bg-white text-black">
-            <Box className="flex flex-col">
-              {renderMenuItems(navigation)}
-            </Box>
-          </DialogBody>
-        </DialogContent>
-      </DialogPortal>
-    </Dialog>
+    <>
+      {/* Hamburger Menu Button */}
+      <Button
+        variant="icon"
+        withIcon
+        className={`flex h-auto !p-2 xsmall:!p-3.5 large:hidden text-white relative z-[70] transition-opacity duration-300 ${
+          isOpen ? 'opacity-0 pointer-events-none' : 'opacity-100'
+        }`}
+        onClick={handleToggleSidebar}
+      >
+        <BarsIcon color="white" />
+      </Button>
+
+      {/* Sidebar */}
+      <div className={`fixed inset-0 w-screen h-screen bg-white z-[65] transform transition-transform duration-300 ease-in-out flex flex-col ${
+        isOpen ? 'translate-x-0' : '-translate-x-full'
+      }`}>
+        {/* Header */}
+        <div className="flex items-center justify-center gap-4 p-4 text-xl font-bold border-b border-gray-200 bg-white text-black flex-shrink-0 relative">
+          <span>MENU</span>
+          <Button
+            onClick={handleCloseSidebar}
+            variant="icon"
+            withIcon
+            size="sm"
+            className="absolute right-4 p-2 text-black"
+          >
+            <XIcon />
+          </Button>
+        </div>
+        
+        {/* Body */}
+        <div className="p-4 flex-1 overflow-y-auto bg-white text-black">
+          <Box className="flex flex-col">
+            {/* Currency Selector */}
+            <div className="mb-6 pb-4 border-b border-gray-200">
+              <div className="mb-2">
+                <span className="text-sm font-medium text-gray-600">Currency</span>
+              </div>
+              <div className="relative">
+                <button
+                  className="flex items-center justify-between w-full px-4 py-3 text-left bg-gray-50 border border-gray-200 rounded-lg hover:bg-gray-100 transition-colors"
+                  onClick={() => setIsCurrencyOpen(!isCurrencyOpen)}
+                >
+                  <span className="flex items-center">
+                    <span className="mr-2 text-lg">{selectedCurrency.symbol}</span>
+                    <span className="font-medium">{selectedCurrency.name}</span>
+                  </span>
+                  <ChevronDown className={`h-4 w-4 transition-transform ${isCurrencyOpen ? 'rotate-180' : ''}`} />
+                </button>
+                
+                {isCurrencyOpen && (
+                  <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
+                    {currencies.map((currency) => (
+                      <button
+                        key={currency.code}
+                        className="w-full flex items-center px-4 py-3 text-left hover:bg-gray-50 transition-colors first:rounded-t-lg last:rounded-b-lg"
+                        onClick={() => handleCurrencyChange(currency)}
+                      >
+                        <span className="mr-3 text-lg">{currency.symbol}</span>
+                        <span className="font-medium">{currency.name}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+            
+            {renderMenuItems(navigation)}
+          </Box>
+        </div>
+      </div>
+    </>
   )
 }
 

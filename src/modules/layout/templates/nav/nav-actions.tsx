@@ -8,7 +8,9 @@ import CurrencyDropdown from '@modules/layout/components/currency-dropdown'
 export default function NavActions() {
   return (
     <Box className="flex items-center !py-4">
-      <CurrencyDropdown />
+      <div className="hidden large:block">
+        <CurrencyDropdown />
+      </div>
       <ProfileButton />
       <CartButton />
     </Box>
