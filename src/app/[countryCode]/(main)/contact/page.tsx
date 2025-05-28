@@ -87,9 +87,31 @@ export default function ContactPage() {
           -webkit-box-shadow: 0 0 0px 1000px #111827 inset !important;
           transition: background-color 5000s ease-in-out 0s;
         }
+        
+        /* Fix contact page layout to prevent white space */
+        #content:has(.contact-page-container) {
+          padding-top: 0 !important;
+        }
+        
+        .contact-page-container {
+          margin-top: 0 !important;
+          padding-top: 8rem !important; /* Space for fixed header */
+        }
+        
+        @media (min-width: 640px) {
+          .contact-page-container {
+            padding-top: 9rem !important;
+          }
+        }
+        
+        @media (min-width: 768px) {
+          .contact-page-container {
+            padding-top: 10rem !important;
+          }
+        }
       `}</style>
       
-      <div className="flex flex-col min-h-[80vh] py-12 sm:py-16 md:py-20 relative overflow-hidden">
+      <div className="contact-page-container flex flex-col min-h-screen py-6 sm:py-8 md:py-12 relative overflow-hidden">
         {/* Background Pattern */}
         <div className="absolute inset-0 bg-repeat opacity-100" style={{ backgroundImage: 'url("/126-wide.png")', backgroundSize: '800px' }}></div>
         
