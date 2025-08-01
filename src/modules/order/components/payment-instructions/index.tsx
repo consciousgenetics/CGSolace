@@ -58,6 +58,12 @@ const PaymentInstructions = ({ order }: PaymentInstructionsProps) => {
         </Heading>
         <Text className="text-gray-700">Order #: {order.display_id}</Text>
       </Box>
+
+      <Box className="bg-blue-50 rounded-lg p-4 mb-4">
+        <Text className="text-blue-800 font-semibold text-center">
+          Receive payments in Euros
+        </Text>
+      </Box>
       
       <Heading as="h3" className="text-lg font-semibold mb-3">
         Bank Transfer Instructions:
@@ -69,14 +75,29 @@ const PaymentInstructions = ({ order }: PaymentInstructionsProps) => {
             <Box className="w-8 h-8 rounded-full bg-yellow-500 text-white flex items-center justify-center font-bold mr-2">1</Box>
             <Text className="font-medium">Make a bank transfer with these details:</Text>
           </Box>
-          <Box className="ml-10 bg-white p-3 rounded-md">
+          
+          {/* International Payments Section */}
+          <Box className="ml-10 bg-white p-4 rounded-md border-l-4 border-blue-500">
+            <Heading as="h4" className="text-md font-semibold mb-3 text-blue-700">
+              For International Payments:
+            </Heading>
             <ul className="space-y-2">
-              <li><span className="font-semibold">Name:</span> Conscious Accessories</li>
-              <li><span className="font-semibold">Account Number:</span> 19831543</li>
-              <li><span className="font-semibold">Sort Code:</span> 04-06-05</li>
-              <li><span className="font-semibold">IBAN:</span> GB41 CLRB 0406 0519 8315 43</li>
-              <li><span className="font-semibold">SWIFT:</span> CLRBGB22</li>
-              <li><span className="font-semibold">Address:</span> 4th Floor, The Featherstone Building, 66 City Road, London, EC1Y 2AL</li>
+              <li><span className="font-semibold">Description / Reference:</span> Zempler13560733</li>
+              <li><span className="font-semibold">IBAN:</span> GB72NWBK60721442217830</li>
+              <li><span className="font-semibold">Account Number:</span> 42217830 <span className="text-sm text-gray-600">(This number is specifically for international payments only)</span></li>
+              <li><span className="font-semibold">SWIFT / BIC:</span> NWBKGB2L</li>
+              <li><span className="font-semibold">Bank Address:</span> NatWest Bank PLC, 250 Bishopsgate, London, EC2M 4AA, UK</li>
+            </ul>
+          </Box>
+
+          {/* Local Payments Section */}
+          <Box className="ml-10 bg-white p-4 rounded-md border-l-4 border-green-500 mt-4">
+            <Heading as="h4" className="text-md font-semibold mb-3 text-green-700">
+              For Local UK Payments:
+            </Heading>
+            <ul className="space-y-2">
+              <li><span className="font-semibold">Account Number:</span> 13560733</li>
+              <li><span className="font-semibold">Sort Code:</span> 08-71-99</li>
             </ul>
           </Box>
         </Box>
@@ -91,10 +112,11 @@ const PaymentInstructions = ({ order }: PaymentInstructionsProps) => {
         <Box className="flex flex-col space-y-1">
           <Box className="flex items-center">
             <Box className="w-8 h-8 rounded-full bg-yellow-500 text-white flex items-center justify-center font-bold mr-2">3</Box>
-            <Text className="font-medium">Include your order number in the reference:</Text>
+            <Text className="font-medium">Include the required reference in your transfer:</Text>
           </Box>
           <Box className="ml-10 bg-white p-3 rounded-md">
-            <Text className="font-semibold">Reference: Order #{order.display_id}</Text>
+            <Text className="font-semibold">Reference: Zempler13560733</Text>
+            <Text className="text-sm text-gray-600 mt-1">Order #: {order.display_id}</Text>
           </Box>
         </Box>
       </Box>
@@ -103,8 +125,8 @@ const PaymentInstructions = ({ order }: PaymentInstructionsProps) => {
         <Text className="font-semibold text-yellow-800">
           Your order will be processed once payment is confirmed.
         </Text>
-        <Text className="mt-3 text-red-600 font-medium bg-red-50 p-2 rounded-md border border-red-200">
-          ⚠️ IMPORTANT: If you are sending payment from outside the UK, please use the IBAN number when making your transfer.
+        <Text className="mt-3 text-blue-600 font-medium bg-blue-50 p-2 rounded-md border border-blue-200">
+          💡 Make sure the person sending the payment uses the correct account details based on whether they are making an international or local UK payment.
         </Text>
       </Box>
     </Box>
