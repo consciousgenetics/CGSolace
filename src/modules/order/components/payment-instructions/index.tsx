@@ -59,11 +59,6 @@ const PaymentInstructions = ({ order }: PaymentInstructionsProps) => {
         <Text className="text-gray-700">Order #: {order.display_id}</Text>
       </Box>
 
-      <Box className="bg-blue-50 rounded-lg p-4 mb-4">
-        <Text className="text-blue-800 font-semibold text-center">
-          Receive payments in Euros
-        </Text>
-      </Box>
       
       <Heading as="h3" className="text-lg font-semibold mb-3">
         Bank Transfer Instructions:
@@ -76,8 +71,20 @@ const PaymentInstructions = ({ order }: PaymentInstructionsProps) => {
             <Text className="font-medium">Make a bank transfer with these details:</Text>
           </Box>
           
+          {/* Local Payments Section */}
+          <Box className="ml-10 bg-white p-4 rounded-md border-l-4 border-green-500">
+            <Heading as="h4" className="text-md font-semibold mb-3 text-green-700">
+              For Local UK Payments:
+            </Heading>
+            <ul className="space-y-2">
+              <li><span className="font-semibold">Reference:</span> Conscious Accessories</li>
+              <li><span className="font-semibold">Account Number:</span> 13560733</li>
+              <li><span className="font-semibold">Sort Code:</span> 08-71-99</li>
+            </ul>
+          </Box>
+
           {/* International Payments Section */}
-          <Box className="ml-10 bg-white p-4 rounded-md border-l-4 border-blue-500">
+          <Box className="ml-10 bg-white p-4 rounded-md border-l-4 border-blue-500 mt-4">
             <Heading as="h4" className="text-md font-semibold mb-3 text-blue-700">
               For International Payments:
             </Heading>
@@ -87,17 +94,6 @@ const PaymentInstructions = ({ order }: PaymentInstructionsProps) => {
               <li><span className="font-semibold">Account Number:</span> 42217830 <span className="text-sm text-gray-600">(This number is specifically for international payments only)</span></li>
               <li><span className="font-semibold">SWIFT / BIC:</span> NWBKGB2L</li>
               <li><span className="font-semibold">Bank Address:</span> NatWest Bank PLC, 250 Bishopsgate, London, EC2M 4AA, UK</li>
-            </ul>
-          </Box>
-
-          {/* Local Payments Section */}
-          <Box className="ml-10 bg-white p-4 rounded-md border-l-4 border-green-500 mt-4">
-            <Heading as="h4" className="text-md font-semibold mb-3 text-green-700">
-              For Local UK Payments:
-            </Heading>
-            <ul className="space-y-2">
-              <li><span className="font-semibold">Account Number:</span> 13560733</li>
-              <li><span className="font-semibold">Sort Code:</span> 08-71-99</li>
             </ul>
           </Box>
         </Box>
@@ -114,9 +110,18 @@ const PaymentInstructions = ({ order }: PaymentInstructionsProps) => {
             <Box className="w-8 h-8 rounded-full bg-yellow-500 text-white flex items-center justify-center font-bold mr-2">3</Box>
             <Text className="font-medium">Include the required reference in your transfer:</Text>
           </Box>
-          <Box className="ml-10 bg-white p-3 rounded-md">
-            <Text className="font-semibold">Reference: Zempler13560733</Text>
-            <Text className="text-sm text-gray-600 mt-1">Order #: {order.display_id}</Text>
+          <Box className="ml-10 space-y-3">
+            <Box className="bg-green-50 p-3 rounded-md border border-green-200">
+              <Text className="font-semibold text-green-700">For Local UK Payments:</Text>
+              <Text className="text-sm text-green-600">Reference: Conscious Accessories</Text>
+            </Box>
+            <Box className="bg-blue-50 p-3 rounded-md border border-blue-200">
+              <Text className="font-semibold text-blue-700">For International Payments:</Text>
+              <Text className="text-sm text-blue-600">Reference: Zempler13560733</Text>
+            </Box>
+            <Box className="bg-gray-50 p-3 rounded-md border border-gray-200">
+              <Text className="text-sm text-gray-600">Order #: {order.display_id}</Text>
+            </Box>
           </Box>
         </Box>
       </Box>
