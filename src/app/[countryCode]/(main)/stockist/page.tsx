@@ -87,6 +87,7 @@ export default function StockistPage() {
                 <ul className="space-y-2 text-gray-300">
                   <li><a href="https://panpestka.pl" target="_blank" rel="noopener noreferrer" className="hover:text-yellow-300 transition-colors">panpestka.pl</a></li>
                   <li><a href="https://www.breedbros.com" target="_blank" rel="noopener noreferrer" className="hover:text-yellow-300 transition-colors">breedbros.com</a></li>
+                  <li><a href="https://www.Weedfarma.pl" target="_blank" rel="noopener noreferrer" className="hover:text-yellow-300 transition-colors">weedfarma.pl</a></li>
                 </ul>
               </Box>
               

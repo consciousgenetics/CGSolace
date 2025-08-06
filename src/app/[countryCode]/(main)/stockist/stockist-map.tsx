@@ -66,7 +66,8 @@ const StockistMap = () => {
       y: 32.5,
       distributors: [
         { name: 'Pan Pestka', url: 'https://panpestka.pl' },
-        { name: 'Breed Bros', url: 'https://www.breedbros.com' }
+        { name: 'Breed Bros', url: 'https://www.breedbros.com' },
+        { name: 'Weed Farma', url: 'https://www.Weedfarma.pl' }
       ]
     },
     {

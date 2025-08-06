@@ -32,7 +32,7 @@ const AgeVerification: React.FC = () => {
         Cookies.set('age_verified', 'true', { expires: 30 });
       }
     } else {
-      alert('You must be at least 21 years old to enter.');
+      alert('You must be at least 18 years old to enter.');
     }
   };
 
