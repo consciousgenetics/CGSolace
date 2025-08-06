@@ -105,7 +105,7 @@ const AgeVerification = () => {
 
           <div className="mt-2">
             <p className="text-base text-gray-200 text-center mb-6">
-              You must be 21 or older to enter this website.
+              You must be 18 or older to enter this website.
               Please enter your date of birth.
             </p>
           </div>
