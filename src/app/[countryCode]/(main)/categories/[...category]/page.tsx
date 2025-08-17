@@ -31,17 +31,32 @@ export default async function CategoryPage({ params }: {
       return notFound()
     }
     
-    // Get category data safely
+    // Get category data safely with additional timeout protection
     let categoryData;
     try {
-      categoryData = await getCategoryByHandle(category)
+      // Add an additional timeout wrapper
+      const categoryPromise = getCategoryByHandle(category)
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('Category page timeout')), 3000)
+      })
+      
+      categoryData = await Promise.race([categoryPromise, timeoutPromise])
     } catch (err) {
       console.error(`Error fetching category data: ${err}`)
+      // Instead of showing error, redirect to category template with fallback
       return (
         <Container>
-          <p className="py-10 text-center text-lg text-gray-500">
-            There was an error loading this category. Please try again later.
-          </p>
+          <div className="py-10 text-center">
+            <h1 className="text-2xl font-bold mb-4">
+              {category[category.length - 1]?.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+            </h1>
+            <p className="text-lg text-gray-500 mb-8">
+              This category is temporarily unavailable. Please check back soon.
+            </p>
+            <div className="text-sm text-gray-400">
+              Category: {category.join(' > ')}
+            </div>
+          </div>
         </Container>
       )
     }
