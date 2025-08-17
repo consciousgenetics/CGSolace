@@ -48,7 +48,7 @@ export const getCategoryByHandle = async function (categoryHandle: string[]) {
           { next: { tags: ['categories'] } }
         ),
         new Promise((_, reject) => 
-          setTimeout(() => reject(new Error('Category fetch timeout')), 5000)
+          setTimeout(() => reject(new Error('Category fetch timeout')), 10000)
         )
       ]);
     };

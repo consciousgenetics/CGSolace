@@ -98,29 +98,8 @@ export default async function CategoryTemplate({
     // Try to get the current category from the array
     const currentCategory = product_categories[product_categories.length - 1]
     if (!currentCategory) {
-      // Instead of showing 404, provide a fallback experience
-      console.warn(`Category not found for handle: ${category.join('/')}, providing fallback`)
-      
-      // Create a fallback category object
-      const fallbackCategory = {
-        id: 'fallback-category',
-        name: category[category.length - 1]?.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
-        handle: category.join('/'),
-        description: 'This category is currently being updated. Please check back soon for products.',
-        category_children: []
-      }
-      
-      return (
-        <Container>
-          <div className="py-10 text-center">
-            <h1 className="text-2xl font-bold mb-4">{fallbackCategory.name}</h1>
-            <p className="text-lg text-secondary mb-8">{fallbackCategory.description}</p>
-            <div className="text-sm text-gray-500">
-              Category: {category.join(' > ')}
-            </div>
-          </div>
-        </Container>
-      )
+      console.error(`Category not found for handle: ${category.join('/')}`)
+      notFound()
     }
 
     // Get filters data with error handling

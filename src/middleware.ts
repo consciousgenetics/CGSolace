@@ -41,10 +41,7 @@ async function fetchRegionsWithTimeout() {
       return FALLBACK_REGIONS
     }
     
-    // Ensure backend URL has proper protocol
-    const backendUrl = BACKEND_URL?.startsWith('http') ? BACKEND_URL : `https://${BACKEND_URL}`
-    
-    const fetchPromise = fetch(`${backendUrl}/store/regions`, {
+    const fetchPromise = fetch(`${BACKEND_URL}/store/regions`, {
         headers: {
           ...(PUBLISHABLE_API_KEY ? { 'x-publishable-api-key': PUBLISHABLE_API_KEY } : {}),
         },

@@ -472,7 +472,7 @@ export async function setAddresses(currentState: unknown, formData: FormData) {
   )
 }
 
-export async function placeOrder(comment: any, currentCountryCode?: string) {
+export async function placeOrder(comment: any) {
   const cartId = await getCartId()
   if (!cartId) {
     throw new Error('No existing cart found when placing an order')
@@ -561,10 +561,8 @@ export async function placeOrder(comment: any, currentCountryCode?: string) {
     .catch(medusaError)
 
   if (cartRes?.type === 'order') {
-    // Use the current user's country code (from URL) for order confirmation redirect
-    // This ensures the user stays in their preferred region/currency context
-    // regardless of their shipping address country
-    const countryCode = currentCountryCode || 'gb'
+    const countryCode =
+      cartRes.order.shipping_address?.country_code?.toLowerCase()
     removeCartId()
     // Instead of redirecting, return the order ID and country code
     return {

@@ -29,12 +29,7 @@ export const revalidate = 300 // revalidate content every 5 minutes
 // Cache the category fetch operation
 const getCachedCategories = cache(async () => {
   try {
-    // Ensure backend URL has proper protocol
-    const backendUrl = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL?.startsWith('http') 
-      ? process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL 
-      : `https://${process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL}`
-    
-    const response = await fetch(`${backendUrl}/store/product-categories`, {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL}/store/product-categories`, {
       headers: {
         "x-publishable-api-key": process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY || "temp",
       },

@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
-import { useRouter, usePathname } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import { isManual } from '@lib/constants'
 import { placeOrder } from '@lib/data/cart'
 import { HttpTypes } from '@medusajs/types'
@@ -20,12 +20,8 @@ const PaymentButton: React.FC<PaymentButtonProps> = ({
   comment
 }) => {
   const router = useRouter()
-  const pathname = usePathname()
   const [submitting, setSubmitting] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
-
-  // Get current country code from URL path
-  const currentCountryCode = pathname.split('/')[1]?.toLowerCase() || 'gb'
 
   // Only require essential fields for checkout
   const notReady =
@@ -60,7 +56,7 @@ const PaymentButton: React.FC<PaymentButtonProps> = ({
     try {
       // Use a try-catch inside a try-catch to handle potential NEXT_REDIRECT errors
       try {
-        const result = await placeOrder(comment, currentCountryCode)
+        const result = await placeOrder(comment)
         
         if (result.success && result.orderId) {
           // Use client-side navigation to redirect to order confirmation
@@ -76,13 +72,13 @@ const PaymentButton: React.FC<PaymentButtonProps> = ({
       } catch (innerError: any) {
         // Handle NEXT_REDIRECT error specifically (it's an internal Next.js error)
         if (innerError.message && innerError.message.includes('NEXT_REDIRECT')) {
-          // Get the orderId from the cart and use current country code
-          // This ensures we redirect to the correct region regardless of shipping address
+          // Get the orderId and countryCode from the cart
           const orderId = cart.id
+          const countryCode = cart.shipping_address?.country_code?.toLowerCase() || 'gb'
           
           // Navigate to a reasonable guess of where it was trying to redirect
           setTimeout(() => {
-            router.push(`/${currentCountryCode}/order/confirmed/${orderId}`)
+            router.push(`/${countryCode}/order/confirmed/${orderId}`)
           }, 100)
           return
         }
