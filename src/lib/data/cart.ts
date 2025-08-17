@@ -11,6 +11,7 @@ import { omit } from 'lodash'
 import { getAuthHeaders, getCartId, removeCartId, setCartId } from './cookies'
 import { getProductByHandle, getProductsById } from './products'
 import { getRegion } from './regions'
+import { listCartShippingMethods } from './fulfillment'
 
 export async function retrieveCart() {
   const cartId = await getCartId()
@@ -414,6 +415,8 @@ export async function setAddresses(currentState: unknown, formData: FormData) {
       throw new Error('No existing cart found when setting addresses')
     }
 
+    const shippingCountryCode = formData.get('shipping_address.country_code') as string
+
     const data = {
       shipping_address: {
         first_name: formData.get('shipping_address.first_name'),
@@ -423,7 +426,7 @@ export async function setAddresses(currentState: unknown, formData: FormData) {
         company: formData.get('shipping_address.company'),
         postal_code: formData.get('shipping_address.postal_code'),
         city: formData.get('shipping_address.city'),
-        country_code: formData.get('shipping_address.country_code'),
+        country_code: shippingCountryCode,
         province: formData.get('shipping_address.province'),
         phone: formData.get('shipping_address.phone'),
       },
@@ -446,7 +449,20 @@ export async function setAddresses(currentState: unknown, formData: FormData) {
         province: formData.get('billing_address.province'),
         phone: formData.get('billing_address.phone'),
       }
+
+    // Get the appropriate region for the shipping country
+    const region = await getRegion(shippingCountryCode)
+    if (!region) {
+      throw new Error(`Region not found for country code: ${shippingCountryCode}`)
+    }
+
+    // Update both the addresses AND the cart region to match the shipping country
+    data.region_id = region.id
+    
     await updateCart(data)
+    
+    // Invalidate shipping methods cache since region changed
+    revalidateTag('shipping')
   } catch (e: any) {
     return e.message
   }
@@ -481,28 +497,42 @@ export async function placeOrder(comment: any) {
     
     // If there are required profiles, check if they have shipping methods
     if (requiredProfileIds.size > 0) {
+      // Get available shipping options for this cart to map profiles correctly
+      const availableShippingMethods = await listCartShippingMethods(cartId);
+      
       // Get shipping profile IDs covered by selected shipping methods
       const selectedProfileIds = new Set();
       
-      // For each shipping method, try to find which profile it covers
+      // For each shipping method, find the corresponding shipping option to get its profile
       (cart.shipping_methods || []).forEach((method: any) => {
-        // For each item with a shipping profile
-        cart.items.forEach((item: any) => {
-          if (item.variant?.product?.shipping_profile_id) {
-            // If this item's shipping methods include the current method
-            if (item.shipping_methods && item.shipping_methods.some(
-              (sm: any) => sm.shipping_option_id === method.shipping_option_id
-            )) {
-              selectedProfileIds.add(item.variant.product.shipping_profile_id);
-            }
-          }
-        });
+        // Find the shipping option that corresponds to this method
+        const shippingOption = availableShippingMethods?.find(
+          (option: any) => option.id === method.shipping_option_id
+        );
+        
+        if (shippingOption?.shipping_profile_id) {
+          selectedProfileIds.add(shippingOption.shipping_profile_id);
+        }
+        // Fallback: if the shipping method has a nested shipping_option object
+        else if (method.shipping_option?.shipping_profile_id) {
+          selectedProfileIds.add(method.shipping_option.shipping_profile_id);
+        }
       });
       
       // Debug information
       console.log('Shipping profile validation:', {
         required: Array.from(requiredProfileIds),
-        selected: Array.from(selectedProfileIds)
+        selected: Array.from(selectedProfileIds),
+        shippingMethods: cart.shipping_methods?.map((m: any) => ({
+          id: m.id,
+          shipping_option_id: m.shipping_option_id,
+          shipping_option: m.shipping_option
+        })),
+        availableOptions: availableShippingMethods?.map((opt: any) => ({
+          id: opt.id,
+          name: opt.name,
+          shipping_profile_id: opt.shipping_profile_id
+        }))
       });
       
       // Check if any required profiles are missing shipping methods
@@ -511,7 +541,7 @@ export async function placeOrder(comment: any) {
         
       if (missingProfiles.length > 0) {
         throw new Error(
-          'The cart items require shipping profiles that are not satisfied by the current shipping methods'
+          `The cart items require shipping profiles that are not satisfied by the current shipping methods. Missing profiles: ${missingProfiles.join(', ')}`
         );
       }
     }

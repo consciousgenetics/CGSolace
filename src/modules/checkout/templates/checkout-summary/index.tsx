@@ -9,6 +9,7 @@ import CartTotals from '@modules/common/components/cart-totals'
 import LocalizedClientLink from '@modules/common/components/localized-client-link'
 import { Text } from '@modules/common/components/text'
 import { useEffect, useMemo, useState } from 'react'
+import { listCartShippingMethods } from '@lib/data/fulfillment'
 
 // Add this function at the top to check for valid pricing
 const validateCartPricing = (cart: any) => {
@@ -49,6 +50,18 @@ const CheckoutSummary = ({
 }) => {
     const [comment, setComment] = useState<string>('');
     const [pricingError, setPricingError] = useState<string>('');
+  // State for shipping methods
+  const [availableShippingMethods, setAvailableShippingMethods] = useState<any[] | null>(null);
+
+  // Fetch shipping methods when cart changes
+  useEffect(() => {
+    if (cart?.id) {
+      listCartShippingMethods(cart.id)
+        .then(setAvailableShippingMethods)
+        .catch(console.error);
+    }
+  }, [cart?.id]);
+
   // Check if all required shipping profiles have methods selected
   const allShippingProfilesSatisfied = useMemo(() => {
     if (!cart || !cart.items || cart.items.length === 0) return false
@@ -73,34 +86,47 @@ const CheckoutSummary = ({
     }
     
     // Get shipping profile IDs that have methods selected
-    const selectedProfileIds = new Set(
-      (cart.shipping_methods || [])
-        .map(method => {
-          // Find the corresponding shipping option to get its profile ID
-          const item = cart.items.find(item => 
-            item.variant?.product?.shipping_profile_id && 
-            item.shipping_methods?.some(sm => sm.shipping_option_id === method.shipping_option_id)
-          )
-          return item?.variant?.product?.shipping_profile_id
-        })
-        .filter(Boolean)
-    )
+    const selectedProfileIds = new Set();
+    
+    // For each shipping method, find the corresponding shipping option to get its profile
+    (cart.shipping_methods || []).forEach((method) => {
+      // Find the shipping option that corresponds to this method
+      const shippingOption = availableShippingMethods?.find(
+        (option) => option.id === method.shipping_option_id
+      );
+      
+      if (shippingOption?.shipping_profile_id) {
+        selectedProfileIds.add(shippingOption.shipping_profile_id);
+      }
+      // Fallback: if the shipping method has a nested shipping_option object
+      else if (method.shipping_option?.shipping_profile_id) {
+        selectedProfileIds.add(method.shipping_option.shipping_profile_id);
+      }
+    });
     
     // For debug purposes
     console.log('Shipping profile check:', {
       required: Array.from(requiredProfileIds),
       selected: Array.from(selectedProfileIds),
-      satisfied: requiredProfileIds.size <= selectedProfileIds.size
+      satisfied: requiredProfileIds.size <= selectedProfileIds.size,
+      shippingMethods: cart.shipping_methods?.map((m) => ({
+        id: m.id,
+        shipping_option_id: m.shipping_option_id,
+        shipping_option: m.shipping_option
+      })),
+      availableOptions: availableShippingMethods?.map((opt) => ({
+        id: opt.id,
+        name: opt.name,
+        shipping_profile_id: opt.shipping_profile_id
+      }))
     });
     
-    // If at least one shipping method is selected, consider it good enough
-    if (requiredProfileIds.size > 0 && selectedProfileIds.size > 0) {
-      return true;
-    }
-    
-    // Check if all required profiles have methods selected
-    return requiredProfileIds.size <= selectedProfileIds.size
-  }, [cart])
+    // Check if any required profiles are missing shipping methods
+    const missingProfiles = Array.from(requiredProfileIds)
+      .filter(id => !selectedProfileIds.has(id));
+      
+    return missingProfiles.length === 0;
+  }, [cart, availableShippingMethods])
 
   // Determine if payment button should be shown
   const showPaymentButton = useMemo(() => {
@@ -149,7 +175,7 @@ const CheckoutSummary = ({
           }
         <Box className="flex flex-col gap-5 bg-primary p-5">
           <CartTotals totals={cart} />
-          {!showPaymentButton && cart?.shipping_methods && cart.shipping_methods.length > 0 && !allShippingProfilesSatisfied && (
+          {cart?.shipping_methods && cart.shipping_methods.length > 0 && !allShippingProfilesSatisfied && (
             <div className="mt-4 rounded-md bg-amber-50 p-4">
               <Text className="text-amber-800 font-medium">
                 Multiple shipping methods required
@@ -173,7 +199,7 @@ const CheckoutSummary = ({
          
           {showPaymentButton && (
             <Box className="flex flex-col gap-5">
-              {!pricingError && <PaymentButton cart={cart} data-testid="submit-order-button" comment={comment} />}
+              {!pricingError && allShippingProfilesSatisfied && <PaymentButton cart={cart} data-testid="submit-order-button" comment={comment} />}
               <Box className="flex w-full">
                 <Text className="text-center text-sm text-secondary">
                   By clicking the Place order button, you confirm that you have

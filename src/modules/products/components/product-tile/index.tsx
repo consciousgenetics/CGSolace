@@ -4,6 +4,7 @@ import { differenceInDays } from 'date-fns'
 import { formatNameForTestId } from '@lib/util/formatNameForTestId'
 import { getProductPrice } from '@lib/util/get-product-price'
 import { transformUrl } from '@lib/util/transform-url'
+import { sortVariantsBySizeOrder } from '@lib/util/size-ordering'
 import { Badge } from '@modules/common/components/badge'
 import { Box } from '@modules/common/components/box'
 import { Button } from '@modules/common/components/button'
@@ -319,7 +320,7 @@ export function ProductTile({
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#d67bef]"
                       onClick={(e) => e.stopPropagation()}
                     >
-                      {product.variants.map((variant) => (
+                      {sortVariantsBySizeOrder(product.variants).map((variant) => (
                         <option key={variant.id} value={variant.id}>
                           {variant.title}
                         </option>

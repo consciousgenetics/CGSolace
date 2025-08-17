@@ -14,6 +14,7 @@ import { toast } from '@modules/common/components/toast'
 import OptionSelect from '@modules/products/components/product-actions/option-select'
 import { isEqual } from 'lodash'
 import { VariantColor } from 'types/strapi'
+import { sortVariantsBySizeOrder } from '@lib/util/size-ordering'
 
 import ProductPrice from '../product-price'
 
@@ -146,7 +147,7 @@ export default function ProductActions({
   const maxQuantity = useMemo(() => {
     if (!selectedVariant) return 0
 
-    // Get the quantity of this variant already in the cart
+    // Get the quantity of this specific variant already in the cart
     const cartQuantity = cartItems?.reduce((sum, item) => {
       if (item.variant_id === selectedVariant.id) {
         return sum + item.quantity
@@ -154,27 +155,48 @@ export default function ProductActions({
       return sum
     }, 0) || 0
 
-    // If we have a specific inventory quantity, use that
+    // If we manage inventory and have actual inventory tracking
     if (
       selectedVariant.manage_inventory &&
       selectedVariant.inventory_quantity !== null &&
-      selectedVariant.inventory_quantity !== undefined
+      selectedVariant.inventory_quantity !== undefined &&
+      selectedVariant.inventory_quantity > 0
     ) {
       const availableQuantity = selectedVariant.inventory_quantity - cartQuantity
-      console.log('maxQuantity calculation:', {
+      console.log('maxQuantity calculation (managed inventory):', {
         variant: selectedVariant.title,
         inventoryQuantity: selectedVariant.inventory_quantity,
         cartQuantity,
-        availableQuantity
+        availableQuantity,
+        manageInventory: selectedVariant.manage_inventory,
+        allowBackorder: selectedVariant.allow_backorder
       })
       return Math.max(0, availableQuantity)
     }
 
-    // If we allow backorders or don't manage inventory, use a reasonable limit
-    if (selectedVariant.allow_backorder || !selectedVariant.manage_inventory) {
-      return Math.max(0, 10 - cartQuantity)
+    // If we allow backorders, don't manage inventory, or have 0 inventory but manage it, use a reasonable per-variant limit
+    // This allows 10 items per variant, not 10 items total across all variants
+    if (selectedVariant.allow_backorder || !selectedVariant.manage_inventory ||
+        (selectedVariant.manage_inventory && (selectedVariant.inventory_quantity === 0 || selectedVariant.inventory_quantity === null))) {
+      const maxQty = Math.max(0, 10 - cartQuantity)
+      console.log('maxQuantity calculation (no inventory limits):', {
+        variant: selectedVariant.title,
+        cartQuantity,
+        maxQty,
+        manageInventory: selectedVariant.manage_inventory,
+        allowBackorder: selectedVariant.allow_backorder,
+        inventoryQuantity: selectedVariant.inventory_quantity
+      })
+      return maxQty
     }
 
+    console.log('maxQuantity calculation (fallback to 0):', {
+      variant: selectedVariant.title,
+      cartQuantity,
+      manageInventory: selectedVariant.manage_inventory,
+      allowBackorder: selectedVariant.allow_backorder,
+      inventoryQuantity: selectedVariant.inventory_quantity
+    })
     return 0
   }, [selectedVariant, cartItems])
 
@@ -184,12 +206,11 @@ export default function ProductActions({
       const variantOptions = optionsAsKeymap(product.variants[0].options)
       setOptions(variantOptions ?? {})
     } else if (product.variants && product.variants.length > 1) {
-      const sortedVariants = [...product.variants].sort((a, b) =>
-        (a.title || '').localeCompare(b.title || '')
-      )
-      const firstAlphabeticalVariant = sortedVariants[0]
-      if (firstAlphabeticalVariant) {
-        const variantOptions = optionsAsKeymap(firstAlphabeticalVariant.options)
+      // Sort variants by size order (Small, Medium, Large, XL) instead of alphabetically
+      const sortedVariants = sortVariantsBySizeOrder(product.variants)
+      const firstVariant = sortedVariants[0]
+      if (firstVariant) {
+        const variantOptions = optionsAsKeymap(firstVariant.options)
         setOptions(variantOptions ?? {})
       }
     }

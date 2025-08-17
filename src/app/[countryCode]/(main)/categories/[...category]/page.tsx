@@ -16,8 +16,8 @@ export default async function CategoryPage({ params }: {
   params: { countryCode: string; category: string[] } 
 }) {
   try {
-    // Use params directly without awaiting
-    const { countryCode, category } = params
+    // Await params as required by Next.js 15
+    const { countryCode, category } = await params
 
     // Get region data - if not found, show 404
     const region = await getRegion(countryCode)

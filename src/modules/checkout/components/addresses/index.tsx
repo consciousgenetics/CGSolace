@@ -1,6 +1,6 @@
 'use client'
 
-import React, { startTransition, useActionState, useState } from 'react'
+import React, { startTransition, useActionState, useState, useEffect } from 'react'
 import {
   useParams,
   usePathname,
@@ -11,6 +11,7 @@ import Image from 'next/image'
 import { motion } from 'framer-motion'
 
 import { initiatePaymentSession, setAddresses } from '@lib/data/cart'
+import { listRegions } from '@lib/data/regions'
 import { useCheckoutForms } from '@lib/hooks/use-checkout-forms'
 import compareAddresses from '@lib/util/addresses'
 import { HttpTypes } from '@medusajs/types'
@@ -84,6 +85,23 @@ const Addresses = ({
   const [, formAction] = useActionState(setAddresses, null)
   const [isTransitioning, setIsTransitioning] = useState(false)
   const [formError, setFormError] = useState<string | null>(null)
+  const [allRegions, setAllRegions] = useState<HttpTypes.StoreRegion[]>([])
+
+  // Fetch all regions on component mount
+  useEffect(() => {
+    const fetchAllRegions = async () => {
+      try {
+        const regions = await listRegions()
+        if (regions) {
+          setAllRegions(regions)
+        }
+      } catch (error) {
+        console.error('Error fetching regions:', error)
+      }
+    }
+    
+    fetchAllRegions()
+  }, [])
 
   const toggleSameAsShipping = (value: boolean) => {
     originalToggleSameAsShipping()
@@ -276,6 +294,7 @@ const Addresses = ({
               onChange={toggleSameAsShipping}
               handleChange={checkout.handleChange}
               errors={checkout.errors}
+              allRegions={allRegions}
             />
             {!sameAsShipping && (
               <div>
@@ -288,6 +307,7 @@ const Addresses = ({
                   values={checkout.values}
                   handleChange={checkout.handleChange}
                   errors={checkout.errors}
+                  allRegions={allRegions}
                 />
               </div>
             )}

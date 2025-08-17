@@ -1,4 +1,5 @@
 import { useAddressSelect } from '@lib/hooks/use-address-select'
+import { listRegions } from '@lib/data/regions'
 import { userShippingAddressFormValidationSchema } from '@lib/util/validator'
 import { HttpTypes } from '@medusajs/types'
 import { Button } from '@modules/common/components/button'
@@ -17,6 +18,7 @@ import {
 import { ArrowLeftIcon } from '@modules/common/icons'
 import * as VisuallyHidden from '@radix-ui/react-visually-hidden'
 import { FormikProvider, useFormik } from 'formik'
+import { useEffect, useState } from 'react'
 
 import EditAddressForm from '../edit-address-form'
 import NewAddressForm from '../new-address-form'
@@ -38,6 +40,24 @@ const AddressSelect: React.FC<AddressSelectProps> = ({
   cart,
   onSelect,
 }) => {
+  const [allRegions, setAllRegions] = useState<HttpTypes.StoreRegion[]>([])
+
+  // Fetch all regions on component mount
+  useEffect(() => {
+    const fetchAllRegions = async () => {
+      try {
+        const regions = await listRegions()
+        if (regions) {
+          setAllRegions(regions)
+        }
+      } catch (error) {
+        console.error('Error fetching regions:', error)
+      }
+    }
+    
+    fetchAllRegions()
+  }, [])
+
   const {
     formRef,
     editFormRef,
@@ -129,6 +149,7 @@ const AddressSelect: React.FC<AddressSelectProps> = ({
                 <NewAddressForm
                   ref={formRef}
                   region={cart?.region}
+                  allRegions={allRegions}
                   formState={addFormState}
                 />
               ) : editAddress ? (
@@ -136,6 +157,7 @@ const AddressSelect: React.FC<AddressSelectProps> = ({
                   ref={editFormRef}
                   address={editingAddress}
                   region={cart?.region}
+                  allRegions={allRegions}
                   formState={updateFormState}
                 />
               ) : (

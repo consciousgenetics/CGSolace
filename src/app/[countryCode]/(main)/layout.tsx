@@ -16,7 +16,7 @@ export default async function PageLayout({
   children: React.ReactNode
   params: { countryCode: string }
 }) {
-  const { countryCode } = params;
+  const { countryCode } = await params;
   
   return (
     <>

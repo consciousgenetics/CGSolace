@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Cookies from 'js-cookie';
+import { areCookiesAccepted } from '@lib/util/cookie-consent';
 
 const AgeVerification: React.FC = () => {
   const [birthday, setBirthday] = useState('');
@@ -7,9 +8,12 @@ const AgeVerification: React.FC = () => {
   const [isVerified, setIsVerified] = useState(false);
 
   useEffect(() => {
-    const verified = Cookies.get('age_verified');
-    if (verified) {
-      setIsVerified(true);
+    // Only check for age verification cookie if cookies are accepted
+    if (areCookiesAccepted()) {
+      const verified = Cookies.get('age_verified');
+      if (verified) {
+        setIsVerified(true);
+      }
     }
   }, []);
 
@@ -28,7 +32,8 @@ const AgeVerification: React.FC = () => {
     const age = calculateAge(birthday);
     if (age >= 21) {
       setIsVerified(true);
-      if (rememberMe) {
+      // Only set cookie if user has accepted cookies and wants to be remembered
+      if (rememberMe && areCookiesAccepted()) {
         Cookies.set('age_verified', 'true', { expires: 30 });
       }
     } else {
@@ -56,8 +61,9 @@ const AgeVerification: React.FC = () => {
           type="checkbox"
           checked={rememberMe}
           onChange={(e) => setRememberMe(e.target.checked)}
+          disabled={!areCookiesAccepted()}
         />
-        Remember me
+        Remember me {!areCookiesAccepted() && '(requires cookies)'}
       </label>
       <button onClick={handleSubmit}>Submit</button>
     </div>

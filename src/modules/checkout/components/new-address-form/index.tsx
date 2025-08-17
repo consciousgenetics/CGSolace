@@ -14,6 +14,7 @@ import CountrySelect from '../country-select'
 type NewAddressFormProps = {
   ref: React.RefObject<HTMLFormElement | null>
   region: HttpTypes.StoreRegion
+  allRegions?: HttpTypes.StoreRegion[]
   formState: {
     success: boolean
     error: string | null
@@ -22,7 +23,7 @@ type NewAddressFormProps = {
 
 const NewAddressForm = forwardRef<HTMLFormElement, NewAddressFormProps>(
   (props, ref) => {
-    const { region, formState } = props
+    const { region, allRegions, formState } = props
 
     const { setFieldValue, errors, values, handleChange } =
       useFormikContext<
@@ -95,6 +96,7 @@ const NewAddressForm = forwardRef<HTMLFormElement, NewAddressFormProps>(
             <CountrySelect
               label="Country"
               region={region}
+              allRegions={allRegions}
               name="country_code"
               required
               autoComplete="country"

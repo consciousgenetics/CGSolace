@@ -65,11 +65,11 @@ function isCountdownEnded() {
 export default async function CategoryTemplate({
   params,
 }: {
-  params: { countryCode: string; category: string[] }
+  params: Promise<{ countryCode: string; category: string[] }>
 }) {
   try {
-    // Use params directly without awaiting
-    const { countryCode, category } = params
+    // Await params before using
+    const { countryCode, category } = await params
 
     // Get region data - if not found, show 404
     const region = await getRegion(countryCode)

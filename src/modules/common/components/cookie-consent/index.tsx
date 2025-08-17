@@ -1,37 +1,45 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import CookieConsent from 'react-cookie-consent'
 import { toast } from 'sonner'
+import { setCookieConsent, clearAllCookies, hasUserMadeCookieChoice } from '@lib/util/cookie-consent'
 
 const CookieConsentBanner = () => {
-  const [isDeclined, setIsDeclined] = useState(false)
+  const [shouldShowBanner, setShouldShowBanner] = useState(true)
+
+  useEffect(() => {
+    // Check if user has already made a choice
+    if (hasUserMadeCookieChoice()) {
+      setShouldShowBanner(false)
+    }
+  }, [])
 
   const handleDecline = () => {
-    // Clear all cookies
-    document.cookie.split(';').forEach(cookie => {
-      const [name] = cookie.split('=')
-      document.cookie = `${name.trim()}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`
-    })
-
-    // Clear localStorage
-    localStorage.clear()
+    // Clear all existing cookies and storage
+    clearAllCookies()
     
-    // Clear sessionStorage
-    sessionStorage.clear()
-
-    // Set a flag to prevent new cookies
-    localStorage.setItem('cookiesDeclined', 'true')
+    // Set the decline preference using our cookie consent utility
+    setCookieConsent(false)
     
-    setIsDeclined(true)
+    setShouldShowBanner(false)
     
     // Show feedback to user
     toast.error('Cookies have been disabled. Some features may not work properly.')
   }
 
   const handleAccept = () => {
-    localStorage.setItem('cookiesAccepted', 'true')
+    // Set the acceptance preference using our cookie consent utility
+    setCookieConsent(true)
+    
+    setShouldShowBanner(false)
+    
     toast.success('Cookies have been enabled. Thank you for accepting.')
+  }
+
+  // Don't render the banner if user has already made a choice
+  if (!shouldShowBanner) {
+    return null
   }
 
   return (

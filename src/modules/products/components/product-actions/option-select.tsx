@@ -29,7 +29,8 @@ const OptionSelect: React.FC<OptionSelectProps> = ({
   productTitle,
 }) => {
   const getSizeOrder = (value: string) => {
-    // Size ordering priority
+    // Size ordering priority - handles both lowercase and proper case
+    const normalizedValue = value.toLowerCase().trim()
     const sizeOrder = {
       'xxs': 0,
       'xs': 1,
@@ -40,23 +41,57 @@ const OptionSelect: React.FC<OptionSelectProps> = ({
       'l': 4,
       'large': 4,
       'xl': 5,
+      'x-large': 5,
       'extra large': 5,
       'extra-large': 5,
       'extralarge': 5,
       'xxl': 6,
       '2xl': 6,
+      'xx-large': 6,
       '3xl': 7,
       'xxxl': 7,
-      '4xl': 8
+      'xxx-large': 7,
+      '4xl': 8,
+      '5xl': 9
     }
-    return sizeOrder[value.toLowerCase()] ?? 999 // Default high value for unknown sizes
+    return sizeOrder[normalizedValue] ?? 999 // Default high value for unknown sizes
   }
+
+  // Function to detect if this option contains size values
+  const isSizeOption = (values: any[], optionTitle: string) => {
+    if (!values || values.length === 0) return false
+    
+    // Check if option title suggests it's a size option
+    const titleLower = optionTitle.toLowerCase()
+    if (titleLower === 'size' || titleLower.includes('size')) {
+      return true
+    }
+    
+    // Check if all values look like clothing sizes
+    const sizeValues = ['small', 'medium', 'large', 'xl', 'xxl', 's', 'm', 'l', 'xs', 'xxs']
+    const allValuesAreSizes = values.every(v => 
+      sizeValues.some(size => v.value.toLowerCase().includes(size))
+    )
+    
+    console.log(`Size detection for "${optionTitle}":`, {
+      values: values.map(v => v.value),
+      allValuesAreSizes,
+      titleSuggested: titleLower === 'size' || titleLower.includes('size')
+    })
+    
+    return allValuesAreSizes
+  }
+
+  const isSizeOptionDetected = isSizeOption(option.values || [], title)
 
   const filteredOptions = option.values
     ?.sort((a, b) => {
-      if (title.toLowerCase() === 'size') {
+      if (isSizeOptionDetected) {
         // Custom sort for sizes
-        return getSizeOrder(a.value) - getSizeOrder(b.value)
+        const orderA = getSizeOrder(a.value)
+        const orderB = getSizeOrder(b.value)
+        console.log(`Size ordering: ${a.value} (${orderA}) vs ${b.value} (${orderB}) for title: ${title}`)
+        return orderA - orderB
       }
       // Default alphabetical sort for other options
       return a.value.localeCompare(b.value)
@@ -65,45 +100,87 @@ const OptionSelect: React.FC<OptionSelectProps> = ({
 
   const getDisplayText = (value: string, title: string) => {
     // For size options, handle specific sizes
-    if (title.toLowerCase() === 'size') {
-      // Display 'XL' for Extra Large variants
-      if (value.toLowerCase() === 'extra large' || 
-          value.toLowerCase() === 'extralarge' || 
-          value.toLowerCase() === 'extra-large' || 
-          value.toLowerCase() === 'xl') {
+    if (isSizeOptionDetected) {
+      const normalizedValue = value.toLowerCase().trim()
+      
+      // Handle various XL representations
+      if (normalizedValue === 'extra large' || 
+          normalizedValue === 'extralarge' || 
+          normalizedValue === 'extra-large' || 
+          normalizedValue === 'x-large' ||
+          normalizedValue === 'xl') {
         return 'XL'
       }
       
-      // Special case for Large
-      if (value.toLowerCase() === 'large') {
+      // Handle Large
+      if (normalizedValue === 'large' || normalizedValue === 'l') {
         return 'L'
       }
       
-      // Special case for Medium
-      if (value.toLowerCase() === 'medium') {
+      // Handle Medium
+      if (normalizedValue === 'medium' || normalizedValue === 'm') {
         return 'M'
       }
       
-      // Special case for Small
-      if (value.toLowerCase() === 'small') {
+      // Handle Small
+      if (normalizedValue === 'small' || normalizedValue === 's') {
         return 'S'
       }
       
-      // For Extra Large that might not match the conditions above
-      if (value.toLowerCase().includes('extra') && value.toLowerCase().includes('large')) {
-        return 'XL'
+      // Handle XXL and other sizes
+      if (normalizedValue === 'xxl' || normalizedValue === '2xl' || normalizedValue === 'xx-large') {
+        return 'XXL'
       }
       
-      // For other sizes, just use the first letter
-      return value.charAt(0).toUpperCase()
+      if (normalizedValue === 'xxxl' || normalizedValue === '3xl' || normalizedValue === 'xxx-large') {
+        return 'XXXL'
+      }
+      
+      if (normalizedValue === 'xs') {
+        return 'XS'
+      }
+      
+      if (normalizedValue === 'xxs') {
+        return 'XXS'
+      }
+      
+      // For other sizes, just use the original value or first letter
+      return value.length <= 3 ? value.toUpperCase() : value.charAt(0).toUpperCase()
     }
     // For other options (like seed types), show full name
     return value
   }
 
-  // Check if this is a pack product that should use dropdown
-  const useDropdown = productTitle?.toLowerCase().includes('merch pack') || 
-                     productTitle?.toLowerCase().includes('5 x favourite pack')
+  // Function to determine if dropdown should be used
+  const shouldUseDropdown = () => {
+    // Always use dropdown for pack products
+    if (productTitle?.toLowerCase().includes('merch pack') || 
+        productTitle?.toLowerCase().includes('5 x favourite pack')) {
+      return true
+    }
+
+    if (!filteredOptions || filteredOptions.length === 0) {
+      return false
+    }
+
+    // Check if any variation name is too long
+    const maxLength = 12 // Character limit for button display (reduced for better UX)
+    const hasLongVariations = filteredOptions.some(option => option.length > maxLength)
+    
+    // Check if variations contain descriptive text (like "Hemp Grinder: Conscious Genetics")
+    const hasDescriptiveVariations = filteredOptions.some(option => 
+      option.includes(':') || option.includes(' - ') || option.split(' ').length > 2
+    )
+    
+    // Check if there are too many variations (would cause layout issues)
+    const maxVariationsForButtons = 8
+    const hasTooManyVariations = filteredOptions.length > maxVariationsForButtons
+    
+    // Use dropdown if variations are too long, descriptive, or too many
+    return hasLongVariations || hasDescriptiveVariations || hasTooManyVariations
+  }
+
+  const useDropdown = shouldUseDropdown()
 
   return (
     <div className="flex flex-col gap-y-3">
@@ -116,17 +193,26 @@ const OptionSelect: React.FC<OptionSelectProps> = ({
         </Text>
       </Text>
       {useDropdown ? (
-        // Dropdown for pack products
+        // Dropdown for products with long variation names or many variations
         <select
-          value={current}
+          value={current || ""}
           onChange={(e) => updateOption(option.id, e.target.value)}
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#d67bef] bg-white"
+          className={cn(
+            "w-full px-4 py-3 border rounded-lg text-sm transition-all duration-200 bg-white",
+            "focus:outline-none focus:ring-2 focus:border-transparent",
+            "hover:border-gray-400",
+            disabled 
+              ? "border-gray-200 bg-gray-50 text-gray-400 cursor-not-allowed" 
+              : "border-gray-300 focus:ring-[#d67bef] focus:ring-opacity-50"
+          )}
           disabled={disabled}
           data-testid="variant-select"
         >
-          <option value="">Select {title}</option>
+          <option value="" disabled>
+            Select {title}
+          </option>
           {filteredOptions?.map((v) => (
-            <option key={v} value={v}>
+            <option key={v} value={v} className="py-2">
               {v}
             </option>
           ))}

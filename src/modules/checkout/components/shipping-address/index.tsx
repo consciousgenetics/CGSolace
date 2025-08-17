@@ -24,6 +24,7 @@ const ShippingAddress = ({
   handleChange,
   values,
   errors,
+  allRegions,
 }: {
   customer: HttpTypes.StoreCustomer | null
   cart: HttpTypes.StoreCart | null
@@ -33,6 +34,7 @@ const ShippingAddress = ({
   handleChange: (e: React.ChangeEvent<HTMLInputElement>) => void
   values: any
   errors: FormikErrors<FormikErrorsType>
+  allRegions?: HttpTypes.StoreRegion[]
 }) => {
   const countriesInRegion = useMemo(
     () => cart?.region?.countries?.map((c) => c.iso_2),
@@ -203,6 +205,7 @@ const ShippingAddress = ({
           name="shipping_address.country_code"
           autoComplete="country"
           region={cart?.region}
+          allRegions={allRegions}
           value={values.shipping_address.country_code}
           onChange={
             handleChange as unknown as ChangeEventHandler<HTMLSelectElement>

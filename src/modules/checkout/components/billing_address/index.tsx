@@ -13,11 +13,13 @@ const BillingAddress = ({
   handleChange,
   values,
   errors,
+  allRegions,
 }: {
   cart: HttpTypes.StoreCart | null
   handleChange: (e: React.ChangeEvent<HTMLInputElement>) => void
   values: any
   errors: FormikErrors<FormikErrorsType>
+  allRegions?: HttpTypes.StoreRegion[]
 }) => {
   return (
     <>
@@ -85,6 +87,7 @@ const BillingAddress = ({
           name="billing_address.country_code"
           autoComplete="country"
           region={cart?.region}
+          allRegions={allRegions}
           value={values.billing_address.country_code}
           onChange={
             handleChange as unknown as ChangeEventHandler<HTMLSelectElement>

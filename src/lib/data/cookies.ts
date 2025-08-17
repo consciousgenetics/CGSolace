@@ -1,6 +1,7 @@
 import 'server-only'
 
 import { cookies } from 'next/headers'
+import { checkServerSideCookieConsent } from '@lib/util/cookie-consent'
 
 export const getAuthHeaders = async (): Promise<
   { authorization: string } | {}
@@ -17,6 +18,15 @@ export const getAuthHeaders = async (): Promise<
 
 export const setAuthToken = async (token: string) => {
   const cookieStore = await cookies()
+  
+  // Check if cookies are accepted via request headers
+  const cookieHeader = (await cookies()).toString()
+  const hasConsent = checkServerSideCookieConsent(cookieHeader)
+  
+  if (!hasConsent) {
+    console.warn('Cannot set auth token: User has not accepted cookies')
+    return
+  }
 
   cookieStore.set('_medusa_jwt', token, {
     maxAge: 60 * 60 * 24 * 7,
@@ -40,6 +50,16 @@ export const getCartId = async () => {
 
 export const setCartId = async (cartId: string) => {
   const cookieStore = await cookies()
+  
+  // Check if cookies are accepted via request headers
+  const cookieHeader = (await cookies()).toString()
+  const hasConsent = checkServerSideCookieConsent(cookieHeader)
+  
+  if (!hasConsent) {
+    console.warn('Cannot set cart ID: User has not accepted cookies')
+    return
+  }
+  
   cookieStore.set('_medusa_cart_id', cartId, {
     maxAge: 60 * 60 * 24 * 7,
     httpOnly: true,

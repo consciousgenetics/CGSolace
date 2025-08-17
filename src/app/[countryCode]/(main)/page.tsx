@@ -46,7 +46,8 @@ export default async function Home(props: {
   params: { countryCode: string }
 }) {
   try {
-    const countryCode = props.params.countryCode
+    const params = await props.params
+    const countryCode = params.countryCode
 
     let collectionsList = [];
     let seedProducts = [];

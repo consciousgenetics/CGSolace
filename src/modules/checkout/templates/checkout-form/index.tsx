@@ -8,9 +8,9 @@ import Shipping from '@modules/checkout/components/shipping'
 import { Box } from '@modules/common/components/box'
 import { Text } from '@modules/common/components/text'
 
-// Cache shipping methods fetching
+// Cache shipping methods fetching - include region ID in cache key for proper invalidation
 const getShippingMethods = cache(
-  (cartId: string) => listCartShippingMethods(cartId),
+  (cartId: string, regionId?: string) => listCartShippingMethods(cartId),
   ['shipping-methods'],
   { revalidate: 10 }
 )
@@ -46,7 +46,7 @@ export default async function CheckoutForm({
   // Fetch both shipping and payment methods in parallel
   const regionId = cart.region?.id || ''
   const [shippingMethods, paymentMethods] = await Promise.all([
-    getShippingMethods(cart.id),
+    getShippingMethods(cart.id, regionId),
     getPaymentMethods(regionId)
   ])
 

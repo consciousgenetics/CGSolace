@@ -7,14 +7,16 @@ import { Label } from '@modules/common/components/label'
 import NativeSelect, {
   NativeSelectProps,
 } from '@modules/common/components/native-select'
+import { listRegions } from '@lib/data/regions'
 
 const CountrySelect = forwardRef<
   HTMLSelectElement,
   NativeSelectProps & {
     region?: HttpTypes.StoreRegion
     error?: string
+    allRegions?: HttpTypes.StoreRegion[]
   }
->(({ placeholder = 'Country', region, error, defaultValue, ...props }, ref) => {
+>(({ placeholder = 'Country', region, error, defaultValue, allRegions, ...props }, ref) => {
   const innerRef = useRef<HTMLSelectElement>(null)
 
   useImperativeHandle<HTMLSelectElement | null, HTMLSelectElement | null>(
@@ -23,6 +25,28 @@ const CountrySelect = forwardRef<
   )
 
   const countryOptions = useMemo(() => {
+    // If allRegions is provided, collect all countries from all regions
+    if (allRegions && allRegions.length > 0) {
+      const allCountries = new Map()
+      
+      allRegions.forEach(reg => {
+        reg.countries?.forEach(country => {
+          if (country.iso_2 && country.display_name) {
+            allCountries.set(country.iso_2, {
+              value: country.iso_2,
+              label: country.display_name,
+            })
+          }
+        })
+      })
+      
+      // Convert to array and sort alphabetically
+      return Array.from(allCountries.values()).sort((a, b) => 
+        a.label.localeCompare(b.label)
+      )
+    }
+    
+    // Fallback to current region only
     if (!region) {
       return []
     }
@@ -30,8 +54,8 @@ const CountrySelect = forwardRef<
     return region.countries?.map((country) => ({
       value: country.iso_2,
       label: country.display_name,
-    }))
-  }, [region])
+    })) || []
+  }, [region, allRegions])
 
   return (
     <Box className="flex flex-col gap-2">

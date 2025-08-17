@@ -15,7 +15,7 @@ export const metadata: Metadata = {
 export const revalidate = 300 // Revalidate at most every 5 minutes
 
 // This is a server component
-export default function CountryLayout({
+export default async function CountryLayout({
   children,
   params,
 }: {
@@ -23,7 +23,7 @@ export default function CountryLayout({
   params: { countryCode: string }
 }) {
   // Extract countryCode
-  const { countryCode } = params
+  const { countryCode } = await params
   
   return (
     <CountdownProvider>

@@ -1,5 +1,6 @@
 import { cookies } from 'next/headers'
 import { NextRequest, NextResponse } from 'next/server'
+import { checkServerSideCookieConsent } from '@lib/util/cookie-consent'
 
 // Helper function to set cart ID cookie properly within a route handler
 export async function POST(request: NextRequest) {
@@ -11,6 +12,16 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ 
         error: 'Cart ID is required'
       }, { status: 400 })
+    }
+
+    // Check cookie consent
+    const cookieHeader = request.headers.get('cookie')
+    const hasConsent = checkServerSideCookieConsent(cookieHeader || '')
+    
+    if (!hasConsent) {
+      return NextResponse.json({ 
+        error: 'Cannot set cart cookie: User has not accepted cookies'
+      }, { status: 403 })
     }
     
     // Create a response

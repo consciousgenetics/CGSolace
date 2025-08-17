@@ -49,43 +49,16 @@ const Shipping: React.FC<ShippingProps> = ({
 
   const isOpen = searchParams.get('step') === 'delivery'
 
-  // Filter shipping options based on country code
+  // Use all shipping options returned by Medusa backend
+  // The backend already filters shipping options based on the cart's region
   const filteredShippingMethods = useMemo(() => {
     if (!availableShippingMethods) return null
     
-    // Convert country code to uppercase for comparison
-    const country = countryCode.toUpperCase()
-    
-    // Filter shipping options by country
-    return availableShippingMethods.filter(method => {
-      const methodName = method.name.toLowerCase()
-      
-      // For US/international shipping
-      if (country === 'US') {
-        // Only show international or US specific options
-        return methodName.includes('international') || 
-               methodName.includes('usa') || 
-               methodName.includes('us ') || 
-               methodName.includes('united states')
-      }
-      
-      // For UK/GB shipping
-      if (country === 'GB') {
-        // Only show UK options or options without international/US in the name
-        return methodName.includes('uk') || 
-               methodName.includes('united kingdom') || 
-               methodName.includes('standard') || 
-               method.name === 'Royal Mail 1st Class' || 
-               method.name === 'Royal Mail 2nd Class' || 
-               (!methodName.includes('international') && 
-                !methodName.includes('usa') && 
-                !methodName.includes('us '))
-      }
-      
-      // For other countries, only show international options
-      return methodName.includes('international')
-    })
-  }, [availableShippingMethods, countryCode])
+    // Trust Medusa's backend to return the correct shipping options for the region
+    // No need to filter by country code since the cart's region already determines
+    // which shipping options are available
+    return availableShippingMethods
+  }, [availableShippingMethods])
 
   // Group shipping options by shipping profile
   const shippingOptionsByProfile = useMemo(() => {

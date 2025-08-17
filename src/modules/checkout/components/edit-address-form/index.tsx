@@ -15,6 +15,7 @@ type EditAddressFormProps = {
   ref: React.RefObject<HTMLFormElement | null>
   address: HttpTypes.StoreCustomerAddress
   region: HttpTypes.StoreRegion
+  allRegions?: HttpTypes.StoreRegion[]
   formState: {
     success: boolean
     error: string | null
@@ -23,7 +24,7 @@ type EditAddressFormProps = {
 
 const EditAddressForm = forwardRef<HTMLFormElement, EditAddressFormProps>(
   (props, ref) => {
-    const { address, region, formState } = props
+    const { address, region, allRegions, formState } = props
 
     const { setFieldValue, errors, values, handleChange } =
       useFormikContext<
@@ -98,6 +99,7 @@ const EditAddressForm = forwardRef<HTMLFormElement, EditAddressFormProps>(
               label="Country"
               name="country_code"
               region={region}
+              allRegions={allRegions}
               required
               autoComplete="country"
               data-testid="country-select"
